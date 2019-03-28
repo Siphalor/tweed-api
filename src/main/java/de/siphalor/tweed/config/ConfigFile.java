@@ -70,7 +70,7 @@ public class ConfigFile {
 	 * @param entry the entry itself
 	 * @return the entry (for chain calls)
 	 */
-	public ConfigEntry register(String name, ConfigEntry entry) {
+	public <T extends ConfigEntry> T register(String name, T entry) {
 		entries.put(name, entry);
 		return entry;
 	}

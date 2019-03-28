@@ -13,7 +13,7 @@ public class ConfigCategory {
 	 * Convenience method for adding entries to categories.
 	 * @see ConfigFile#register(String, ConfigEntry)
 	 */
-	public ConfigEntry register(String name, ConfigEntry configEntry) {
+	public <T extends ConfigEntry> T register(String name, T configEntry) {
 		owner.register(name, configEntry);
 		configEntry.setCategoryPath(owner.categories.inverse().get(this));
 		return configEntry;
