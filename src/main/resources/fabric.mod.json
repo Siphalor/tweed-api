@@ -1,0 +1,16 @@
+{
+  "id": "tweed",
+  "name": "Tweed",
+  "description": "Yet another config handler mod",
+  "version": "${version}",
+  "side": "universal",
+  "initializers": [
+    "de.siphalor.tweed.client.ClientCore",
+    "de.siphalor.tweed.server.ServerCore"
+  ],
+  "requires": {
+    "fabric": "*"
+  },
+  "mixins": {
+  }
+}
