@@ -2,6 +2,7 @@ plugins {
 	id 'fabric-loom' version '0.2.0-SNAPSHOT'
 	id 'maven-publish'
 	id 'java-library'
+	id 'com.github.johnrengelman.shadow' version '4.0.0'
 }
 
 repositories {
@@ -33,7 +34,8 @@ dependencies {
 
 	// hjson
 	//compile 'org.hjson:hjson:3.0.0'
-	compile 'com.github.PersonTheCat:hjson-java:master-SNAPSHOT'
+	shadow 'com.github.PersonTheCat:hjson-java:master-SNAPSHOT'
+	implementation 'com.github.PersonTheCat:hjson-java:master-SNAPSHOT'
 	//compile 'com.github.Prospector:ModMenu:-SNAPSHOT'
 	//compile 'com.github.shedaniel:Cloth:-SNAPSHOT'
 }
@@ -68,6 +70,16 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 jar {
 	from "LICENSE"
+}
+
+shadowJar {
+	configurations = [project.configurations.shadow]
+	classifier = "main"
+}
+
+remapJar {
+    dependsOn shadowJar
+	jar = shadowJar.archivePath
 }
 
 // configure the maven publication
