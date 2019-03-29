@@ -6,9 +6,7 @@ import de.siphalor.tweed.Core;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
-import org.hjson.JsonObject;
-import org.hjson.JsonType;
-import org.hjson.JsonValue;
+import org.hjson.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -108,7 +106,7 @@ public class ConfigFile {
 					if(parent.get(part) == null) {
 						JsonObject partObject = new JsonObject();
 						if(categories.containsKey(path))
-							partObject.setComment(categories.get(path).comment);
+							partObject.setComment(CommentType.BOL, CommentStyle.BLOCK, categories.get(path).comment);
 						parent.add(part, partObject);
 					} else {
 						if(parent.get(part).getType() != JsonType.OBJECT) {
