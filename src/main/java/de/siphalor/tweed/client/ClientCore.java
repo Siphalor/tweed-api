@@ -13,6 +13,7 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
 public class ClientCore implements ClientModInitializer {
+
 	@Override
 	public void onInitializeClient() {
 		ResourceManagerHelper.get(ResourceType.ASSETS).registerReloadListener(new SimpleSynchronousResourceReloadListener() {

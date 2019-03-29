@@ -37,8 +37,8 @@ public final class ConfigLoader {
 					e.printStackTrace();
 				}
 			}
-			if(!new File(Core.mainConfigDirectory).mkdirs())
-				continue;
+			//noinspection ResultOfMethodCallIgnored
+			new File(Core.mainConfigDirectory).mkdirs();
 			try {
 				FileWriter writer = new FileWriter(mainConfig);
 				configFile.write(environment, definitionScope).writeTo(writer, Core.HJSON_OPTIONS);
