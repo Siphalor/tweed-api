@@ -70,17 +70,16 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 
 jar {
 	from "LICENSE"
+	classifier = "plain"
 }
 
 shadowJar {
 	configurations = [project.configurations.shadow]
-	classifier = "main"
+	classifier = ""
 }
 
 remapJar {
-	dependencies {
-		shadowJar
-	}
+	dependsOn shadowJar
 	jar = shadowJar.archivePath
 }
 
@@ -89,7 +88,7 @@ publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			// add all the jars that should be included when publishing to maven
-			artifact(jar) {
+			artifact(shadowJar) {
 				builtBy remapJar
 			}
 			artifact(sourcesJar) {
