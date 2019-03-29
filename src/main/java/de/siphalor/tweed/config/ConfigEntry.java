@@ -19,7 +19,7 @@ public abstract class ConfigEntry<T> {
 		this.defaultValue = defaultValue;
 		this.value = defaultValue;
 		this.comment = "";
-		this.environment = ConfigEnvironment.SERVER;
+		this.environment = ConfigEnvironment.UNIVERSAL;
 		this.definitionScope = ConfigDefinitionScope.NONE;
 		this.categoryPath = "";
 	}

@@ -96,7 +96,7 @@ public class ConfigFile {
 		JsonObject jsonObject = new JsonObject();
 		entry:
 		for(Map.Entry<String, ConfigEntry> entry : entries.entrySet()) {
-            if(environment != entry.getValue().getEnvironment() || !entry.getValue().getDefinitionScope().isIn(definitionScope))
+            if(!environment.matches(entry.getValue().getEnvironment()) || !entry.getValue().getDefinitionScope().isIn(definitionScope))
             	continue;
 			String path = entry.getValue().categoryPath;
 			String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
@@ -131,7 +131,7 @@ public class ConfigFile {
 	 */
 	public void reset(ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
 		for(ConfigEntry entry : entries.values()) {
-			if(environment == entry.getEnvironment() && entry.getDefinitionScope().isIn(definitionScope))
+			if(environment.matches(entry.getEnvironment()) && entry.getDefinitionScope().isIn(definitionScope))
 			entry.reset();
 		}
 	}
@@ -154,7 +154,7 @@ public class ConfigFile {
 	public void load(JsonObject json, ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
 		entry:
 		for(Map.Entry<String, ConfigEntry> entry : entries.entrySet()) {
-			if(environment != entry.getValue().getEnvironment())
+			if(!environment.matches(entry.getValue().getEnvironment()))
 				continue;
 			if(!entry.getValue().getDefinitionScope().isIn(definitionScope))
 				continue;
