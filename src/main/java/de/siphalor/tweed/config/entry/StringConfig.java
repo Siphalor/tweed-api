@@ -1,6 +1,5 @@
 package de.siphalor.tweed.config.entry;
 
-import de.siphalor.tweed.config.ConfigEntry;
 import org.hjson.JsonValue;
 
 public class StringConfig extends ConfigEntry<String> {

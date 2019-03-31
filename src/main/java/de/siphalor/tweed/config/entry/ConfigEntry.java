@@ -1,9 +1,15 @@
-package de.siphalor.tweed.config;
+package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.config.ConfigDefinitionScope;
+import de.siphalor.tweed.config.ConfigEnvironment;
+import de.siphalor.tweed.config.constraints.Constraint;
+import de.siphalor.tweed.config.constraints.ConstraintException;
 import org.hjson.CommentStyle;
 import org.hjson.CommentType;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
+
+import java.util.concurrent.SynchronousQueue;
 
 public abstract class ConfigEntry<T> {
 
@@ -14,6 +20,7 @@ public abstract class ConfigEntry<T> {
 	protected ConfigEnvironment environment;
 	protected ConfigDefinitionScope definitionScope;
 	protected String categoryPath;
+	protected SynchronousQueue<Constraint<T>> constraints;
 
 	public ConfigEntry(T defaultValue) {
 		this.defaultValue = defaultValue;
@@ -22,6 +29,7 @@ public abstract class ConfigEntry<T> {
 		this.environment = ConfigEnvironment.UNIVERSAL;
 		this.definitionScope = ConfigDefinitionScope.NONE;
 		this.categoryPath = "";
+		this.constraints = new SynchronousQueue<>();
 	}
 
 	public ConfigEntry setComment(String comment) {
@@ -56,12 +64,31 @@ public abstract class ConfigEntry<T> {
 		return this;
 	}
 
+	public String getCategoryPath() {
+		return categoryPath;
+	}
+
 	public final void reset() {
 		value = defaultValue;
 	}
 
 	public abstract void read(JsonValue json);
     public abstract JsonValue write(T value);
+
+    public final void registerConstraint(Constraint<T> constraint) {
+    	constraints.add(constraint);
+    }
+
+    public final void applyConstraints() throws ConstraintException {
+		for(Constraint<T> constraint : constraints) {
+			try {
+				constraint.apply(this);
+			} catch (ConstraintException e) {
+				if(e.fatal)
+					throw e;
+			}
+		}
+    }
 
     public final void write(JsonObject jsonObject, String key) {
     	jsonObject.set(key, write(value));

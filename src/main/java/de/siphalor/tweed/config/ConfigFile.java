@@ -3,6 +3,8 @@ package de.siphalor.tweed.config;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import de.siphalor.tweed.Core;
+import de.siphalor.tweed.config.constraints.ConstraintException;
+import de.siphalor.tweed.config.entry.ConfigEntry;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +18,7 @@ import java.util.function.BiConsumer;
 
 /**
  * A configuration file.
- * @see ConfigRegistry#registerConfigFile(String)
+ * @see TweedRegistry#registerConfigFile(String)
  */
 public class ConfigFile {
 	private String fileName;
@@ -96,7 +98,7 @@ public class ConfigFile {
 		for(Map.Entry<String, ConfigEntry> entry : entries.entrySet()) {
             if(!environment.matches(entry.getValue().getEnvironment()) || !entry.getValue().getDefinitionScope().isIn(definitionScope))
             	continue;
-			String path = entry.getValue().categoryPath;
+			String path = entry.getValue().getCategoryPath();
 			String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
 			JsonObject parent = jsonObject;
 			path = "";
@@ -156,7 +158,7 @@ public class ConfigFile {
 				continue;
 			if(!entry.getValue().getDefinitionScope().isIn(definitionScope))
 				continue;
-			String path = entry.getValue().categoryPath;
+			String path = entry.getValue().getCategoryPath();
 			JsonObject parent = json;
 			String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
 			for(String part : parts) {
@@ -166,8 +168,14 @@ public class ConfigFile {
 					parent = parent.get(part).asObject();
 				}
 			}
-			if(parent.get(entry.getKey()) != null)
+			if(parent.get(entry.getKey()) != null) {
 				entry.getValue().read(parent.get(entry.getKey()));
+				try {
+					entry.getValue().applyConstraints();
+				} catch (ConstraintException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

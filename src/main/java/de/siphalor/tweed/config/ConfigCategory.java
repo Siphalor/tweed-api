@@ -1,5 +1,7 @@
 package de.siphalor.tweed.config;
 
+import de.siphalor.tweed.config.entry.ConfigEntry;
+
 public class ConfigCategory {
 	protected String comment;
 	protected ConfigFile owner;

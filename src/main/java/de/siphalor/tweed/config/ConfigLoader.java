@@ -24,7 +24,7 @@ public final class ConfigLoader {
 	 * @param definitionScope the definition scope
 	 */
 	public static void loadConfigs(ResourceManager resourceManager, ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
-		Collection<ConfigFile> configFiles = ConfigRegistry.getConfigFiles();
+		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, definitionScope);
 			File mainConfig = new File(Core.mainConfigDirectory, configFile.getFileName());

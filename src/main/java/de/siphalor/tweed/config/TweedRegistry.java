@@ -6,7 +6,7 @@ import java.util.Collection;
 /**
  * Used to register {@link ConfigFile}s.
  */
-public class ConfigRegistry {
+public class TweedRegistry {
 	private static ArrayList<ConfigFile> configFiles = new ArrayList<>();
 
 	/**
