@@ -1,4 +1,8 @@
 # Tweed
+
+[![curseforge downloads](http://cf.way2muchnoise.eu/full_tweed-api.svg)](https://minecraft.curseforge.com/projects/tweed-api)
+[![curseforge mc versions](http://cf.way2muchnoise.eu/versions/tweed-api.svg)](https://minecraft.curseforge.com/projects/tweed-api)
+
 Yet another config API.
 
 For a quick example see [here](https://github.com/Siphalor/spiceoffabric/blob/master/src/main/java/de/siphalor/spiceoffabric/Config.java)
