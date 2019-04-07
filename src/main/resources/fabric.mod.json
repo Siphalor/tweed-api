@@ -1,16 +1,39 @@
 {
-  "id": "tweed",
-  "name": "Tweed",
-  "description": "Yet another config handler mod",
-  "version": "${version}",
-  "side": "universal",
-  "initializers": [
-    "de.siphalor.tweed.client.ClientCore",
-    "de.siphalor.tweed.server.ServerCore"
-  ],
-  "requires": {
-    "fabric": "*"
-  },
-  "mixins": {
-  }
+	"schemaVersion": 1,
+	"id": "tweed",
+	"version": "${version}",
+
+	"name": "Tweed API",
+	"description": "Yet another config handler mod",
+
+	"authors": [
+		"Siphalor"
+	],
+	"contact": {
+		"email": "xyx0125@gmail.com",
+		"issues": "https://github.com/Siphalor/tweed-api/issues",
+		"sources": "https://github.com/Siphalor/tweed-api"
+	},
+
+	"license": "CC0-1.0",
+	"icon": "assets/tweed/icon.png",
+
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"de.siphalor.tweed.client.ClientCore"
+		],
+		"main": [
+			"de.siphalor.tweed.server.ServerCore"
+		]
+	},
+
+	"requires": {
+		"fabricloader": ">=0.4.0",
+		"fabric": "*"
+	},
+
+	"custom": {
+		"modmenu:api": true
+	}
 }
