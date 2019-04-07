@@ -23,7 +23,7 @@
 		"client": [
 			"de.siphalor.tweed.client.ClientCore"
 		],
-		"main": [
+		"server": [
 			"de.siphalor.tweed.server.ServerCore"
 		]
 	},
