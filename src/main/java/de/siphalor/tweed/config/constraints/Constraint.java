@@ -10,4 +10,26 @@ public interface Constraint<T> {
 	 * @throws ConstraintException a possible exception in case of problems
 	 */
 	void apply(ConfigEntry<T> configEntry) throws ConstraintException;
+
+	default String getDescription() {
+		return "";
+	}
+
+	/**
+	 * Gets the type of the constraint
+	 * @return the type
+	 * @see Type
+	 */
+	Type getConstraintType();
+
+	/**
+	 * Types of constraints. This determines the position when the constraint gets applied.
+	 *
+	 * <i>PRE</i> constraints are applied before the {@link ConfigEntry} is read.
+	 * <i>POST</i> constraints are applied after the {@link ConfigEntry} is read.
+	 */
+	enum Type {
+		PRE,
+		POST
+	}
 }

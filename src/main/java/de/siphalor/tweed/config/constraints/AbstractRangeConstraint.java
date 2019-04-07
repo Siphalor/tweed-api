@@ -20,5 +20,15 @@ public abstract class AbstractRangeConstraint<T extends Number> implements Const
 		}
 	}
 
+	@Override
+	public String getDescription() {
+		return "Must be between " + min + " and " + max + ".";
+	}
+
+	@Override
+	public Type getConstraintType() {
+		return Type.PRE;
+	}
+
 	public abstract void clampValue(ConfigEntry<T> entry);
 }

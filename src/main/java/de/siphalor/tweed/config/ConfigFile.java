@@ -169,9 +169,10 @@ public class ConfigFile {
 				}
 			}
 			if(parent.get(entry.getKey()) != null) {
-				entry.getValue().read(parent.get(entry.getKey()));
 				try {
-					entry.getValue().applyConstraints();
+					entry.getValue().applyPreConstraints();
+					entry.getValue().read(parent.get(entry.getKey()));
+					entry.getValue().applyPostConstraints();
 				} catch (ConstraintException e) {
 					e.printStackTrace();
 				}
