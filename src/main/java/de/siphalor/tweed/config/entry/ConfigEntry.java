@@ -102,10 +102,10 @@ public abstract class ConfigEntry<T> {
     	return this;
     }
 
-	public final void applyPreConstraints() throws ConstraintException {
+	public final void applyPreConstraints(JsonValue jsonValue) throws ConstraintException {
 		for(Constraint<T> constraint : preConstraints) {
 			try {
-				constraint.apply(this);
+				constraint.apply(jsonValue, this);
 			} catch (ConstraintException e) {
 				if(e.fatal)
 					throw e;
@@ -113,10 +113,10 @@ public abstract class ConfigEntry<T> {
 		}
 	}
 
-    public final void applyPostConstraints() throws ConstraintException {
+    public final void applyPostConstraints(JsonValue jsonValue) throws ConstraintException {
 		for(Constraint<T> constraint : postConstraints) {
 			try {
-				constraint.apply(this);
+				constraint.apply(jsonValue, this);
 			} catch (ConstraintException e) {
 				if(e.fatal)
 					throw e;

@@ -170,9 +170,10 @@ public class ConfigFile {
 			}
 			if(parent.get(entry.getKey()) != null) {
 				try {
-					entry.getValue().applyPreConstraints();
-					entry.getValue().read(parent.get(entry.getKey()));
-					entry.getValue().applyPostConstraints();
+					JsonValue jsonValue = parent.get(entry.getKey());
+					entry.getValue().applyPreConstraints(jsonValue);
+					entry.getValue().read(jsonValue);
+					entry.getValue().applyPostConstraints(jsonValue);
 				} catch (ConstraintException e) {
 					e.printStackTrace();
 				}

@@ -80,7 +80,6 @@ shadowJar {
 
 remapJar {
 	dependsOn shadowJar
-	jar = shadowJar.archivePath
 }
 
 // configure the maven publication
