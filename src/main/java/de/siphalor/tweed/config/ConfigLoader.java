@@ -23,7 +23,7 @@ public final class ConfigLoader {
 	 * @param environment the current environment
 	 * @param definitionScope the definition scope
 	 */
-	public static void loadConfigs(ResourceManager resourceManager, ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
+	public static void loadConfigs(ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope definitionScope) {
 		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, definitionScope);
@@ -53,6 +53,9 @@ public final class ConfigLoader {
 				}
 			} catch (IOException ignored) {}
 			configFile.finishReload(environment, definitionScope);
+			if(environment.isContainedIn(ConfigEnvironment.SERVER)) {
+				configFile.syncToClients(definitionScope);
+			}
 		}
 	}
 }

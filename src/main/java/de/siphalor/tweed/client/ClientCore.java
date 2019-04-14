@@ -1,11 +1,13 @@
 package de.siphalor.tweed.client;
 
 import de.siphalor.tweed.Core;
-import de.siphalor.tweed.config.ConfigDefinitionScope;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigLoader;
+import de.siphalor.tweed.config.ConfigScope;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.event.server.ServerStartCallback;
+import net.fabricmc.fabric.api.event.server.ServerStopCallback;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.ResourceManager;
@@ -24,14 +26,21 @@ public class ClientCore implements ClientModInitializer {
 
 			@Override
 			public void apply(ResourceManager resourceManager) {
-				ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigDefinitionScope.NONE);
+				ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
 			}
 		});
 
-		//noinspection CodeBlock2Expr
 		ServerStartCallback.EVENT.register(minecraftServer -> {
-			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.SERVER, ConfigDefinitionScope.GAME);
+			Core.setMinecraftServer(minecraftServer);
+			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.SERVER, ConfigScope.GAME);
+		});
+		//noinspection CodeBlock2Expr
+		ServerStopCallback.EVENT.register(minecraftServer -> {
+			Core.setMinecraftServer(null);
 		});
 
+		ClientSidePacketRegistry.INSTANCE.register(Core.CONFIG_SYNC_PACKET, (packetContext, packetByteBuf) -> {
+			//ConfigFile = TweedRegistry.getConfigFiles().stream().;
+		});
 	}
 }

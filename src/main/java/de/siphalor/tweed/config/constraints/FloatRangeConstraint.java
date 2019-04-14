@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config.constraints;
 
-import de.siphalor.tweed.config.entry.ConfigEntry;
+import de.siphalor.tweed.config.entry.AbstractValueEntry;
 import net.minecraft.util.math.MathHelper;
 
 public class FloatRangeConstraint extends AbstractRangeConstraint<Float> {
@@ -10,7 +10,7 @@ public class FloatRangeConstraint extends AbstractRangeConstraint<Float> {
 	}
 
 	@Override
-	public void clampValue(ConfigEntry<Float> entry) {
+	public void clampValue(AbstractValueEntry<Float, ?> entry) {
 		entry.value = MathHelper.clamp(entry.value, min, max);
 	}
 }

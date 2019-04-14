@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config.constraints;
 
-import de.siphalor.tweed.config.entry.ConfigEntry;
+import de.siphalor.tweed.config.entry.AbstractValueEntry;
 import net.minecraft.util.math.MathHelper;
 
 public class IntRangeConstraint extends AbstractRangeConstraint<Integer> {
@@ -9,7 +9,7 @@ public class IntRangeConstraint extends AbstractRangeConstraint<Integer> {
 	}
 
 	@Override
-	public void clampValue(ConfigEntry<Integer> entry) {
+	public void clampValue(AbstractValueEntry<Integer, ?> entry) {
         entry.value = MathHelper.clamp(entry.value, this.min, this.max);
 	}
 }

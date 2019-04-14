@@ -1,6 +1,8 @@
 package de.siphalor.tweed.config.constraints;
 
-public class ConstraintException extends Exception {
+import de.siphalor.tweed.config.ConfigReadException;
+
+public class ConstraintException extends ConfigReadException {
 	public boolean fatal;
 
 	/**

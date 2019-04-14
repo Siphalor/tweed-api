@@ -1,19 +1,19 @@
 package de.siphalor.tweed.config;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import de.siphalor.tweed.Core;
-import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.ConfigEntry;
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.server.PlayerStream;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.PacketByteBuf;
 import org.apache.commons.lang3.StringUtils;
-import org.hjson.*;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -22,30 +22,30 @@ import java.util.function.BiConsumer;
  */
 public class ConfigFile {
 	private String fileName;
-	private BiConsumer<ConfigEnvironment, ConfigDefinitionScope> reloadListener = null;
+	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
 
-	protected Map<String, ConfigEntry> entries = new HashMap<>();
-	protected BiMap<String, ConfigCategory> categories = HashBiMap.create();
+	protected ConfigCategory mainCategory;
 
 	protected ConfigFile(String fileName) {
 		this.fileName = fileName;
+		mainCategory = new ConfigCategory();
 	}
 
 	/**
 	 * Adds a new reload listener.
 	 *
 	 * This gets called after all reloading of sub-entries is done for the specific reload point.
-	 * @param listener a {@link BiConsumer} accepting the used {@link ConfigEnvironment} and {@link ConfigDefinitionScope}
+	 * @param listener a {@link BiConsumer} accepting the used {@link ConfigEnvironment} and {@link ConfigScope}
 	 * @return the current config file (for chain calls)
 	 */
-	public ConfigFile setReloadListener(BiConsumer<ConfigEnvironment, ConfigDefinitionScope> listener) {
+	public ConfigFile setReloadListener(BiConsumer<ConfigEnvironment, ConfigScope> listener) {
 		reloadListener = listener;
 		return this;
 	}
 
-	protected void finishReload(ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
+	protected void finishReload(ConfigEnvironment environment, ConfigScope scope) {
 		if(reloadListener != null)
-			reloadListener.accept(environment, definitionScope);
+			reloadListener.accept(environment, scope);
 	}
 
 	/**
@@ -66,77 +66,50 @@ public class ConfigFile {
 
 	/**
 	 * Registers a new {@link ConfigEntry}.
-	 * @param name the property name to use
+	 * @param path the property path of the entry ({@link Core#HJSON_PATH_DELIMITER}
 	 * @param entry the entry itself
-	 * @return the entry (for chain calls)
+	 * @return the entry (for chain calls) or <i>null</i> if the path to the entry is invalid
 	 */
-	public <T extends ConfigEntry> T register(String name, T entry) {
-		entries.put(name, entry);
+	public <T extends ConfigEntry> T register(String path, T entry) {
+        String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
+        if(parts.length == 1)
+        	mainCategory.register(path, entry);
+        else {
+        	ConfigCategory category = mainCategory;
+        	for(int i = 0; i < parts.length - 1; i++) {
+        		ConfigEntry iEntry = category.entries.get(parts[i]);
+                if(!(iEntry instanceof ConfigCategory)) {
+                	return null;
+				}
+				category = (ConfigCategory) iEntry;
+			}
+        	category.register(parts[parts.length - 1], entry);
+		}
 		return entry;
-	}
-
-	/**
-	 * Used to append information to categories
-	 * @param path the path to the category (see {@link Core#HJSON_PATH_DELIMITER})
-	 * @return the category
-	 */
-	public ConfigCategory category(String path) {
-		ConfigCategory configCategory = new ConfigCategory(this);
-		categories.put(path, configCategory);
-		return configCategory;
 	}
 
 	/**
 	 * Constructs a {@link JsonObject} for writing it to the {@link Core#mainConfigDirectory}
 	 * @param environment the current environment
-	 * @param definitionScope the current definition scope
+	 * @param scope the current definition scope
 	 * @return the new {@link JsonObject}
 	 */
-	public JsonObject write(ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
+	public JsonObject write(ConfigEnvironment environment, ConfigScope scope) {
 		JsonObject jsonObject = new JsonObject();
-		entry:
-		for(Map.Entry<String, ConfigEntry> entry : entries.entrySet()) {
-            if(!environment.matches(entry.getValue().getEnvironment()) || !entry.getValue().getDefinitionScope().isIn(definitionScope))
-            	continue;
-			String path = entry.getValue().getCategoryPath();
-			String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
-			JsonObject parent = jsonObject;
-			path = "";
-			for(String part : parts) {
-				path += path.equals("") ? part : ":" + part;
-				if(part.length() > 0) {
-					if(parent.get(part) == null) {
-						JsonObject partObject = new JsonObject();
-						if(categories.containsKey(path))
-							partObject.setComment(CommentType.BOL, CommentStyle.BLOCK, categories.get(path).comment);
-						parent.add(part, partObject);
-					} else {
-						if(parent.get(part).getType() != JsonType.OBJECT) {
-							System.err.println("Internal error with config generation");
-							continue entry;
-						}
-					}
-					parent = (JsonObject) parent.get(part);
-				}
-			}
-			entry.getValue().write(parent, entry.getKey());
-		}
+		mainCategory.write(jsonObject, "", environment, scope);
 		return jsonObject;
 	}
 
 	/**
 	 * Resets all entries to their default values
 	 * @param environment The current {@link ConfigEnvironment}
-	 * @param definitionScope The current {@link ConfigDefinitionScope}
+	 * @param scope The current {@link ConfigScope}
 	 */
-	public void reset(ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
-		for(ConfigEntry entry : entries.values()) {
-			if(environment.matches(entry.getEnvironment()) && entry.getDefinitionScope().isIn(definitionScope))
-			entry.reset();
-		}
+	public void reset(ConfigEnvironment environment, ConfigScope scope) {
+        mainCategory.reset(environment, scope);
 	}
 
-	public void load(Resource resource, ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
+	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope) {
 		JsonValue json;
 		try {
 			json = JsonValue.readHjson(new InputStreamReader(resource.getInputStream()));
@@ -148,37 +121,22 @@ public class ConfigFile {
         	System.err.println("Config files should contain a hjson object!");
         	return;
         }
-        load(json.asObject(), environment, definitionScope);
+        load(json.asObject(), environment, scope);
 	}
 
-	public void load(JsonObject json, ConfigEnvironment environment, ConfigDefinitionScope definitionScope) {
-		entry:
-		for(Map.Entry<String, ConfigEntry> entry : entries.entrySet()) {
-			if(!environment.matches(entry.getValue().getEnvironment()))
-				continue;
-			if(!entry.getValue().getDefinitionScope().isIn(definitionScope))
-				continue;
-			String path = entry.getValue().getCategoryPath();
-			JsonObject parent = json;
-			String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
-			for(String part : parts) {
-				if(!part.equals("")) {
-					if(parent.get(part) == null)
-						continue entry;
-					parent = parent.get(part).asObject();
-				}
-			}
-			if(parent.get(entry.getKey()) != null) {
-				try {
-					JsonValue jsonValue = parent.get(entry.getKey());
-					entry.getValue().applyPreConstraints(jsonValue);
-					entry.getValue().read(jsonValue);
-					entry.getValue().applyPostConstraints(jsonValue);
-				} catch (ConstraintException e) {
-					e.printStackTrace();
-				}
-			}
+	public void load(JsonObject json, ConfigEnvironment environment, ConfigScope scope) {
+		try {
+			mainCategory.read(json, environment, scope);
+		} catch (ConfigReadException e) {
+            System.err.println("The config file " + fileName + ".hjson must contain an object!");
 		}
 	}
 
+	public void syncToClients(ConfigScope scope) {
+		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+		packetByteBuf.writeString(this.fileName);
+		mainCategory.write(packetByteBuf);
+
+		PlayerStream.all(Core.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Core.CONFIG_SYNC_PACKET, packetByteBuf));
+	}
 }
