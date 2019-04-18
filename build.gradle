@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.2.0-SNAPSHOT'
+	id 'fabric-loom' version '0.2.1-SNAPSHOT'
 	id 'maven-publish'
 	id 'java-library'
 	id 'com.github.johnrengelman.shadow' version '4.0.0'
@@ -11,6 +11,7 @@ repositories {
 		name "Jitpack"
 		url "https://jitpack.io/"
 	}
+	maven { url "https://minecraft.curseforge.com/api/maven"}
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -30,14 +31,19 @@ dependencies {
 	modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
+	include "net.fabricmc:fabric:${project.fabric_version}"
 	modCompile "net.fabricmc:fabric:${project.fabric_version}"
 
 	// hjson
 	//compile 'org.hjson:hjson:3.0.0'
 	shadow 'com.github.PersonTheCat:hjson-java:master-SNAPSHOT'
 	implementation 'com.github.PersonTheCat:hjson-java:master-SNAPSHOT'
-	//compile 'com.github.Prospector:ModMenu:-SNAPSHOT'
-	//compile 'com.github.shedaniel:Cloth:-SNAPSHOT'
+
+	// ModMenu
+	modCompile "io.github.prospector.modmenu:ModMenu:${project.modmenu_version}"
+
+	// Cloth Config
+	modCompile "cloth-config:ClothConfig:${project.clothconfig_version}"
 }
 
 processResources {
@@ -80,6 +86,8 @@ shadowJar {
 
 remapJar {
 	dependsOn shadowJar
+	//noinspection GroovyAssignabilityCheck
+	jar = shadowJar.archivePath
 }
 
 // configure the maven publication

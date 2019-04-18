@@ -51,5 +51,4 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	public void writeValue(PacketByteBuf buf) {
         buf.writeString(stringToEnum.inverse().get(value));
 	}
-
 }

@@ -28,6 +28,7 @@ import java.util.function.Consumer;
  * @see MappedEnumEntry
  * @see StringEntry
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extends AbstractBasicEntry<T> {
 
 	/**
@@ -56,6 +57,10 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 
 	public String getComment() {
 		return comment;
+	}
+
+	public V getDefaultValue() {
+		return defaultValue;
 	}
 
 	@Override

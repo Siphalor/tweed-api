@@ -32,6 +32,9 @@
 		"fabricloader": ">=0.4.0",
 		"fabric": "*"
 	},
+	"suggests": {
+		"modmenu": "*"
+	},
 
 	"custom": {
 		"modmenu:api": true
