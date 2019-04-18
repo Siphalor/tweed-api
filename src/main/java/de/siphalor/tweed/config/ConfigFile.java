@@ -21,14 +21,14 @@ import java.util.function.BiConsumer;
  * @see TweedRegistry#registerConfigFile(String)
  */
 public class ConfigFile {
-	private String fileName;
+	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
 
-	protected ConfigCategory mainCategory;
+	protected ConfigCategory rootCategory;
 
-	protected ConfigFile(String fileName) {
-		this.fileName = fileName;
-		mainCategory = new ConfigCategory();
+	protected ConfigFile(String name) {
+		this.name = name;
+		rootCategory = new ConfigCategory();
 	}
 
 	/**
@@ -53,15 +53,29 @@ public class ConfigFile {
 	 * @return the identifier
 	 */
 	public Identifier getFileIdentifier() {
-		return new Identifier(Core.MODID, "config/" + fileName + ".hjson");
+		return new Identifier(Core.MODID, "config/" + name + ".hjson");
 	}
 
 	/**
 	 * Gets the file name
 	 * @return the file name <b>with extension</b>
+	 * @see ConfigFile#getName()
 	 */
 	public String getFileName() {
-		return fileName + ".hjson";
+		return name + ".hjson";
+	}
+
+	/**
+	 * Gets the name
+	 * @return the (file) name <b>without extension</b>
+	 * @see ConfigFile#getFileName()
+	 */
+	public String getName() {
+		return name;
+	}
+
+	public ConfigCategory getRootCategory() {
+		return rootCategory;
 	}
 
 	/**
@@ -73,9 +87,9 @@ public class ConfigFile {
 	public <T extends ConfigEntry> T register(String path, T entry) {
         String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
         if(parts.length == 1)
-        	mainCategory.register(path, entry);
+        	rootCategory.register(path, entry);
         else {
-        	ConfigCategory category = mainCategory;
+        	ConfigCategory category = rootCategory;
         	for(int i = 0; i < parts.length - 1; i++) {
         		ConfigEntry iEntry = category.entries.get(parts[i]);
                 if(!(iEntry instanceof ConfigCategory)) {
@@ -96,7 +110,7 @@ public class ConfigFile {
 	 */
 	public JsonObject write(ConfigEnvironment environment, ConfigScope scope) {
 		JsonObject jsonObject = new JsonObject();
-		mainCategory.write(jsonObject, "", environment, scope);
+		rootCategory.write(jsonObject, "", environment, scope);
 		return jsonObject;
 	}
 
@@ -106,7 +120,7 @@ public class ConfigFile {
 	 * @param scope The current {@link ConfigScope}
 	 */
 	public void reset(ConfigEnvironment environment, ConfigScope scope) {
-        mainCategory.reset(environment, scope);
+        rootCategory.reset(environment, scope);
 	}
 
 	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope) {
@@ -114,7 +128,7 @@ public class ConfigFile {
 		try {
 			json = JsonValue.readHjson(new InputStreamReader(resource.getInputStream()));
 		} catch (IOException e) {
-            System.err.println("Couldn't load config file '" + fileName + "'");
+            System.err.println("Couldn't load config file '" + name + "'");
             return;
 		}
         if(!json.isObject()) {
@@ -126,16 +140,16 @@ public class ConfigFile {
 
 	public void load(JsonObject json, ConfigEnvironment environment, ConfigScope scope) {
 		try {
-			mainCategory.read(json, environment, scope);
+			rootCategory.read(json, environment, scope);
 		} catch (ConfigReadException e) {
-            System.err.println("The config file " + fileName + ".hjson must contain an object!");
+            System.err.println("The config file " + name + ".hjson must contain an object!");
 		}
 	}
 
 	public void syncToClients(ConfigScope scope) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		packetByteBuf.writeString(this.fileName);
-		mainCategory.write(packetByteBuf);
+		packetByteBuf.writeString(this.name);
+		rootCategory.write(packetByteBuf);
 
 		PlayerStream.all(Core.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Core.CONFIG_SYNC_PACKET, packetByteBuf));
 	}

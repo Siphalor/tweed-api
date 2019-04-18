@@ -101,6 +101,10 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		}
 	}
 
+	public Stream<Map.Entry<String, ConfigEntry>> entryStream() {
+		return entries.entrySet().stream();
+	}
+
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
 		return entries.entrySet().stream().filter(entry -> entry.getValue().getEnvironment().contains(environment) && entry.getValue().getScope().isContained(scope));
 	}
