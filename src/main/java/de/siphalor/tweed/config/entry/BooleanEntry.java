@@ -9,8 +9,8 @@ public class BooleanEntry extends AbstractValueEntry<Boolean, BooleanEntry> {
 	}
 
 	@Override
-	public void readValue(JsonValue json) {
-		value = json.asBoolean();
+	public Boolean readValue(JsonValue json) {
+		return json.asBoolean();
 	}
 
 	@Override

@@ -1,10 +1,7 @@
 package de.siphalor.tweed.config.entry;
 
 import com.google.common.collect.Iterators;
-import de.siphalor.tweed.config.ConfigCategory;
-import de.siphalor.tweed.config.ConfigEnvironment;
-import de.siphalor.tweed.config.ConfigReadException;
-import de.siphalor.tweed.config.ConfigScope;
+import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.Constraint;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import net.minecraft.util.PacketByteBuf;
@@ -36,6 +33,9 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 	 */
 	public V value;
 
+	protected V mainConfigValue;
+	protected boolean datapackOverridden = false;
+
 	protected V defaultValue;
 	protected ArrayDeque<Constraint<V>> preConstraints;
 	protected ArrayDeque<Constraint<V>> postConstraints;
@@ -61,6 +61,14 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 
 	public V getDefaultValue() {
 		return defaultValue;
+	}
+
+	public final boolean isDatapackOverridden() {
+		return datapackOverridden;
+	}
+
+	public final V getMainConfigValue() {
+		return mainConfigValue;
 	}
 
 	@Override
@@ -105,12 +113,23 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 		}
     }
 
-    public abstract void readValue(JsonValue jsonValue);
 
-	@SuppressWarnings("RedundantThrows")
+	/**
+	 * Abstract method to read in a value and <b>return it</b>. <i>Do not change {@link AbstractValueEntry#value}.</i>
+	 * @param jsonValue The json to read from.
+	 * @return The read and converted value;
+	 */
+	public abstract V readValue(JsonValue jsonValue) throws ConfigReadException;
+
 	@Override
-	public final void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope) throws ConfigReadException {
-		readValue(json);
+	public final void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigLoadOrigin origin) throws ConfigReadException {
+		value = readValue(json);
+		if(origin == ConfigLoadOrigin.MAIN) {
+			mainConfigValue = value;
+			datapackOverridden = false;
+		} else {
+			datapackOverridden = true;
+		}
 		onReload();
 	}
 

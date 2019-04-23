@@ -42,24 +42,34 @@ public final class ConfigLoader {
 	}
 
 	public static void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
-		File mainConfig = new File(Core.mainConfigDirectory, configFile.getFileName());
-		if(mainConfig.exists()) {
-			try {
-				FileReader reader = new FileReader(mainConfig);
-				configFile.load((JsonObject) JsonValue.readHjson(reader), environment, scope);
-				reader.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		configFile.load(readMainConfigFile(configFile), environment, scope);
 		//noinspection ResultOfMethodCallIgnored
 		new File(Core.mainConfigDirectory).mkdirs();
 		try {
-			FileWriter writer = new FileWriter(mainConfig);
+			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
 			configFile.write(environment, scope).writeTo(writer, Core.HJSON_OPTIONS);
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static JsonObject readMainConfigFile(ConfigFile configFile) {
+		File mainConfig = getMainConfigPath(configFile);
+		if(mainConfig.exists()) {
+			try {
+				FileReader reader = new FileReader(mainConfig);
+				JsonObject json = (JsonObject) JsonValue.readHjson(reader);
+				reader.close();
+				return json;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return new JsonObject();
+	}
+
+	public static File getMainConfigPath(ConfigFile configFile) {
+		return new File(Core.mainConfigDirectory, configFile.getFileName());
 	}
 }

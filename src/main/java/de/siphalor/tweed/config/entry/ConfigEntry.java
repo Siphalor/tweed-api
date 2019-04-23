@@ -1,6 +1,7 @@
 package de.siphalor.tweed.config.entry;
 
 import de.siphalor.tweed.config.ConfigEnvironment;
+import de.siphalor.tweed.config.ConfigLoadOrigin;
 import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.config.constraints.ConstraintException;
@@ -24,7 +25,7 @@ public interface ConfigEntry {
 	 * @param scope the current reload scope
 	 * @throws ConfigReadException if an issue occurs during reading the value
 	 */
-	void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope) throws ConfigReadException;
+	void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigLoadOrigin origin) throws ConfigReadException;
 
 	/**
 	 * Read this kind of entry from a packet.

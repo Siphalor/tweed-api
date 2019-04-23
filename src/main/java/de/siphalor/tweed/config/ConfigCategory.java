@@ -34,7 +34,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope) throws ConfigReadException {
+	public void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigLoadOrigin origin) throws ConfigReadException {
 		if(!json.isObject()) {
 			throw new ConfigReadException("The entry should be an object (category)");
 		}
@@ -50,7 +50,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 					return;
 			}
 			try {
-				entry.getValue().read(value, environment, scope);
+				entry.getValue().read(value, environment, scope, origin);
 			} catch (ConfigReadException e) {
 				System.err.println("Error reading " + entry.getKey() + ":");
 				e.printStackTrace();

@@ -9,8 +9,8 @@ public class FloatEntry extends AbstractValueEntry<Float, FloatEntry> {
 	}
 
 	@Override
-	public void readValue(JsonValue json) {
-		value = json.asFloat();
+	public Float readValue(JsonValue json) {
+		return json.asFloat();
 	}
 
 	@Override

@@ -25,8 +25,8 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	}
 
 	@Override
-	public void readValue(JsonValue json) {
-		readValue(json.asString());
+	public T readValue(JsonValue json) {
+		return getValue(json.asString());
 	}
 
 	@Override
@@ -35,10 +35,14 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	}
 
 	public void readValue(String key) {
-		if(!stringToEnum.containsKey(key)) {
-			value = defaultValue;
+		value = getValue(key);
+	}
+
+	public T getValue(String string) {
+		if(!stringToEnum.containsKey(string)) {
+			return defaultValue;
 		} else {
-			value = stringToEnum.get(key);
+			return stringToEnum.get(string);
 		}
 	}
 

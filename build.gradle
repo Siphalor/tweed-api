@@ -43,7 +43,7 @@ dependencies {
 	modCompile "io.github.prospector.modmenu:ModMenu:${project.modmenu_version}"
 
 	// Cloth Config
-	modCompile "cloth-config:ClothConfig:${project.clothconfig_version}"
+	//modCompile "cloth-config:ClothConfig:${project.clothconfig_version}"
 }
 
 processResources {

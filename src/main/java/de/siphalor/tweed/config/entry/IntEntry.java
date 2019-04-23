@@ -10,10 +10,8 @@ public class IntEntry extends AbstractValueEntry<Integer, IntEntry> {
 	}
 
 	@Override
-	public void readValue(JsonValue json) {
-		if(json.isNumber()){
-			value = json.asInt();
-		}
+	public Integer readValue(JsonValue json) {
+        return json.asInt();
 	}
 
 	@Override

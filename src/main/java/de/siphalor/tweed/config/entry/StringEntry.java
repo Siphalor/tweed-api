@@ -9,10 +9,8 @@ public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	}
 
 	@Override
-	public void readValue(JsonValue json) {
-		if(json.isString()) {
-			value = json.asString();
-		}
+	public String readValue(JsonValue json) {
+        return json.asString();
 	}
 
 	@Override
