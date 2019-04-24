@@ -98,7 +98,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 			categoryObject = jsonObject.get(key).asObject();
 		}
 		if(!comment.equals(""))
-			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, comment);
+			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, getTranslatedComment());
 		entryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
 	}
 
@@ -107,6 +107,6 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
-		return entryStream().filter(entry -> entry.getValue().getEnvironment().contains(environment) && entry.getValue().getScope().triggeredBy(scope));
+		return entryStream().filter(entry -> environment.contains(entry.getValue().getEnvironment()) && scope.triggers(entry.getValue().getScope()));
 	}
 }

@@ -2,6 +2,7 @@ package de.siphalor.tweed.config.entry;
 
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
+import net.minecraft.client.resource.language.I18n;
 
 public abstract class AbstractBasicEntry<T extends AbstractBasicEntry> implements ConfigEntry {
 	protected ConfigEnvironment environment = ConfigEnvironment.UNIVERSAL;
@@ -48,5 +49,13 @@ public abstract class AbstractBasicEntry<T extends AbstractBasicEntry> implement
 	public T setComment(String comment) {
 		this.comment = comment;
 		return (T) this;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public String getTranslatedComment() {
+		return I18n.translate(comment);
 	}
 }

@@ -56,10 +56,6 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 		this.postConstraints = new ArrayDeque<>();
 	}
 
-	public String getComment() {
-		return comment;
-	}
-
 	public V getDefaultValue() {
 		return defaultValue;
 	}
@@ -128,7 +124,7 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 	public String getDescription() {
 		StringBuilder description = new StringBuilder();
 		if(comment.length() > 0)
-			description.append(comment).append(System.lineSeparator());
+			description.append(getTranslatedComment()).append(System.lineSeparator());
 		description.append("default: ").append(writeValue(defaultValue).toString());
 		ArrayList<String> constraintDescriptions = new ArrayList<>();
 		for(Iterator<Constraint<V>> it = Iterators.concat(preConstraints.iterator(), postConstraints.iterator()); it.hasNext(); ) {

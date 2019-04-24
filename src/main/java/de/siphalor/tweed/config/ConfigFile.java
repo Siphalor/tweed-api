@@ -11,6 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
 import org.apache.commons.lang3.StringUtils;
+import org.hjson.HjsonOptions;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
@@ -26,11 +27,14 @@ public class ConfigFile {
 	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
 
+	private HjsonOptions hjsonOptions;
+
 	protected ConfigCategory rootCategory;
 
 	protected ConfigFile(String name) {
 		this.name = name;
 		rootCategory = new ConfigCategory();
+		hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
 	}
 
 	/**
@@ -43,6 +47,14 @@ public class ConfigFile {
 	public ConfigFile setReloadListener(BiConsumer<ConfigEnvironment, ConfigScope> listener) {
 		reloadListener = listener;
 		return this;
+	}
+
+	public HjsonOptions getHjsonOptions() {
+		return hjsonOptions;
+	}
+
+	public void setHjsonOptions(HjsonOptions hjsonOptions) {
+		this.hjsonOptions = hjsonOptions;
 	}
 
 	protected void finishReload(ConfigEnvironment environment, ConfigScope scope) {
@@ -73,7 +85,7 @@ public class ConfigFile {
 	 * @see ConfigFile#getFileName()
 	 */
 	public String getName() {
-		return name;
+		return name.replace('/', '.');
 	}
 
 	public ConfigCategory getRootCategory() {

@@ -25,6 +25,9 @@
 		],
 		"main": [
 			"de.siphalor.tweed.Core"
+		],
+		"server": [
+			"de.siphalor.tweed.server.ServerCore"
 		]
 	},
 	"mixins": [

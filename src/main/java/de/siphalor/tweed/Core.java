@@ -2,7 +2,6 @@ package de.siphalor.tweed;
 
 import de.siphalor.tweed.config.*;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.server.ServerStartCallback;
 import net.fabricmc.fabric.api.event.server.ServerStopCallback;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -13,7 +12,6 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import org.hjson.HjsonOptions;
 
 import java.io.File;
 
@@ -25,7 +23,6 @@ public class Core implements ModInitializer {
 
 	public static final char HJSON_PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
-	public static final HjsonOptions HJSON_OPTIONS = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
 
 	private static MinecraftServer minecraftServer;
 
@@ -43,10 +40,6 @@ public class Core implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ServerStartCallback.EVENT.register(minecraftServer -> {
-			Core.setMinecraftServer(minecraftServer);
-			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.SERVER, ConfigScope.GAME);
-		});
 		ServerStopCallback.EVENT.register((MinecraftServer minecraftServer) -> Core.setMinecraftServer(null));
 		ResourceManagerHelper.get(ResourceType.DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override

@@ -3,9 +3,11 @@ package de.siphalor.tweed.client;
 import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.*;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.event.server.ServerStartCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -25,6 +27,10 @@ public class ClientCore implements ClientModInitializer {
 				ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
 			}
 		});
+		ServerStartCallback.EVENT.register(minecraftServer -> {
+			Core.setMinecraftServer(minecraftServer);
+			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
+		});
 
 		ClientSidePacketRegistry.INSTANCE.register(Core.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
 			String fileName = packetByteBuf.readString();
@@ -41,5 +47,7 @@ public class ClientCore implements ClientModInitializer {
 				}
 			}
 		});
+
+		ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.GAME);
 	}
 }

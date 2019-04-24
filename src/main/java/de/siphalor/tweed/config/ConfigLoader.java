@@ -27,14 +27,14 @@ public final class ConfigLoader {
 		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, scope);
-            configFile.load(readMainConfigFile(configFile), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
-            writeMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+			configFile.load(readMainConfigFile(configFile), environment, scope, ConfigOrigin.MAIN);
+            updateMainConfigFile(configFile, environment, scope);
 			try {
 				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
 				for(Resource resource : resources) {
 					configFile.load(resource, environment, scope, ConfigOrigin.DATAPACK);
 				}
-			} catch (IOException ignored) {}
+			} catch (Exception ignored) {}
 			configFile.finishReload(environment, scope);
 			if(ConfigEnvironment.SERVER.contains(environment)) {
 				configFile.syncToClients(ConfigEnvironment.SYNCED, scope);
@@ -49,7 +49,7 @@ public final class ConfigLoader {
 		new File(Core.mainConfigDirectory).mkdirs();
 		try {
 			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
-			jsonObject.writeTo(writer, Core.HJSON_OPTIONS);
+			jsonObject.writeTo(writer, configFile.getHjsonOptions());
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -76,7 +76,7 @@ public final class ConfigLoader {
 		new File(Core.mainConfigDirectory).mkdirs();
 		try {
 			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
-			configFile.write(new JsonObject(), environment, scope).writeTo(writer, Core.HJSON_OPTIONS);
+			configFile.write(new JsonObject(), environment, scope).writeTo(writer, configFile.getHjsonOptions());
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
