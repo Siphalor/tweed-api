@@ -10,7 +10,6 @@ import me.shedaniel.cloth.api.ConfigScreenBuilder;
 import me.shedaniel.cloth.gui.ClothConfigScreen;
 import me.shedaniel.cloth.gui.entries.*;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Screen;
 import net.minecraft.client.gui.menu.NoticeScreen;
@@ -53,7 +52,7 @@ public class TweedClothBridge {
 		this.modId = modId;
 	}
 
-	public void open() {
+	public Screen open() {
         inGame = MinecraftClient.getInstance().world != null;
 		parentScreen = MinecraftClient.getInstance().currentScreen;
 
@@ -65,16 +64,16 @@ public class TweedClothBridge {
 			ClientSidePacketRegistry.INSTANCE.sendToServer(Core.REQUEST_SYNC_C2S_PACKET, buffer);
 			awaitSync = true;
 
-			MinecraftClient.getInstance().openScreen(new NoticeScreen(
+			return new NoticeScreen(
 				() -> {
 					MinecraftClient.getInstance().openScreen(parentScreen);
 					awaitSync = false;
 				},
 				new TranslatableTextComponent("tweed.gui.screen.syncFromServer"),
 				new TranslatableTextComponent("tweed.gui.screen.syncFromServer.note")
-			));
+			);
 		} else {
-        	MinecraftClient.getInstance().openScreen(buildScreen());
+            return buildScreen();
 		}
 	}
 
@@ -131,16 +130,6 @@ public class TweedClothBridge {
 			categories.addAll(collectCategories(pair.getValue()));
 		});
 		return categories;
-	}
-
-	public Screen getScreen() {
-		return screenBuilder.build();
-	}
-
-	public void registerForModMenu() {
-		if(FabricLoader.getInstance().isModLoaded("modmenu")) {
-			ModMenuWrapper.addConfigOverride(modId, this::open);
-		}
 	}
 
 	public static <T extends ConfigEntry> void registerClothEntryMapping(Class<T> clazz, BiFunction<T, String, ClothConfigScreen.AbstractListEntry> supplier) {
