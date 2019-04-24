@@ -28,6 +28,7 @@ public final class ConfigLoader {
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, scope);
             configFile.load(readMainConfigFile(configFile), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
+            writeMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
 			try {
 				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
 				for(Resource resource : resources) {
