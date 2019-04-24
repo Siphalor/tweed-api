@@ -49,6 +49,7 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 	public AbstractValueEntry(V defaultValue) {
 		this.defaultValue = defaultValue;
 		this.value = defaultValue;
+		this.mainConfigValue = defaultValue;
 		this.comment = "";
 		this.environment = ConfigEnvironment.UNIVERSAL;
 		this.preConstraints = new ArrayDeque<>();
@@ -71,9 +72,19 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 		return mainConfigValue;
 	}
 
+	public void setMainConfigValue(V mainConfigValue) {
+		this.mainConfigValue = mainConfigValue;
+	}
+
+	public void setBothValues(V value) {
+		this.value = value;
+		this.mainConfigValue = value;
+	}
+
 	@Override
 	public void reset(ConfigEnvironment environment, ConfigScope scope) {
 		value = defaultValue;
+		mainConfigValue = defaultValue;
 	}
 
 	/**
@@ -113,6 +124,28 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 		}
     }
 
+	@Override
+	public String getDescription() {
+		StringBuilder description = new StringBuilder();
+		if(comment.length() > 0)
+			description.append(comment).append(System.lineSeparator());
+		description.append("default: ").append(writeValue(defaultValue).toString());
+		ArrayList<String> constraintDescriptions = new ArrayList<>();
+		for(Iterator<Constraint<V>> it = Iterators.concat(preConstraints.iterator(), postConstraints.iterator()); it.hasNext(); ) {
+			Constraint<V> constraint = it.next();
+			String desc = constraint.getDescription();
+			if(desc.isEmpty())
+				continue;
+			constraintDescriptions.add(desc.replace(System.lineSeparator(), System.lineSeparator() + "\t"));
+		}
+		if(constraintDescriptions.size() > 0) {
+			description.append(System.lineSeparator()).append("constraints:");
+			for(String desc : constraintDescriptions) {
+				description.append(System.lineSeparator()).append(desc);
+			}
+		}
+		return description.toString();
+	}
 
 	/**
 	 * Abstract method to read in a value and <b>return it</b>. <i>Do not change {@link AbstractValueEntry#value}.</i>
@@ -122,23 +155,35 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 	public abstract V readValue(JsonValue jsonValue) throws ConfigReadException;
 
 	@Override
-	public final void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigLoadOrigin origin) throws ConfigReadException {
+	public final void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
 		value = readValue(json);
-		if(origin == ConfigLoadOrigin.MAIN) {
+		if(origin == ConfigOrigin.MAIN) {
 			mainConfigValue = value;
 			datapackOverridden = false;
 		} else {
 			datapackOverridden = true;
 		}
-		onReload();
 	}
 
-	public abstract void readValue(PacketByteBuf buf);
+	/**
+	 * Abstract method to read in a value and <b>return it</b>. <i>Do not change {@link AbstractValueEntry#value}.</i>
+	 * @param buf The buffer to read from.
+	 * @return The read and converted value;
+	 */
+	public abstract V readValue(PacketByteBuf buf);
 
 	@Override
-	public final void read(PacketByteBuf buf) {
-		readValue(buf);
-		onReload();
+	public final void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
+		if(environment.contains(getEnvironment())) {
+			if(scope.triggers(getScope())) {
+				value = readValue(buf);
+				onReload();
+			} else {
+				mainConfigValue = readValue(buf);
+			}
+		} else {
+			readValue(buf);
+		}
 	}
 
 	/**
@@ -150,32 +195,14 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 
 	@Override
     public final void write(JsonObject jsonObject, String key, ConfigEnvironment environment, ConfigScope scope) {
-    	jsonObject.set(key, writeValue(value));
-    	StringBuilder wholeComment = new StringBuilder();
-    	if(comment.length() > 0)
-            wholeComment.append(comment).append(System.lineSeparator());
-    	wholeComment.append("default: ").append(writeValue(defaultValue).toString());
-	    ArrayList<String> constraintDescriptions = new ArrayList<>();
-		for(Iterator<Constraint<V>> it = Iterators.concat(preConstraints.iterator(), postConstraints.iterator()); it.hasNext(); ) {
-			Constraint<V> constraint = it.next();
-			String desc = constraint.getDescription();
-			if(desc.isEmpty())
-				continue;
-			constraintDescriptions.add(desc.replace(System.lineSeparator(), System.lineSeparator() + "\t"));
-		}
-	    if(constraintDescriptions.size() > 0) {
-	    	wholeComment.append(System.lineSeparator()).append("constraints:");
-	    	for(String desc : constraintDescriptions) {
-	    		wholeComment.append(System.lineSeparator()).append(desc);
-		    }
-	    }
-    	jsonObject.setComment(key, CommentType.BOL, CommentStyle.LINE, wholeComment.toString());
+    	jsonObject.set(key, writeValue(mainConfigValue));
+    	jsonObject.setComment(key, CommentType.BOL, CommentStyle.LINE, getDescription());
     }
 
     public abstract void writeValue(PacketByteBuf buf);
 
 	@Override
-	public final void write(PacketByteBuf buf) {
+	public final void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
 		writeValue(buf);
 	}
 

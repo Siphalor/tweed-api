@@ -34,7 +34,12 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigLoadOrigin origin) throws ConfigReadException {
+	public String getDescription() {
+		return comment;
+	}
+
+	@Override
+	public void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
 		if(!json.isObject()) {
 			throw new ConfigReadException("The entry should be an object (category)");
 		}
@@ -65,18 +70,18 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(PacketByteBuf buf) {
+	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
 		while(buf.readBoolean()) {
-			entries.get(buf.readString()).read(buf);
+			entries.get(buf.readString()).read(buf, environment, scope);
 		}
 	}
 
 	@Override
-	public void write(PacketByteBuf buf) {
-		entryStream(ConfigEnvironment.SYNCED, ConfigScope.HIGHEST).filter(entry -> entry.getValue().getEnvironment() == ConfigEnvironment.SYNCED).forEach(entry -> {
+	public void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
+		entryStream(environment, scope).forEach(entry -> {
 			buf.writeBoolean(true);
 			buf.writeString(entry.getKey());
-			entry.getValue().write(buf);
+			entry.getValue().write(buf, environment, scope);
 		});
 		buf.writeBoolean(false);
 	}
@@ -94,11 +99,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		}
 		if(!comment.equals(""))
 			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, comment);
-		for(Map.Entry<String, ConfigEntry> entry : entries.entrySet()) {
-			if(!environment.isContainedIn(entry.getValue().getEnvironment()) || !entry.getValue().getScope().isContained(scope))
-				continue;
-			entry.getValue().write(categoryObject, entry.getKey(), environment, scope);
-		}
+		entryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream() {
@@ -106,6 +107,6 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
-		return entries.entrySet().stream().filter(entry -> entry.getValue().getEnvironment().contains(environment) && entry.getValue().getScope().isContained(scope));
+		return entryStream().filter(entry -> entry.getValue().getEnvironment().contains(environment) && entry.getValue().getScope().triggeredBy(scope));
 	}
 }

@@ -23,11 +23,16 @@
 		"client": [
 			"de.siphalor.tweed.client.ClientCore"
 		],
-		"server": [
-			"de.siphalor.tweed.server.ServerCore"
+		"main": [
+			"de.siphalor.tweed.Core"
 		]
 	},
-
+	"mixins": [
+		{
+			"config": "tweed.client.mixin.json",
+			"environment": "client"
+		}
+	],
 	"requires": {
 		"fabricloader": ">=0.4.0",
 		"fabric": "*"

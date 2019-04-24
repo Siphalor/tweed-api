@@ -27,27 +27,28 @@ public final class ConfigLoader {
 		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, scope);
-			updateMainConfigFile(configFile, environment, scope);
+            configFile.load(readMainConfigFile(configFile), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
 			try {
 				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
 				for(Resource resource : resources) {
-					configFile.load(resource, environment, scope);
+					configFile.load(resource, environment, scope, ConfigOrigin.DATAPACK);
 				}
 			} catch (IOException ignored) {}
 			configFile.finishReload(environment, scope);
-			if(environment.isContainedIn(ConfigEnvironment.SERVER)) {
-				configFile.syncToClients(scope);
+			if(ConfigEnvironment.SERVER.contains(environment)) {
+				configFile.syncToClients(ConfigEnvironment.SYNCED, scope);
 			}
 		}
 	}
 
 	public static void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
-		configFile.load(readMainConfigFile(configFile), environment, scope);
+        JsonObject jsonObject = readMainConfigFile(configFile);
+        configFile.write(jsonObject, environment, scope);
 		//noinspection ResultOfMethodCallIgnored
 		new File(Core.mainConfigDirectory).mkdirs();
 		try {
 			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
-			configFile.write(environment, scope).writeTo(writer, Core.HJSON_OPTIONS);
+			jsonObject.writeTo(writer, Core.HJSON_OPTIONS);
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -67,6 +68,18 @@ public final class ConfigLoader {
 			}
 		}
 		return new JsonObject();
+	}
+
+	public static void writeMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
+		//noinspection ResultOfMethodCallIgnored
+		new File(Core.mainConfigDirectory).mkdirs();
+		try {
+			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
+			configFile.write(new JsonObject(), environment, scope).writeTo(writer, Core.HJSON_OPTIONS);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static File getMainConfigPath(ConfigFile configFile) {

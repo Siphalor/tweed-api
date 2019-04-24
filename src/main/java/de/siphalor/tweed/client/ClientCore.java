@@ -1,12 +1,8 @@
 package de.siphalor.tweed.client;
 
 import de.siphalor.tweed.Core;
-import de.siphalor.tweed.config.ConfigEnvironment;
-import de.siphalor.tweed.config.ConfigLoader;
-import de.siphalor.tweed.config.ConfigScope;
+import de.siphalor.tweed.config.*;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.event.server.ServerStartCallback;
-import net.fabricmc.fabric.api.event.server.ServerStopCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -30,17 +26,20 @@ public class ClientCore implements ClientModInitializer {
 			}
 		});
 
-		ServerStartCallback.EVENT.register(minecraftServer -> {
-			Core.setMinecraftServer(minecraftServer);
-			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.SERVER, ConfigScope.GAME);
-		});
-		//noinspection CodeBlock2Expr
-		ServerStopCallback.EVENT.register(minecraftServer -> {
-			Core.setMinecraftServer(null);
-		});
-
-		ClientSidePacketRegistry.INSTANCE.register(Core.CONFIG_SYNC_PACKET, (packetContext, packetByteBuf) -> {
-			//ConfigFile = TweedRegistry.getConfigFiles().stream().;
+		ClientSidePacketRegistry.INSTANCE.register(Core.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
+			String fileName = packetByteBuf.readString();
+            for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
+            	if(configFile.getName().equals(fileName)) {
+					configFile.read(packetByteBuf, ConfigEnvironment.SYNCED, ConfigScope.GAME);
+					break;
+				}
+			}
+            for(TweedClothBridge bridge : TweedClothBridge.tweedClothBridges) {
+            	if(bridge.configFile.getName().equals(fileName)) {
+            		bridge.onSync();
+            		break;
+				}
+			}
 		});
 	}
 }

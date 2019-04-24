@@ -1,5 +1,5 @@
 package de.siphalor.tweed.config;
 
-public enum ConfigLoadOrigin {
+public enum ConfigOrigin {
 	MAIN, DATAPACK
 }

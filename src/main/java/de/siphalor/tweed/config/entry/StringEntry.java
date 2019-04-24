@@ -14,8 +14,8 @@ public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	}
 
 	@Override
-	public void readValue(PacketByteBuf buf) {
-		value = buf.readString();
+	public String readValue(PacketByteBuf buf) {
+		return buf.readString();
 	}
 
 	@Override

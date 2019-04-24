@@ -14,8 +14,8 @@ public class FloatEntry extends AbstractValueEntry<Float, FloatEntry> {
 	}
 
 	@Override
-	public void readValue(PacketByteBuf buf) {
-		value = buf.readFloat();
+	public Float readValue(PacketByteBuf buf) {
+		return buf.readFloat();
 	}
 
 	@Override

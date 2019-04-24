@@ -20,12 +20,11 @@ public enum ConfigScope {
 		this.value = value;
 	}
 
-	/**
-	 * Returns whether this scope is valid when a reload event of an other scope happens
-	 * @param other The other scope
-	 * @return a boolean denoting it
-	 */
-	public boolean isContained(ConfigScope other) {
+	public boolean triggeredBy(ConfigScope other) {
 		return this.value <= other.value;
+	}
+
+	public boolean triggers(ConfigScope other) {
+		return this.value >= other.value;
 	}
 }

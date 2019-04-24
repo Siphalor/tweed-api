@@ -3,9 +3,11 @@ package de.siphalor.tweed.config;
 import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.entry.ConfigEntry;
 import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.server.PlayerStream;
 import net.minecraft.resource.Resource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
 import org.apache.commons.lang3.StringUtils;
@@ -103,13 +105,14 @@ public class ConfigFile {
 	}
 
 	/**
-	 * Constructs a {@link JsonObject} for writing it to the {@link Core#mainConfigDirectory}
+	 * Writes to the {@link JsonObject} for handing it to the {@link Core#mainConfigDirectory}
+	 *
+	 * @param jsonObject the target json
 	 * @param environment the current environment
 	 * @param scope the current definition scope
 	 * @return the new {@link JsonObject}
 	 */
-	public JsonObject write(ConfigEnvironment environment, ConfigScope scope) {
-		JsonObject jsonObject = new JsonObject();
+	public JsonObject write(JsonObject jsonObject, ConfigEnvironment environment, ConfigScope scope) {
 		rootCategory.write(jsonObject, "", environment, scope);
 		return jsonObject;
 	}
@@ -123,7 +126,7 @@ public class ConfigFile {
         rootCategory.reset(environment, scope);
 	}
 
-	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope) {
+	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		JsonValue json;
 		try {
 			json = JsonValue.readHjson(new InputStreamReader(resource.getInputStream()));
@@ -135,22 +138,48 @@ public class ConfigFile {
         	System.err.println("Config files should contain a hjson object!");
         	return;
         }
-        load(json.asObject(), environment, scope);
+        load(json.asObject(), environment, scope, origin);
 	}
 
-	public void load(JsonObject json, ConfigEnvironment environment, ConfigScope scope) {
+	public void load(JsonObject json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		try {
-			rootCategory.read(json, environment, scope);
+			rootCategory.read(json, environment, scope, origin);
 		} catch (ConfigReadException e) {
             System.err.println("The config file " + name + ".hjson must contain an object!");
 		}
 	}
 
-	public void syncToClients(ConfigScope scope) {
+	public void syncToClients(ConfigEnvironment environment, ConfigScope scope) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		packetByteBuf.writeString(this.name);
-		rootCategory.write(packetByteBuf);
+		write(packetByteBuf, environment, scope);
 
-		PlayerStream.all(Core.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Core.CONFIG_SYNC_PACKET, packetByteBuf));
+		PlayerStream.all(Core.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Core.CONFIG_SYNC_S2C_PACKET, packetByteBuf));
+	}
+
+	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope) {
+		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+		write(packetByteBuf, environment, scope);
+
+		ServerSidePacketRegistry.INSTANCE.sendToPlayer(playerEntity, Core.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
+	}
+
+	public void syncToServer(ConfigEnvironment environment, ConfigScope scope) {
+		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+		packetByteBuf.writeString(name);
+		packetByteBuf.writeEnumConstant(environment);
+		packetByteBuf.writeEnumConstant(scope);
+		write(packetByteBuf, environment, scope);
+
+		ClientSidePacketRegistry.INSTANCE.sendToServer(Core.TWEED_CLOTH_SYNC_C2S_PACKET, packetByteBuf);
+	}
+
+	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope) {
+		buffer.writeString(name);
+		rootCategory.write(buffer, environment, scope);
+	}
+
+	public void read(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope) {
+		rootCategory.read(buffer, environment, scope);
+		reloadListener.accept(environment, scope);
 	}
 }

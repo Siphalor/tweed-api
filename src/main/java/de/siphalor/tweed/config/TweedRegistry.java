@@ -1,7 +1,6 @@
 package de.siphalor.tweed.config;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Used to register {@link ConfigFile}s.
@@ -25,7 +24,7 @@ public class TweedRegistry {
 	 * @return a collection of {@link ConfigFile}s
 	 * @see #registerConfigFile(String)
 	 */
-	public static Collection<ConfigFile> getConfigFiles() {
+	public static ArrayList<ConfigFile> getConfigFiles() {
 		return configFiles;
 	}
 }

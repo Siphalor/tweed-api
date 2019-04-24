@@ -30,8 +30,8 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	}
 
 	@Override
-	public void readValue(PacketByteBuf buf) {
-		readValue(buf.readString());
+	public T readValue(PacketByteBuf buf) {
+		return getValue(buf.readString());
 	}
 
 	public void readValue(String key) {

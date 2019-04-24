@@ -19,8 +19,8 @@ public class BooleanEntry extends AbstractValueEntry<Boolean, BooleanEntry> {
 	}
 
 	@Override
-	public void readValue(PacketByteBuf buf) {
-		value = buf.readBoolean();
+	public Boolean readValue(PacketByteBuf buf) {
+		return buf.readBoolean();
 	}
 
 	@Override

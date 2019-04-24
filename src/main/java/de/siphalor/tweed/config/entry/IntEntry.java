@@ -15,8 +15,8 @@ public class IntEntry extends AbstractValueEntry<Integer, IntEntry> {
 	}
 
 	@Override
-	public void readValue(PacketByteBuf buf) {
-		value = buf.readVarInt();
+	public Integer readValue(PacketByteBuf buf) {
+		return buf.readVarInt();
 	}
 
 	@Override
