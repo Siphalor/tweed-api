@@ -98,7 +98,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 			categoryObject = jsonObject.get(key).asObject();
 		}
 		if(!comment.equals(""))
-			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, getTranslatedComment());
+			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, getComment());
 		entryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
 	}
 

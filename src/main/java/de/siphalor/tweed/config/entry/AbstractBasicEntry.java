@@ -2,8 +2,8 @@ package de.siphalor.tweed.config.entry;
 
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
-import net.minecraft.client.resource.language.I18n;
 
+@SuppressWarnings("unchecked")
 public abstract class AbstractBasicEntry<T extends AbstractBasicEntry> implements ConfigEntry {
 	protected ConfigEnvironment environment = ConfigEnvironment.UNIVERSAL;
 	protected ConfigScope scope = ConfigScope.SMALLEST;
@@ -53,9 +53,5 @@ public abstract class AbstractBasicEntry<T extends AbstractBasicEntry> implement
 
 	public String getComment() {
 		return comment;
-	}
-
-	public String getTranslatedComment() {
-		return I18n.translate(comment);
 	}
 }
