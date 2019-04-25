@@ -3,6 +3,7 @@ package de.siphalor.tweed.config;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
 import org.hjson.CommentStyle;
 import org.hjson.CommentType;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 
 	protected Map<String, ConfigEntry> entries = new HashMap<>();
+	protected Identifier backgroundTexture;
 
 	/**
 	 * Adds a new entry to the category
@@ -36,6 +38,24 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	@Override
 	public String getDescription() {
 		return comment;
+	}
+
+	/**
+	 * Sets the background texture for a possible GUI
+	 * @param backgroundTexture an identifier to that texture
+	 * @return this category for chain calls
+	 */
+	public ConfigCategory setBackgroundTexture(Identifier backgroundTexture) {
+		this.backgroundTexture = backgroundTexture;
+		return this;
+	}
+
+	/**
+	 * Gets the background texture identifier (<b>may be null!</b>)
+	 * @return an identifier for the background texture or <b>null</b>
+	 */
+	public Identifier getBackgroundTexture() {
+		return backgroundTexture;
 	}
 
 	@Override

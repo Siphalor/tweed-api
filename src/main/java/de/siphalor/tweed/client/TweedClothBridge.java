@@ -115,6 +115,9 @@ public class TweedClothBridge {
 	protected void addCategory(String name, ConfigCategory configCategory) {
 		final String categoryName = screenId + CATEGORY_NAME_DELIMITER + name;
 		ConfigScreenBuilder.CategoryBuilder categoryBuilder = screenBuilder.addCategory(categoryName);
+		if(configCategory.getBackgroundTexture() != null) {
+			categoryBuilder.setBackgroundTexture(configCategory.getBackgroundTexture());
+		}
 		categoryBuilder.addOption(new TextListEntry(categoryName, configCategory.getCleanedDescription(), Color.LIGHT_GRAY.getRGB()));
 		configCategory.entryStream().forEach(entry -> addOption(categoryBuilder, categoryName + ENTRY_NAME_DELIMITER + entry.getKey(), entry.getValue()));
 	}
