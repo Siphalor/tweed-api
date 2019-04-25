@@ -56,6 +56,14 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 		this.postConstraints = new ArrayDeque<>();
 	}
 
+	/**
+	 * Sets the default value. Use with care!
+	 * @param defaultValue the new default value ("new default" lol)
+	 */
+	public void setDefaultValue(V defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
 	public V getDefaultValue() {
 		return defaultValue;
 	}
