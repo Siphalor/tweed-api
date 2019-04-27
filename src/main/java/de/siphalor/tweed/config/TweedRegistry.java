@@ -10,6 +10,7 @@ public class TweedRegistry {
 
 	/**
 	 * Registers a new {@link ConfigFile}.
+	 * Trigger {@link ConfigFile#triggerInitialLoad()} after registering all your entries in your ModInitializer.
 	 * @param fileName the file name which is used (no extension; no subdirectories for now)
 	 * @return the new {@link ConfigFile}
 	 */

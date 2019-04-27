@@ -21,6 +21,7 @@ import java.util.function.BiConsumer;
 
 /**
  * A configuration file.
+ * Trigger {@link ConfigFile#triggerInitialLoad()} after registering all your entries in your ModInitializer.
  * @see TweedRegistry#registerConfigFile(String)
  */
 public class ConfigFile {
@@ -57,7 +58,7 @@ public class ConfigFile {
 		this.hjsonOptions = hjsonOptions;
 	}
 
-	protected void finishReload(ConfigEnvironment environment, ConfigScope scope) {
+	public void finishReload(ConfigEnvironment environment, ConfigScope scope) {
 		if(reloadListener != null)
 			reloadListener.accept(environment, scope);
 	}
@@ -136,6 +137,11 @@ public class ConfigFile {
 	 */
 	public void reset(ConfigEnvironment environment, ConfigScope scope) {
         rootCategory.reset(environment, scope);
+	}
+
+	public void triggerInitialLoad() {
+		load(ConfigLoader.readMainConfigFile(this), ConfigEnvironment.UNIVERSAL, ConfigScope.GAME, ConfigOrigin.MAIN);
+		finishReload(ConfigEnvironment.UNIVERSAL, ConfigScope.GAME);
 	}
 
 	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {

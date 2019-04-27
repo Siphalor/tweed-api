@@ -99,7 +99,7 @@ public class TweedClothBridge {
 	public ClothConfigScreen buildScreen() {
 		screenId = SCREEN_NAME_PREFIX + configFile.getName();
 
-		screenBuilder = ConfigScreenBuilder.create(parentScreen, screenId, this::save);
+		screenBuilder = createScreenBuilder();
 
 		// setup
 		if(configFile.getRootCategory().entryStream().anyMatch(entry -> !(entry.getValue() instanceof ConfigCategory))) {
@@ -110,6 +110,10 @@ public class TweedClothBridge {
 
 		// build
 		return screenBuilder.build();
+	}
+
+	protected ConfigScreenBuilder createScreenBuilder() {
+		return ConfigScreenBuilder.create(parentScreen, screenId, this::save);
 	}
 
 	protected void addCategory(String name, ConfigCategory configCategory) {
