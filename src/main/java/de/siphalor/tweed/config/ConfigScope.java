@@ -11,7 +11,7 @@ package de.siphalor.tweed.config;
 public enum ConfigScope {
 	HIGHEST(3),
 	GAME(2),
-	@Deprecated WORLD(1),
+	WORLD(1),
 	SMALLEST(0);
 
 	private final int value;

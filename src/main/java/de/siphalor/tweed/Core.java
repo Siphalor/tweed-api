@@ -49,7 +49,7 @@ public class Core implements ModInitializer {
 
 			@Override
 			public void apply(ResourceManager resourceManager) {
-				ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.HIGHEST);
+				ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
 			}
 		});
 

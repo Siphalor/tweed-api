@@ -23,7 +23,7 @@ public class MixinClientPlayNetworkHandler {
 			PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
 			packetByteBuf.writeString(configFile.getName());
 			packetByteBuf.writeEnumConstant(ConfigEnvironment.SYNCED);
-			packetByteBuf.writeEnumConstant(ConfigScope.HIGHEST);
+			packetByteBuf.writeEnumConstant(ConfigScope.WORLD);
 			ClientSidePacketRegistry.INSTANCE.sendToServer(Core.REQUEST_SYNC_C2S_PACKET, packetByteBuf);
 		}
 	}
