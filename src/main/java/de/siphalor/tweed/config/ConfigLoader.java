@@ -9,7 +9,6 @@ import org.hjson.JsonValue;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,7 +50,7 @@ public final class ConfigLoader {
 			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
 			jsonObject.writeTo(writer, configFile.getHjsonOptions());
 			writer.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -78,7 +77,7 @@ public final class ConfigLoader {
 			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
 			configFile.write(new JsonObject(), environment, scope).writeTo(writer, configFile.getHjsonOptions());
 			writer.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
