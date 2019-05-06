@@ -5,7 +5,6 @@ import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.entry.*;
 import de.siphalor.tweed.util.Recursive;
 import io.netty.buffer.Unpooled;
-import javafx.util.Pair;
 import me.shedaniel.cloth.api.ConfigScreenBuilder;
 import me.shedaniel.cloth.gui.ClothConfigScreen;
 import me.shedaniel.cloth.gui.entries.*;
@@ -123,20 +122,11 @@ public class TweedClothBridge {
 			categoryBuilder.setBackgroundTexture(configCategory.getBackgroundTexture());
 		}
 		categoryBuilder.addOption(new TextListEntry(categoryName, configCategory.getCleanedDescription(), Color.LIGHT_GRAY.getRGB()));
-		configCategory.entryStream().forEach(entry -> addOption(categoryBuilder, categoryName + ENTRY_NAME_DELIMITER + entry.getKey(), entry.getValue()));
+		configCategory.sortedEntryStream().forEach(entry -> addOption(categoryBuilder, categoryName + ENTRY_NAME_DELIMITER + entry.getKey(), entry.getValue()));
 	}
 
 	protected void addOption(ConfigScreenBuilder.CategoryBuilder categoryBuilder, String name, ConfigEntry configEntry) {
 		categoryBuilder.addOption(getClothEntry(configEntry, name));
-	}
-
-	protected static ArrayDeque<Pair<String, ConfigCategory>> collectCategories(ConfigCategory configCategory) {
-		ArrayDeque<Pair<String, ConfigCategory>> categories = new ArrayDeque<>();
-		configCategory.entryStream().filter(entry -> entry.getValue() instanceof ConfigCategory).map(entry -> new Pair<>(entry.getKey(), (ConfigCategory) entry.getValue())).forEach(pair -> {
-			categories.add(pair);
-			categories.addAll(collectCategories(pair.getValue()));
-		});
-		return categories;
 	}
 
 	public static <T extends ConfigEntry> void registerClothEntryMapping(Class<T> clazz, BiFunction<T, String, ClothConfigScreen.AbstractListEntry> supplier) {
@@ -194,7 +184,7 @@ public class TweedClothBridge {
 		registerClothEntryMapping(ConfigCategory.class,
 			(categoryEntry, key) -> {
 				List<ClothConfigScreen.AbstractListEntry> entries = new ArrayList<>(Collections.singleton(new TextListEntry(key, categoryEntry.getCleanedDescription(), Color.LIGHT_GRAY.getRGB())));
-				entries.addAll(categoryEntry.entryStream().map(entry -> getClothEntry(entry.getValue(), key + CATEGORY_NAME_DELIMITER + entry.getKey())).collect(Collectors.toList()));
+				entries.addAll(categoryEntry.sortedEntryStream().map(entry -> getClothEntry(entry.getValue(), key + CATEGORY_NAME_DELIMITER + entry.getKey())).collect(Collectors.toList()));
 				return new SubCategoryListEntry(key, entries, false);
 			}
 		);

@@ -119,14 +119,22 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		}
 		if(!comment.equals(""))
 			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, getComment());
-		entryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
+		sortedEntryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream() {
 		return entries.entrySet().stream();
 	}
 
+	public Stream<Map.Entry<String, ConfigEntry>> sortedEntryStream() {
+		return entryStream().sorted((o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey()));
+	}
+
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
 		return entryStream().filter(entry -> environment.contains(entry.getValue().getEnvironment()) && scope.triggers(entry.getValue().getScope()));
+	}
+
+	public Stream<Map.Entry<String, ConfigEntry>> sortedEntryStream(ConfigEnvironment environment, ConfigScope scope) {
+		return entryStream(environment, scope).sorted((o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey()));
 	}
 }
