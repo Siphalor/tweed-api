@@ -2,6 +2,7 @@ package de.siphalor.tweed.config;
 
 import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.entry.ConfigEntry;
+import de.siphalor.tweed.config.fixers.ConfigEntryFixer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -10,13 +11,15 @@ import net.minecraft.resource.Resource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
+import net.minecraft.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.hjson.HjsonOptions;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.function.BiConsumer;
 
 /**
@@ -27,8 +30,8 @@ import java.util.function.BiConsumer;
 public class ConfigFile {
 	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
-
 	private HjsonOptions hjsonOptions;
+	private Deque<Pair<String, ConfigEntryFixer>> configEntryFixers;
 
 	protected ConfigCategory rootCategory;
 
@@ -36,6 +39,7 @@ public class ConfigFile {
 		this.name = name;
 		rootCategory = new ConfigCategory();
 		hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
+		configEntryFixers = new ArrayDeque<>();
 	}
 
 	/**
@@ -95,14 +99,14 @@ public class ConfigFile {
 
 	/**
 	 * Registers a new {@link ConfigEntry}.
-	 * @param path the property path of the entry ({@link Core#HJSON_PATH_DELIMITER}
+	 * @param name the property name or path of the entry ({@link Core#HJSON_PATH_DELIMITER}
 	 * @param entry the entry itself
 	 * @return the entry (for chain calls) or <i>null</i> if the path to the entry is invalid
 	 */
-	public <T extends ConfigEntry> T register(String path, T entry) {
-        String[] parts = StringUtils.split(path, Core.HJSON_PATH_DELIMITER);
+	public <T extends ConfigEntry> T register(String name, T entry) {
+        String[] parts = StringUtils.split(name, Core.HJSON_PATH_DELIMITER);
         if(parts.length == 1)
-        	rootCategory.register(path, entry);
+        	rootCategory.register(name, entry);
         else {
         	ConfigCategory category = rootCategory;
         	for(int i = 0; i < parts.length - 1; i++) {
@@ -118,6 +122,15 @@ public class ConfigFile {
 	}
 
 	/**
+	 * Registers a new {@link ConfigEntryFixer}
+	 * @param path the name/path of the value to be fixed
+	 * @param configEntryFixer a fixer
+	 */
+	public void register(String path, ConfigEntryFixer configEntryFixer) {
+		configEntryFixers.add(new Pair<>(path, configEntryFixer));
+	}
+
+	/**
 	 * Writes to the {@link JsonObject} for handing it to the {@link Core#mainConfigDirectory}
 	 *
 	 * @param jsonObject the target json
@@ -126,6 +139,7 @@ public class ConfigFile {
 	 * @return the new {@link JsonObject}
 	 */
 	public JsonObject write(JsonObject jsonObject, ConfigEnvironment environment, ConfigScope scope) {
+		fixConfig(jsonObject);
 		rootCategory.write(jsonObject, "", environment, scope);
 		return jsonObject;
 	}
@@ -139,27 +153,48 @@ public class ConfigFile {
         rootCategory.reset(environment, scope);
 	}
 
+	/**
+	 * Should be called after registering all components in the initializer
+	 */
 	public void triggerInitialLoad() {
-		load(ConfigLoader.readMainConfigFile(this), ConfigEnvironment.UNIVERSAL, ConfigScope.GAME, ConfigOrigin.MAIN);
+		load(ConfigLoader.readMainConfigFile(this), ConfigEnvironment.SERVER, ConfigScope.GAME, ConfigOrigin.MAIN);
+		ConfigLoader.updateMainConfigFile(this, ConfigEnvironment.SERVER, ConfigScope.GAME);
 		finishReload(ConfigEnvironment.UNIVERSAL, ConfigScope.GAME);
+	}
+
+	public void fixConfig(JsonObject jsonObject) {
+		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
+			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Core.HJSON_PATH_DELIMITER);
+			JsonObject location = jsonObject;
+			for(int i = 0; i < parts.length - 1; i++) {
+				JsonValue jsonValue = location.get(parts[i]);
+				if(jsonValue == null || !jsonValue.isObject())
+					return;
+				location = jsonValue.asObject();
+			}
+			stringConfigEntryFixerPair.getRight().fix(location, parts[parts.length - 1], jsonObject);
+		});
 	}
 
 	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		JsonValue json;
 		try {
 			json = JsonValue.readHjson(new InputStreamReader(resource.getInputStream()));
-		} catch (IOException e) {
+		} catch (Exception e) {
             System.err.println("Couldn't load config file '" + name + "'");
+            e.printStackTrace();
             return;
 		}
         if(!json.isObject()) {
-        	System.err.println("Config files should contain a hjson object!");
+        	System.err.println("Config files should contain an hjson object!");
         	return;
         }
         load(json.asObject(), environment, scope, origin);
 	}
 
 	public void load(JsonObject json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		fixConfig(json);
+
 		try {
 			rootCategory.read(json, environment, scope, origin);
 		} catch (ConfigReadException e) {
