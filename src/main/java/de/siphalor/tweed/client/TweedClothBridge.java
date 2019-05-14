@@ -3,7 +3,6 @@ package de.siphalor.tweed.client;
 import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.entry.*;
-import de.siphalor.tweed.util.Recursive;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.cloth.api.ConfigScreenBuilder;
 import me.shedaniel.cloth.gui.ClothConfigScreen;
@@ -17,9 +16,10 @@ import net.minecraft.util.PacketByteBuf;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Queue;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
@@ -29,26 +29,25 @@ public class TweedClothBridge {
 	protected static final String CATEGORY_NAME_DELIMITER = ".";
 	protected static final String ENTRY_NAME_DELIMITER = ".";
 
-	protected static ArrayDeque<TweedClothBridge> tweedClothBridges = new ArrayDeque<>();
-	protected static ArrayDeque<TweedClothBridge> modMenuBridges = new ArrayDeque<>();
+	protected static Queue<TweedClothBridge> tweedClothBridges = new ConcurrentLinkedQueue<>();
 	protected static HashMap<Class, BiFunction<ConfigEntry, String, ClothConfigScreen.AbstractListEntry>> tweedEntryToClothEntry = new HashMap<>();
 
-	protected ConfigFile configFile;
-	protected String modId;
+	protected ConfigFileEntry[] configFiles;
+	boolean openingScheduled = false;
+	protected String id;
 	protected String screenId;
 	protected ConfigScreenBuilder screenBuilder;
-	protected boolean awaitSync = false;
 	protected Screen parentScreen;
 	protected boolean inGame = false;
 
 	public TweedClothBridge(ConfigFile configFile) {
-		this.configFile = configFile;
-		tweedClothBridges.add(this);
+		this(configFile.getName(), configFile);
 	}
 
-	public TweedClothBridge(ConfigFile configFile, String modId) {
-		this(configFile);
-		this.modId = modId;
+	public TweedClothBridge(String id, ConfigFile... configFiles) {
+		this.id = id;
+		this.configFiles = Arrays.stream(configFiles).map(file -> new ConfigFileEntry(file, false)).toArray(ConfigFileEntry[]::new);
+		tweedClothBridges.add(this);
 	}
 
 	public Screen open() {
@@ -56,17 +55,20 @@ public class TweedClothBridge {
 		parentScreen = MinecraftClient.getInstance().currentScreen;
 
         if(inGame) {
-			PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-			buffer.writeString(configFile.getName());
-			buffer.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
-			buffer.writeEnumConstant(ConfigScope.SMALLEST);
-			ClientSidePacketRegistry.INSTANCE.sendToServer(Core.REQUEST_SYNC_C2S_PACKET, buffer);
-			awaitSync = true;
+        	for(ConfigFileEntry entry : configFiles) {
+				PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+				buffer.writeString(entry.configFile.getName());
+				buffer.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
+				buffer.writeEnumConstant(ConfigScope.SMALLEST);
+				ClientSidePacketRegistry.INSTANCE.sendToServer(Core.REQUEST_SYNC_C2S_PACKET, buffer);
+                entry.awaitSync = true;
+			}
+            ClientCore.scheduledClothBridge = this;
 
 			return new NoticeScreen(
 				() -> {
 					MinecraftClient.getInstance().openScreen(parentScreen);
-					awaitSync = false;
+                    ClientCore.scheduledClothBridge = null;
 				},
 				new TranslatableTextComponent("tweed.gui.screen.syncFromServer"),
 				new TranslatableTextComponent("tweed.gui.screen.syncFromServer.note")
@@ -76,35 +78,35 @@ public class TweedClothBridge {
 		}
 	}
 
-	public void onSync() {
-		if(awaitSync) {
-			awaitSync = false;
-			MinecraftClient.getInstance().openScreen(buildScreen());
-
-			Recursive<Consumer<Map.Entry<String, ConfigEntry>>> recursive = new Recursive<>();
-			recursive.lambda = entry -> {
-				if(entry.getValue().getEnvironment() != ConfigEnvironment.CLIENT) {
-					if(entry.getValue() instanceof ConfigCategory) {
-						((ConfigCategory) entry.getValue()).entryStream().forEach(recursive.lambda);
-					} else if(entry.getValue() instanceof AbstractValueEntry) {
-						((AbstractValueEntry) entry.getValue()).setMainConfigValue(((AbstractValueEntry) entry.getValue()).value);
-					}
+	public void onSync(ConfigFile configFile) {
+        for(ConfigFileEntry entry : configFiles) {
+        	if(entry.configFile == configFile) {
+        		if(entry.awaitSync) {
+        			entry.awaitSync = false;
+        			break;
 				}
-			};
-			configFile.getRootCategory().entryStream().filter(entry -> entry.getValue().getEnvironment() != ConfigEnvironment.CLIENT).forEach(recursive.lambda);
+			}
+		}
+        if(Arrays.stream(configFiles).noneMatch(entry -> entry.awaitSync)) {
+        	ClientCore.scheduledClothBridge = null;
+			MinecraftClient.getInstance().openScreen(buildScreen());
 		}
 	}
 
 	public ClothConfigScreen buildScreen() {
-		screenId = SCREEN_NAME_PREFIX + configFile.getName();
+		screenId = SCREEN_NAME_PREFIX + id;
 
 		screenBuilder = createScreenBuilder();
 
 		// setup
-		if(configFile.getRootCategory().entryStream().anyMatch(entry -> !(entry.getValue() instanceof ConfigCategory))) {
-			addCategory("main", configFile.getRootCategory());
+		if(configFiles.length > 1) {
+			Arrays.stream(configFiles).forEach(entry -> addCategory(entry.configFile.getName(), entry.configFile.getRootCategory()));
 		} else {
-			configFile.getRootCategory().entryStream().filter(entry -> entry.getValue() instanceof ConfigCategory).forEach(entry -> addCategory(entry.getKey(), (ConfigCategory) entry.getValue()));
+			if (configFiles[0].configFile.getRootCategory().entryStream().anyMatch(entry -> !(entry.getValue() instanceof ConfigCategory))) {
+				addCategory("main", configFiles[0].configFile.getRootCategory());
+			} else {
+				configFiles[0].configFile.getRootCategory().entryStream().forEach(entry -> addCategory(entry.getKey(), (ConfigCategory) entry.getValue()));
+			}
 		}
 
 		// build
@@ -116,7 +118,11 @@ public class TweedClothBridge {
 	}
 
 	protected void addCategory(String name, ConfigCategory configCategory) {
-		final String categoryName = screenId + CATEGORY_NAME_DELIMITER + name;
+		final String categoryName;
+		if(configFiles.length > 1)
+			categoryName = SCREEN_NAME_PREFIX + name;
+		else
+			categoryName = screenId + CATEGORY_NAME_DELIMITER + name;
 		ConfigScreenBuilder.CategoryBuilder categoryBuilder = screenBuilder.addCategory(categoryName);
 		if(configCategory.getBackgroundTexture() != null) {
 			categoryBuilder.setBackgroundTexture(configCategory.getBackgroundTexture());
@@ -192,10 +198,22 @@ public class TweedClothBridge {
 
 	private void save(ConfigScreenBuilder.SavedConfig savedConfig) {
 		if(inGame) {
-			configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
-            ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.CLIENT, ConfigScope.HIGHEST);
+			Arrays.stream(configFiles).forEach(entry -> {
+				 entry.configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+				 ConfigLoader.updateMainConfigFile(entry.configFile, ConfigEnvironment.CLIENT, ConfigScope.HIGHEST);
+			});
 		} else {
-            ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+            Arrays.stream(configFiles).forEach(entry -> ConfigLoader.updateMainConfigFile(entry.configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST));
+		}
+	}
+
+	protected static class ConfigFileEntry {
+		public ConfigFile configFile;
+		public boolean awaitSync;
+
+		public ConfigFileEntry(ConfigFile configFile, boolean awaitSync) {
+			this.configFile = configFile;
+			this.awaitSync = awaitSync;
 		}
 	}
 }

@@ -18,20 +18,19 @@ import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.io.InputStreamReader;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 
 /**
  * A configuration file.
- * Trigger {@link ConfigFile#triggerInitialLoad()} after registering all your entries in your ModInitializer.
  * @see TweedRegistry#registerConfigFile(String)
  */
 public class ConfigFile {
 	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
 	private HjsonOptions hjsonOptions;
-	private Deque<Pair<String, ConfigEntryFixer>> configEntryFixers;
+	private Queue<Pair<String, ConfigEntryFixer>> configEntryFixers;
 
 	protected ConfigCategory rootCategory;
 
@@ -39,7 +38,7 @@ public class ConfigFile {
 		this.name = name;
 		rootCategory = new ConfigCategory();
 		hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
-		configEntryFixers = new ArrayDeque<>();
+		configEntryFixers = new ConcurrentLinkedQueue<>();
 	}
 
 	/**
@@ -154,12 +153,13 @@ public class ConfigFile {
 	}
 
 	/**
-	 * Should be called after registering all components in the initializer
+     * @deprecated Is now done automatically
 	 */
+	@Deprecated
 	public void triggerInitialLoad() {
-		load(ConfigLoader.readMainConfigFile(this), ConfigEnvironment.SERVER, ConfigScope.GAME, ConfigOrigin.MAIN);
+		/*load(ConfigLoader.readMainConfigFile(this), ConfigEnvironment.SERVER, ConfigScope.GAME, ConfigOrigin.MAIN);
 		ConfigLoader.updateMainConfigFile(this, ConfigEnvironment.SERVER, ConfigScope.GAME);
-		finishReload(ConfigEnvironment.UNIVERSAL, ConfigScope.GAME);
+		finishReload(ConfigEnvironment.UNIVERSAL, ConfigScope.GAME);*/
 	}
 
 	public void fixConfig(JsonObject jsonObject) {
@@ -234,5 +234,23 @@ public class ConfigFile {
 	public void read(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope) {
 		rootCategory.read(buffer, environment, scope);
 		reloadListener.accept(environment, scope);
+	}
+
+	/**
+	 * Convenience function for <code>getRootCategory().setBackgroundTexture(...)</code>.
+	 * @param path the resource path to the background texture
+	 * @see ConfigCategory#setBackgroundTexture(Identifier)
+	 */
+	public void setBackgroundTexture(Identifier path) {
+		rootCategory.setBackgroundTexture(path);
+	}
+
+	/**
+	 * Convenience function for <code>getRootCategory().setComment(...)</code>.
+	 * @param comment the comment
+	 * @see ConfigCategory#setComment(String)
+	 */
+	public void setComment(String comment) {
+		rootCategory.setComment(comment);
 	}
 }

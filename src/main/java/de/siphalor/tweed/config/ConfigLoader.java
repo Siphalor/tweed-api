@@ -16,6 +16,14 @@ import java.util.List;
  * Used to reload the {@link ConfigFile}s.
  */
 public final class ConfigLoader {
+	public static void initialReload(ConfigEnvironment configEnvironment) {
+		TweedRegistry.getConfigFiles().forEach(configFile -> {
+			configFile.load(readMainConfigFile(configFile), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
+			updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
+			configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
+		});
+	}
+
 	/**
 	 * Reloads all matching {@link ConfigFile}s.
 	 * @param resourceManager the current {@link ResourceManager}
@@ -45,7 +53,7 @@ public final class ConfigLoader {
         JsonObject jsonObject = readMainConfigFile(configFile);
         configFile.write(jsonObject, environment, scope);
 		//noinspection ResultOfMethodCallIgnored
-		new File(Core.mainConfigDirectory).mkdirs();
+		getMainConfigPath(configFile).toPath().getParent().toFile().mkdirs();
 		try {
 			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
 			jsonObject.writeTo(writer, configFile.getHjsonOptions());
@@ -63,8 +71,8 @@ public final class ConfigLoader {
 				JsonObject json = (JsonObject) JsonValue.readHjson(reader);
 				reader.close();
 				return json;
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (Exception ignored) {
+
 			}
 		}
 		return new JsonObject();
@@ -72,7 +80,7 @@ public final class ConfigLoader {
 
 	public static void writeMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
 		//noinspection ResultOfMethodCallIgnored
-		new File(Core.mainConfigDirectory).mkdirs();
+		getMainConfigPath(configFile).toPath().getParent().toFile().mkdirs();
 		try {
 			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
 			configFile.write(new JsonObject(), environment, scope).writeTo(writer, configFile.getHjsonOptions());

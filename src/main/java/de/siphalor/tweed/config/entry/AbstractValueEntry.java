@@ -10,9 +10,10 @@ import org.hjson.CommentType;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 /**
@@ -37,8 +38,8 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 	protected boolean datapackOverridden = false;
 
 	protected V defaultValue;
-	protected ArrayDeque<Constraint<V>> preConstraints;
-	protected ArrayDeque<Constraint<V>> postConstraints;
+	protected Queue<Constraint<V>> preConstraints;
+	protected Queue<Constraint<V>> postConstraints;
 
 	protected Consumer<V> reloadListener;
 
@@ -52,8 +53,8 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 		this.mainConfigValue = defaultValue;
 		this.comment = "";
 		this.environment = ConfigEnvironment.UNIVERSAL;
-		this.preConstraints = new ArrayDeque<>();
-		this.postConstraints = new ArrayDeque<>();
+		this.preConstraints = new ConcurrentLinkedQueue<>();
+		this.postConstraints = new ConcurrentLinkedQueue<>();
 	}
 
 	/**
@@ -98,9 +99,9 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 	 */
 	public final T addConstraint(Constraint<V> constraint) {
     	if(constraint.getConstraintType() == Constraint.Type.PRE)
-    		preConstraints.push(constraint);
+    		preConstraints.add(constraint);
     	else
-    		postConstraints.push(constraint);
+    		postConstraints.add(constraint);
     	return (T) this;
     }
 
