@@ -1,6 +1,5 @@
 package de.siphalor.tweed.server;
 
-import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigLoader;
 import de.siphalor.tweed.config.ConfigScope;
@@ -12,7 +11,6 @@ public class ServerCore implements DedicatedServerModInitializer {
 	public void onInitializeServer() {
         ConfigLoader.initialReload(ConfigEnvironment.SERVER);
 		ServerStartCallback.EVENT.register(minecraftServer -> {
-			Core.setMinecraftServer(minecraftServer);
 			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.SERVER, ConfigScope.GAME);
 		});
 	}

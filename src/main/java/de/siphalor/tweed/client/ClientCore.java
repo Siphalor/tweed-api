@@ -10,8 +10,11 @@ import net.fabricmc.fabric.api.event.server.ServerStartCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 
 import java.util.Map;
@@ -19,6 +22,10 @@ import java.util.function.Consumer;
 
 public class ClientCore implements ClientModInitializer {
 	public static TweedClothBridge scheduledClothBridge;
+
+	public static MinecraftServer getMinecraftServer() {
+		return ((MinecraftClient) FabricLoader.getInstance().getGameInstance()).getServer();
+	}
 
 	@Override
 	public void onInitializeClient() {
@@ -32,11 +39,14 @@ public class ClientCore implements ClientModInitializer {
 
 			@Override
 			public void apply(ResourceManager resourceManager) {
-				ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
+				try {
+					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		ServerStartCallback.EVENT.register(minecraftServer -> {
-			Core.setMinecraftServer(minecraftServer);
 			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
 		});
 

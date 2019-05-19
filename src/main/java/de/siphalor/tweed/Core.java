@@ -1,8 +1,9 @@
 package de.siphalor.tweed;
 
+import de.siphalor.tweed.client.ClientCore;
 import de.siphalor.tweed.config.*;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.server.ServerStopCallback;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -31,16 +32,11 @@ public class Core implements ModInitializer {
 	}
 
 	public static MinecraftServer getMinecraftServer() {
-		return minecraftServer;
-	}
-
-	public static void setMinecraftServer(MinecraftServer minecraftServer) {
-		Core.minecraftServer = minecraftServer;
+        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? ClientCore.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
 	}
 
 	@Override
 	public void onInitialize() {
-		ServerStopCallback.EVENT.register((MinecraftServer minecraftServer) -> Core.setMinecraftServer(null));
 		ResourceManagerHelper.get(ResourceType.DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
@@ -49,7 +45,11 @@ public class Core implements ModInitializer {
 
 			@Override
 			public void apply(ResourceManager resourceManager) {
-				ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
+				try {
+					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 			}
 		});
 
