@@ -11,6 +11,7 @@ import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -56,6 +57,19 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	 */
 	public Identifier getBackgroundTexture() {
 		return backgroundTexture;
+	}
+
+	@Override
+	public ConfigEnvironment getEnvironment() {
+		if(entries.isEmpty()) return ConfigEnvironment.UNIVERSAL;
+		Iterator<ConfigEntry> iterator = entries.values().iterator();
+		ConfigEnvironment environment = iterator.next().getEnvironment();
+		while(iterator.hasNext()) {
+			ConfigEnvironment itEnvironment = iterator.next().getEnvironment();
+            while(!environment.contains(itEnvironment))
+            	environment = environment.parent;
+		}
+		return environment;
 	}
 
 	@Override

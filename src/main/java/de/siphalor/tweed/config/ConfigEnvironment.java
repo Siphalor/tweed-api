@@ -11,7 +11,7 @@ package de.siphalor.tweed.config;
 public enum ConfigEnvironment {
 	UNIVERSAL(null), CLIENT(UNIVERSAL), SERVER(UNIVERSAL), SYNCED(SERVER);
 
-	private final ConfigEnvironment parent;
+	public final ConfigEnvironment parent;
 
 	ConfigEnvironment(ConfigEnvironment parent) {
 		this.parent = parent;
