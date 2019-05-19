@@ -55,6 +55,17 @@ public class TweedClothBridge {
 		parentScreen = MinecraftClient.getInstance().currentScreen;
 
         if(inGame) {
+        	boolean requiresSync = true;
+            for(ConfigFileEntry entry : configFiles) {
+            	if(entry.configFile.getRootCategory().entryStream().anyMatch(configEntry -> configEntry.getValue().getEnvironment() != ConfigEnvironment.CLIENT)) {
+            		requiresSync = false;
+            		break;
+				}
+			}
+            if(!requiresSync) {
+                return buildScreen();
+			}
+
         	for(ConfigFileEntry entry : configFiles) {
 				PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 				buffer.writeString(entry.configFile.getName());
@@ -173,6 +184,13 @@ public class TweedClothBridge {
 				intEntry::getDefaultValue,
                 intEntry::setMainConfigValue,
 				intEntry::getClothyDescription
+			));
+		registerClothEntryMapping(EnumEntry.class,
+			(enumEntry, key) -> new EnumListEntry(key, enumEntry.getDefaultValue().getClass(), (Enum) enumEntry.getMainConfigValue(), RESET_BUTTON_NAME,
+                enumEntry::getDefaultValue,
+				enumEntry::setMainConfigValue,
+				Object::toString,
+				enumEntry::getClothyDescription
 			));
 		registerClothEntryMapping(MappedEnumEntry.class,
 			(mappedEnumEntry, key) -> new StringListEntry(key, mappedEnumEntry.writeValue((Enum) mappedEnumEntry.getMainConfigValue()).toString(), RESET_BUTTON_NAME,
