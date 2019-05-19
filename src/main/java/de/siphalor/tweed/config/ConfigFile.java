@@ -233,7 +233,8 @@ public class ConfigFile {
 
 	public void read(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope) {
 		rootCategory.read(buffer, environment, scope);
-		reloadListener.accept(environment, scope);
+		if(reloadListener != null)
+			reloadListener.accept(environment, scope);
 	}
 
 	/**
