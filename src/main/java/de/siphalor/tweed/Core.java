@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
 import java.io.File;
+import java.util.Objects;
 
 public class Core implements ModInitializer {
 	public static final String MODID = "tweed";
@@ -54,10 +55,10 @@ public class Core implements ModInitializer {
 		});
 
 		ServerSidePacketRegistry.INSTANCE.register(REQUEST_SYNC_C2S_PACKET, (packetContext, packetByteBuf) -> {
-			String fileName = packetByteBuf.readString();
+			String fileName = packetByteBuf.readString(32767);
             for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
             	if(configFile.getName().equals(fileName)) {
-            		if(packetContext.getPlayer().getServer().getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
+            		if(Objects.requireNonNull(packetContext.getPlayer().getServer()).getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
 						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class));
 					} else {
             			packetByteBuf.readEnumConstant(ConfigEnvironment.class);
@@ -68,10 +69,10 @@ public class Core implements ModInitializer {
 			}
 		});
 		ServerSidePacketRegistry.INSTANCE.register(TWEED_CLOTH_SYNC_C2S_PACKET, ((packetContext, packetByteBuf) -> {
-			String fileName = packetByteBuf.readString();
+			String fileName = packetByteBuf.readString(32767);
 			for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
 				if(configFile.getName().equals(fileName)) {
-					if(packetContext.getPlayer().getServer().getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
+					if(Objects.requireNonNull(packetContext.getPlayer().getServer()).getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
 						ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
 						ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
 						configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST);
