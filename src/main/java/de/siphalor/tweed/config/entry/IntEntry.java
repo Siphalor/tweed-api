@@ -25,7 +25,7 @@ public class IntEntry extends AbstractValueEntry<Integer, IntEntry> {
 	}
 
 	@Override
-	public void writeValue(PacketByteBuf buf) {
+	public void writeValue(Integer value, PacketByteBuf buf) {
 		buf.writeVarInt(value);
 	}
 }

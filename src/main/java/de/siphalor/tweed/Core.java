@@ -59,10 +59,11 @@ public class Core implements ModInitializer {
             for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
             	if(configFile.getName().equals(fileName)) {
             		if(Objects.requireNonNull(packetContext.getPlayer().getServer()).getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
-						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class));
+						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class), packetByteBuf.readEnumConstant(ConfigOrigin.class));
 					} else {
             			packetByteBuf.readEnumConstant(ConfigEnvironment.class);
-						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), ConfigEnvironment.SYNCED, packetByteBuf.readEnumConstant(ConfigScope.class));
+            			packetByteBuf.readEnumConstant(ConfigOrigin.class);
+						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), ConfigEnvironment.SYNCED, packetByteBuf.readEnumConstant(ConfigScope.class), ConfigOrigin.DATAPACK);
 					}
             		break;
 				}
@@ -75,7 +76,7 @@ public class Core implements ModInitializer {
 					if(Objects.requireNonNull(packetContext.getPlayer().getServer()).getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
 						ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
 						ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
-						configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST);
+						configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
 						ConfigLoader.writeMainConfigFile(configFile, environment, scope);
 					} else {
                         packetByteBuf.clear();

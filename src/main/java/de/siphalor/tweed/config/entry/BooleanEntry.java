@@ -24,7 +24,7 @@ public class BooleanEntry extends AbstractValueEntry<Boolean, BooleanEntry> {
 	}
 
 	@Override
-	public void writeValue(PacketByteBuf buf) {
+	public void writeValue(Boolean value, PacketByteBuf buf) {
 		buf.writeBoolean(value);
 	}
 }

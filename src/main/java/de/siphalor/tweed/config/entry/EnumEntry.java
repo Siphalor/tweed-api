@@ -39,7 +39,7 @@ public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntr
 	}
 
 	@Override
-	public void writeValue(PacketByteBuf buf) {
+	public void writeValue(E value, PacketByteBuf buf) {
 		buf.writeVarInt(value.ordinal());
 	}
 }

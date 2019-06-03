@@ -31,7 +31,7 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 
 	@Override
 	public T readValue(PacketByteBuf buf) {
-		return getValue(buf.readString());
+		return getValue(buf.readString(32767));
 	}
 
 	public void readValue(String key) {
@@ -52,7 +52,7 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	}
 
 	@Override
-	public void writeValue(PacketByteBuf buf) {
+	public void writeValue(T value, PacketByteBuf buf) {
         buf.writeString(stringToEnum.inverse().get(value));
 	}
 }

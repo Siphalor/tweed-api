@@ -202,16 +202,20 @@ public class ConfigFile {
 		}
 	}
 
-	public void syncToClients(ConfigEnvironment environment, ConfigScope scope) {
+	public void syncToClients(ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		write(packetByteBuf, environment, scope);
+		packetByteBuf.writeEnumConstant(origin);
+		packetByteBuf.writeString(name);
+		write(packetByteBuf, environment, scope, origin);
 
 		PlayerStream.all(Core.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Core.CONFIG_SYNC_S2C_PACKET, packetByteBuf));
 	}
 
-	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope) {
+	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		write(packetByteBuf, environment, scope);
+		packetByteBuf.writeEnumConstant(origin);
+		packetByteBuf.writeString(name);
+		write(packetByteBuf, environment, scope, origin);
 
 		ServerSidePacketRegistry.INSTANCE.sendToPlayer(playerEntity, Core.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
 	}
@@ -221,18 +225,17 @@ public class ConfigFile {
 		packetByteBuf.writeString(name);
 		packetByteBuf.writeEnumConstant(environment);
 		packetByteBuf.writeEnumConstant(scope);
-		write(packetByteBuf, environment, scope);
+		write(packetByteBuf, environment, scope, ConfigOrigin.MAIN);
 
 		ClientSidePacketRegistry.INSTANCE.sendToServer(Core.TWEED_CLOTH_SYNC_C2S_PACKET, packetByteBuf);
 	}
 
-	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope) {
-		buffer.writeString(name);
-		rootCategory.write(buffer, environment, scope);
+	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		rootCategory.write(buffer, environment, scope, origin);
 	}
 
-	public void read(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope) {
-		rootCategory.read(buffer, environment, scope);
+	public void read(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		rootCategory.read(buffer, environment, scope, origin);
 		if(reloadListener != null)
 			reloadListener.accept(environment, scope);
 	}

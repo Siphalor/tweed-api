@@ -24,7 +24,7 @@ public class FloatEntry extends AbstractValueEntry<Float, FloatEntry> {
 	}
 
 	@Override
-	public void writeValue(PacketByteBuf buf) {
+	public void writeValue(Float value, PacketByteBuf buf) {
 		buf.writeFloat(value);
 	}
 }

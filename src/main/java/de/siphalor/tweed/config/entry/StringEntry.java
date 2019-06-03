@@ -15,7 +15,7 @@ public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 
 	@Override
 	public String readValue(PacketByteBuf buf) {
-		return buf.readString();
+		return buf.readString(32767);
 	}
 
 	@Override
@@ -24,7 +24,7 @@ public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	}
 
 	@Override
-	public void writeValue(PacketByteBuf buf) {
+	public void writeValue(String value, PacketByteBuf buf) {
 		buf.writeString(value);
 	}
 

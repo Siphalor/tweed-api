@@ -178,14 +178,16 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
 	public abstract V readValue(PacketByteBuf buf);
 
 	@Override
-	public final void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
+	public final void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		if(environment.contains(getEnvironment())) {
 			if(scope.triggers(getScope())) {
 				value = readValue(buf);
+				if(origin == ConfigOrigin.MAIN)
+					mainConfigValue = value;
 				onReload();
-			} else {
-				mainConfigValue = readValue(buf);
 			}
+			else if(origin == ConfigOrigin.MAIN)
+				mainConfigValue = readValue(buf);
 		} else {
 			readValue(buf);
 		}
@@ -204,11 +206,14 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
     	jsonObject.setComment(key, CommentType.BOL, CommentStyle.LINE, getDescription());
     }
 
-    public abstract void writeValue(PacketByteBuf buf);
+    public abstract void writeValue(V value, PacketByteBuf buf);
 
 	@Override
-	public final void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
-		writeValue(buf);
+	public final void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		if(origin == ConfigOrigin.MAIN)
+			writeValue(mainConfigValue, buf);
+		else
+			writeValue(value, buf);
 	}
 
 	public T setReloadListener(Consumer<V> listener) {

@@ -32,14 +32,16 @@ public interface ConfigEntry {
 	/**
 	 * Read this kind of entry from a packet.
 	 * @param buf the packet's buffer
+	 * @param origin
 	 */
-	void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope);
+	void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin);
 
 	/**
 	 * Write this kind of entry to a packet.
 	 * @param buf the packet's buffer
+	 * @param origin
 	 */
-	void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope);
+	void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin);
 
 	/**
 	 * Method to write the main config value of the entry to HJSON (to be read by the user).

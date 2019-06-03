@@ -104,18 +104,22 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
+	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		while(buf.readBoolean()) {
-			entries.get(buf.readString()).read(buf, environment, scope);
+			ConfigEntry entry = entries.get(buf.readString(32767));
+			if(entry != null)
+				entry.read(buf, environment, scope, origin);
+			else
+				return;
 		}
 	}
 
 	@Override
-	public void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope) {
+	public void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		entryStream(environment, scope).forEach(entry -> {
 			buf.writeBoolean(true);
 			buf.writeString(entry.getKey());
-			entry.getValue().write(buf, environment, scope);
+			entry.getValue().write(buf, environment, scope, origin);
 		});
 		buf.writeBoolean(false);
 	}

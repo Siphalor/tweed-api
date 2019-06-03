@@ -55,10 +55,10 @@ public class TweedClothBridge {
 		parentScreen = MinecraftClient.getInstance().currentScreen;
 
         if(inGame) {
-        	boolean requiresSync = true;
+        	boolean requiresSync = false;
             for(ConfigFileEntry entry : configFiles) {
             	if(entry.configFile.getRootCategory().entryStream().anyMatch(configEntry -> configEntry.getValue().getEnvironment() != ConfigEnvironment.CLIENT)) {
-            		requiresSync = false;
+            		requiresSync = true;
             		break;
 				}
 			}
@@ -71,6 +71,7 @@ public class TweedClothBridge {
 				buffer.writeString(entry.configFile.getName());
 				buffer.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
 				buffer.writeEnumConstant(ConfigScope.SMALLEST);
+				buffer.writeEnumConstant(ConfigOrigin.MAIN);
 				ClientSidePacketRegistry.INSTANCE.sendToServer(Core.REQUEST_SYNC_C2S_PACKET, buffer);
                 entry.awaitSync = true;
 			}
