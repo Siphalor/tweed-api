@@ -216,14 +216,16 @@ public class TweedClothBridge {
 	}
 
 	private void save(ConfigScreenBuilder.SavedConfig savedConfig) {
-		if(inGame) {
-			Arrays.stream(configFiles).forEach(entry -> {
-				 entry.configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
-				 ConfigLoader.updateMainConfigFile(entry.configFile, ConfigEnvironment.CLIENT, ConfigScope.HIGHEST);
-			});
-		} else {
-            Arrays.stream(configFiles).forEach(entry -> ConfigLoader.updateMainConfigFile(entry.configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST));
-		}
+		Arrays.stream(configFiles).forEach(entry -> {
+			if(inGame) {
+				entry.configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+				ConfigLoader.updateMainConfigFile(entry.configFile, ConfigEnvironment.CLIENT, ConfigScope.HIGHEST);
+                ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
+			} else {
+				ConfigLoader.updateMainConfigFile(entry.configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+				ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
+			}
+		});
 	}
 
 	protected static class ConfigFileEntry {
