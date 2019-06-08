@@ -208,7 +208,9 @@ public class TweedClothBridge {
 
 		registerClothEntryMapping(ConfigCategory.class,
 			(categoryEntry, key) -> {
-				List<ClothConfigScreen.AbstractListEntry> entries = new ArrayList<>(Collections.singleton(new TextListEntry(key, categoryEntry.getCleanedDescription(), Color.LIGHT_GRAY.getRGB())));
+				List<ClothConfigScreen.AbstractListEntry> entries = new ArrayList<>();
+				if(!categoryEntry.getDescription().isEmpty())
+					entries.add(new TextListEntry(key, categoryEntry.getCleanedDescription(), Color.LIGHT_GRAY.getRGB()));
 				entries.addAll(categoryEntry.sortedEntryStream().map(entry -> getClothEntry(entry.getValue(), key + CATEGORY_NAME_DELIMITER + entry.getKey())).collect(Collectors.toList()));
 				return new SubCategoryListEntry(key, entries, false);
 			}
