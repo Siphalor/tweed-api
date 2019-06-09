@@ -25,7 +25,7 @@ public class ClientCore implements ClientModInitializer {
 	public void onInitializeClient() {
         ConfigLoader.initialReload(ConfigEnvironment.UNIVERSAL);
 
-		ResourceManagerHelper.get(ResourceType.ASSETS).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
 				return new Identifier(Core.MODID, "assets_listener");
@@ -40,9 +40,7 @@ public class ClientCore implements ClientModInitializer {
 				}
 			}
 		});
-		ServerStartCallback.EVENT.register(minecraftServer -> {
-			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
-		});
+		ServerStartCallback.EVENT.register(minecraftServer -> ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD));
 
 		ClientSidePacketRegistry.INSTANCE.register(Core.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
 			ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);

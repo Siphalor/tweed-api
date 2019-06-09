@@ -2,16 +2,18 @@ package de.siphalor.tweed.client;
 
 import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.*;
+import de.siphalor.tweed.config.constraints.Constraint;
+import de.siphalor.tweed.config.constraints.RangeConstraint;
 import de.siphalor.tweed.config.entry.*;
 import io.netty.buffer.Unpooled;
-import me.shedaniel.cloth.api.ConfigScreenBuilder;
-import me.shedaniel.cloth.gui.ClothConfigScreen;
-import me.shedaniel.cloth.gui.entries.*;
+import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
+import me.shedaniel.clothconfig2.api.ConfigBuilder;
+import me.shedaniel.clothconfig2.gui.entries.*;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Screen;
-import net.minecraft.client.gui.menu.NoticeScreen;
-import net.minecraft.text.TranslatableTextComponent;
+import net.minecraft.client.gui.screen.NoticeScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.PacketByteBuf;
 
 import java.awt.*;
@@ -30,13 +32,13 @@ public class TweedClothBridge {
 	protected static final String ENTRY_NAME_DELIMITER = ".";
 
 	protected static Queue<TweedClothBridge> tweedClothBridges = new ConcurrentLinkedQueue<>();
-	protected static HashMap<Class, BiFunction<ConfigEntry, String, ClothConfigScreen.AbstractListEntry>> tweedEntryToClothEntry = new HashMap<>();
+	protected static HashMap<Class, BiFunction<ConfigEntry, String, AbstractConfigListEntry>> tweedEntryToClothEntry = new HashMap<>();
 
 	protected ConfigFileEntry[] configFiles;
 	boolean openingScheduled = false;
 	protected String id;
 	protected String screenId;
-	protected ConfigScreenBuilder screenBuilder;
+	protected ConfigBuilder screenBuilder;
 	protected Screen parentScreen;
 	protected boolean inGame = false;
 
@@ -82,8 +84,8 @@ public class TweedClothBridge {
 					MinecraftClient.getInstance().openScreen(parentScreen);
                     ClientCore.scheduledClothBridge = null;
 				},
-				new TranslatableTextComponent("tweed.gui.screen.syncFromServer"),
-				new TranslatableTextComponent("tweed.gui.screen.syncFromServer.note")
+				new TranslatableText("tweed.gui.screen.syncFromServer"),
+				new TranslatableText("tweed.gui.screen.syncFromServer.note")
 			);
 		} else {
             return buildScreen();
@@ -105,10 +107,13 @@ public class TweedClothBridge {
 		}
 	}
 
-	public ClothConfigScreen buildScreen() {
+	public Screen buildScreen() {
 		screenId = SCREEN_NAME_PREFIX + id;
 
 		screenBuilder = createScreenBuilder();
+		screenBuilder.setParentScreen(parentScreen);
+		screenBuilder.setSavingRunnable(this::save);
+		screenBuilder.setTitle(screenId);
 
 		// setup
 		if(configFiles.length > 1) {
@@ -125,8 +130,8 @@ public class TweedClothBridge {
 		return screenBuilder.build();
 	}
 
-	protected ConfigScreenBuilder createScreenBuilder() {
-		return ConfigScreenBuilder.create(parentScreen, screenId, this::save);
+	protected ConfigBuilder createScreenBuilder() {
+		return ConfigBuilder.create();
 	}
 
 	protected void addCategory(String name, ConfigCategory configCategory) {
@@ -135,24 +140,24 @@ public class TweedClothBridge {
 			categoryName = SCREEN_NAME_PREFIX + name;
 		else
 			categoryName = screenId + CATEGORY_NAME_DELIMITER + name;
-		ConfigScreenBuilder.CategoryBuilder categoryBuilder = screenBuilder.addCategory(categoryName);
+		me.shedaniel.clothconfig2.api.ConfigCategory category = screenBuilder.getOrCreateCategory(categoryName);
 		if(configCategory.getBackgroundTexture() != null) {
-			categoryBuilder.setBackgroundTexture(configCategory.getBackgroundTexture());
+			category.setCategoryBackground(configCategory.getBackgroundTexture());
 		}
-		categoryBuilder.addOption(new TextListEntry(categoryName, configCategory.getCleanedDescription(), Color.LIGHT_GRAY.getRGB()));
-		configCategory.sortedEntryStream().forEach(entry -> addOption(categoryBuilder, categoryName + ENTRY_NAME_DELIMITER + entry.getKey(), entry.getValue()));
+		category.addEntry(new TextListEntry(categoryName, configCategory.getCleanedDescription(), Color.LIGHT_GRAY.getRGB()));
+		configCategory.entryStream().forEach(entry -> addOption(category, categoryName + ENTRY_NAME_DELIMITER + entry.getKey(), entry.getValue()));
 	}
 
-	protected void addOption(ConfigScreenBuilder.CategoryBuilder categoryBuilder, String name, ConfigEntry configEntry) {
-		categoryBuilder.addOption(getClothEntry(configEntry, name));
+	protected void addOption(me.shedaniel.clothconfig2.api.ConfigCategory categoryBuilder, String name, ConfigEntry configEntry) {
+		categoryBuilder.addEntry(getClothEntry(configEntry, name));
 	}
 
-	public static <T extends ConfigEntry> void registerClothEntryMapping(Class<T> clazz, BiFunction<T, String, ClothConfigScreen.AbstractListEntry> supplier) {
-		tweedEntryToClothEntry.put(clazz, (BiFunction<ConfigEntry, String, ClothConfigScreen.AbstractListEntry>) supplier);
+	public static <T extends ConfigEntry> void registerClothEntryMapping(Class<T> clazz, BiFunction<T, String, AbstractConfigListEntry> supplier) {
+		tweedEntryToClothEntry.put(clazz, (BiFunction<ConfigEntry, String, AbstractConfigListEntry>) supplier);
 	}
 
-	public static ClothConfigScreen.AbstractListEntry getClothEntry(ConfigEntry configEntry, String name) {
-		ClothConfigScreen.AbstractListEntry listEntry = null;
+	public static AbstractConfigListEntry getClothEntry(ConfigEntry configEntry, String name) {
+		AbstractConfigListEntry listEntry = null;
 
         Class clazz = configEntry.getClass();
         while(clazz != ConfigEntry.class) {
@@ -181,11 +186,23 @@ public class TweedClothBridge {
 				floatEntry::getClothyDescription
 			));
 		registerClothEntryMapping(IntEntry.class,
-			(intEntry, key) -> new IntegerListEntry(key, intEntry.getMainConfigValue(), RESET_BUTTON_NAME,
-				intEntry::getDefaultValue,
-                intEntry::setMainConfigValue,
-				intEntry::getClothyDescription
-			));
+			(intEntry, key) -> {
+				Optional<Constraint<Integer>> optionalConstraint = intEntry.getPostConstraints().stream().filter(integerConstraint -> integerConstraint instanceof RangeConstraint).findAny();
+				if(optionalConstraint.isPresent() && ((RangeConstraint) optionalConstraint.get()).hasRealBounds()) {
+					RangeConstraint<Integer> rangeConstraint = (RangeConstraint<Integer>) optionalConstraint.get();
+					return new IntegerSliderEntry(key, rangeConstraint.getMin(), rangeConstraint.getMax(), intEntry.getMainConfigValue(), RESET_BUTTON_NAME,
+						intEntry::getDefaultValue,
+						intEntry::setMainConfigValue,
+						intEntry::getClothyDescription
+					);
+				}
+				return new IntegerListEntry(key, intEntry.getMainConfigValue(), RESET_BUTTON_NAME,
+					intEntry::getDefaultValue,
+					intEntry::setMainConfigValue,
+					intEntry::getClothyDescription
+				);
+			}
+		);
 		registerClothEntryMapping(EnumEntry.class,
 			(enumEntry, key) -> new EnumListEntry(key, enumEntry.getDefaultValue().getClass(), (Enum) enumEntry.getMainConfigValue(), RESET_BUTTON_NAME,
                 enumEntry::getDefaultValue,
@@ -208,16 +225,16 @@ public class TweedClothBridge {
 
 		registerClothEntryMapping(ConfigCategory.class,
 			(categoryEntry, key) -> {
-				List<ClothConfigScreen.AbstractListEntry> entries = new ArrayList<>();
+				List<AbstractConfigListEntry> entries = new ArrayList<>();
 				if(!categoryEntry.getDescription().isEmpty())
 					entries.add(new TextListEntry(key, categoryEntry.getCleanedDescription(), Color.LIGHT_GRAY.getRGB()));
-				entries.addAll(categoryEntry.sortedEntryStream().map(entry -> getClothEntry(entry.getValue(), key + CATEGORY_NAME_DELIMITER + entry.getKey())).collect(Collectors.toList()));
+				entries.addAll(categoryEntry.entryStream().map(entry -> getClothEntry(entry.getValue(), key + CATEGORY_NAME_DELIMITER + entry.getKey())).collect(Collectors.toList()));
 				return new SubCategoryListEntry(key, entries, false);
 			}
 		);
 	}
 
-	private void save(ConfigScreenBuilder.SavedConfig savedConfig) {
+	private void save() {
 		Arrays.stream(configFiles).forEach(entry -> {
 			if(inGame) {
 				entry.configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);

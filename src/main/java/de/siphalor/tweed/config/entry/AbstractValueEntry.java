@@ -105,7 +105,15 @@ public abstract class AbstractValueEntry<V, T extends AbstractValueEntry> extend
     	return (T) this;
     }
 
-    @Override
+	public Queue<Constraint<V>> getPreConstraints() {
+		return preConstraints;
+	}
+
+	public Queue<Constraint<V>> getPostConstraints() {
+		return postConstraints;
+	}
+
+	@Override
 	public final void applyPreConstraints(JsonValue jsonValue) throws ConstraintException {
 		for(Constraint<V> constraint : preConstraints) {
 			try {

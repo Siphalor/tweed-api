@@ -38,7 +38,7 @@ public class Core implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ResourceManagerHelper.get(ResourceType.DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
 				return new Identifier(Core.MODID, "resource_reload");
@@ -77,7 +77,7 @@ public class Core implements ModInitializer {
 						ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
 						ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
 						configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
-						ConfigLoader.writeMainConfigFile(configFile, environment, scope);
+						ConfigLoader.updateMainConfigFile(configFile, environment, scope);
 					} else {
                         packetByteBuf.clear();
 					}

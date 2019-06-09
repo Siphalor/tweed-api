@@ -10,14 +10,14 @@ import org.hjson.CommentType;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 
-	protected Map<String, ConfigEntry> entries = new HashMap<>();
+	protected Map<String, ConfigEntry> entries = new LinkedHashMap<>();
 	protected Identifier backgroundTexture;
 
 	/**
@@ -137,13 +137,14 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		}
 		if(!comment.equals(""))
 			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, getComment());
-		sortedEntryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
+		entryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream() {
 		return entries.entrySet().stream();
 	}
 
+	@Deprecated
 	public Stream<Map.Entry<String, ConfigEntry>> sortedEntryStream() {
 		return entryStream().sorted((o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey()));
 	}
@@ -152,6 +153,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		return entryStream().filter(entry -> environment.contains(entry.getValue().getEnvironment()) && scope.triggers(entry.getValue().getScope()));
 	}
 
+	@Deprecated
 	public Stream<Map.Entry<String, ConfigEntry>> sortedEntryStream(ConfigEnvironment environment, ConfigScope scope) {
 		return entryStream(environment, scope).sorted((o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey()));
 	}
