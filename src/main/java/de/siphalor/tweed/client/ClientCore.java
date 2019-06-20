@@ -28,7 +28,7 @@ public class ClientCore implements ClientModInitializer {
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
-				return new Identifier(Core.MODID, "assets_listener");
+				return new Identifier(Core.MOD_ID, "assets_listener");
 			}
 
 			@Override
@@ -36,6 +36,7 @@ public class ClientCore implements ClientModInitializer {
 				try {
 					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
 				} catch (Throwable e) {
+					Core.LOGGER.error("Tweed failed to load config files");
 					e.printStackTrace();
 				}
 			}
@@ -49,20 +50,6 @@ public class ClientCore implements ClientModInitializer {
             	if(configFile.getName().equals(fileName)) {
 					configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
 
-					/*Recursive<Consumer<Map.Entry<String, ConfigEntry>>> recursive = new Recursive<>();
-					recursive.lambda = entry -> {
-						if(entry.getValue().getEnvironment() != ConfigEnvironment.CLIENT) {
-							if(entry.getValue() instanceof ConfigCategory) {
-								((ConfigCategory) entry.getValue()).entryStream().forEach(recursive.lambda);
-							} else if(entry.getValue() instanceof AbstractValueEntry) {
-								//noinspection unchecked
-								((AbstractValueEntry) entry.getValue()).setMainConfigValue(((AbstractValueEntry) entry.getValue()).value);
-							}
-						}
-					};
-
-					configFile.getRootCategory().entryStream().forEach(recursive.lambda);
-*/
 					if(scheduledClothBridge != null) {
 						scheduledClothBridge.onSync(configFile);
 					}

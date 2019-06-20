@@ -3,18 +3,17 @@ package de.siphalor.tweed.config.entry;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
 
+/**
+ * An basic entry.
+ * @param <T> The extending class
+ */
 @SuppressWarnings("unchecked")
-public abstract class AbstractBasicEntry<T extends AbstractBasicEntry> implements ConfigEntry {
-	protected ConfigEnvironment environment = ConfigEnvironment.UNIVERSAL;
-	protected ConfigScope scope = ConfigScope.SMALLEST;
+public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
+	protected ConfigEnvironment environment = ConfigEnvironment.DEFAULT;
+	protected ConfigScope scope = ConfigScope.DEFAULT;
 	protected String comment = "";
 
-	/**
-	 * Sets the environment where this entry is defined
-	 * @param environment the environment
-	 * @return the current entry for chain calls
-	 * @see ConfigEnvironment
-	 */
+	@Override
 	public T setEnvironment(ConfigEnvironment environment) {
 		this.environment = environment;
 		return (T) this;
@@ -25,12 +24,7 @@ public abstract class AbstractBasicEntry<T extends AbstractBasicEntry> implement
 		return environment;
 	}
 
-	/**
-	 * Sets the scope in which the config can be (re-)loaded
-	 * @param scope the scope to use
-	 * @return the current entry for chain calls
-	 * @see ConfigScope
-	 */
+	@Override
 	public T setScope(ConfigScope scope) {
 		this.scope = scope;
 		return (T) this;
@@ -51,6 +45,10 @@ public abstract class AbstractBasicEntry<T extends AbstractBasicEntry> implement
 		return (T) this;
 	}
 
+	/**
+	 * Gets the comment which might be used in descriptions
+	 * @return
+	 */
 	public String getComment() {
 		return comment;
 	}

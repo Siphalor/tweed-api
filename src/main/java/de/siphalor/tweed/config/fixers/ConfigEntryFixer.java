@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config.fixers;
 
-import org.hjson.JsonObject;
+import de.siphalor.tweed.data.DataObject;
 
 /**
  * Represents a data fixer for specific config entries
@@ -8,9 +8,9 @@ import org.hjson.JsonObject;
 public abstract class ConfigEntryFixer {
 	/**
 	 * This method should fixed the specified config entry
-	 * @param jsonObject The read in json object where this entry is located.
+	 * @param dataObject The read in data object where this entry is located.
 	 * @param propertyName The name of the entry to be fixed
-	 * @param mainObject The main object which was read in. This object should be changed to represent the new data structure
+	 * @param mainCompound The main object which was read in. This object should be changed to represent the new data structure
 	 */
-	public abstract void fix(JsonObject jsonObject, String propertyName, JsonObject mainObject);
+	public abstract void fix(DataObject dataObject, String propertyName, DataObject mainCompound);
 }

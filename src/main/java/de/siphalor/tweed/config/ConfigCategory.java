@@ -1,14 +1,13 @@
 package de.siphalor.tweed.config;
 
+import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.CommentStyle;
-import org.hjson.CommentType;
-import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -22,12 +21,14 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 
 	/**
 	 * Adds a new entry to the category
-	 * @param name the key used in the HJSON
+	 * @param name the key used in the data architecture
 	 * @param configEntry the entry to add
 	 * @see ConfigFile#register(String, ConfigEntry)
 	 */
 	public <T extends ConfigEntry> T register(String name, T configEntry) {
 		entries.put(name, configEntry);
+		if(configEntry.getEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
+		if(configEntry.getScope() == ConfigScope.DEFAULT) configEntry.setScope(scope);
 		return configEntry;
 	}
 
@@ -60,8 +61,15 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
+	public ConfigCategory setEnvironment(ConfigEnvironment environment) {
+		super.setEnvironment(environment);
+        entries.values().stream().filter(configEntry -> configEntry.getEnvironment() == ConfigEnvironment.DEFAULT).forEach(configEntry -> configEntry.setEnvironment(environment));
+		return this;
+	}
+
+	@Override
 	public ConfigEnvironment getEnvironment() {
-		if(entries.isEmpty()) return ConfigEnvironment.UNIVERSAL;
+		if(entries.isEmpty()) return environment;
 		Iterator<ConfigEntry> iterator = entries.values().iterator();
 		ConfigEnvironment environment = iterator.next().getEnvironment();
 		while(iterator.hasNext()) {
@@ -73,17 +81,30 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
-		if(!json.isObject()) {
+	public ConfigCategory setScope(ConfigScope scope) {
+		super.setScope(scope);
+		entries.values().stream().filter(configEntry -> configEntry.getScope() == ConfigScope.DEFAULT).forEach(configEntry -> configEntry.setScope(scope));
+		return this;
+	}
+
+	@Override
+	public ConfigScope getScope() {
+		if(entries.isEmpty()) return scope;
+		return entries.values().stream().map(ConfigEntry::getScope).min((o1, o2) -> o1 == o2 ? 0 : (o1.triggers(o2) ? -1 : 1)).get();
+	}
+
+	@Override
+	public void read(DataValue dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
+		if(!dataValue.isCompound()) {
 			throw new ConfigReadException("The entry should be an object (category)");
 		}
-		JsonObject jsonObject = json.asObject();
-		entryStream(environment, scope).filter(entry -> jsonObject.get(entry.getKey()) != null).forEach(entry -> {
-			JsonValue value = jsonObject.get(entry.getKey());
+		DataObject dataObject = dataValue.asCompound();
+		entryStream(environment, scope).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
+			DataValue value = dataObject.get(entry.getKey());
 			try {
 				entry.getValue().applyPreConstraints(value);
 			} catch (ConstraintException e) {
-				System.err.println("Error reading " + entry.getKey() + " in pre-constraints:");
+				Core.LOGGER.error("Error reading " + entry.getKey() + " in pre-constraints:");
 				e.printStackTrace();
 				if(e.fatal)
 					return;
@@ -91,13 +112,14 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 			try {
 				entry.getValue().read(value, environment, scope, origin);
 			} catch (ConfigReadException e) {
-				System.err.println("Error reading " + entry.getKey() + ":");
+				Core.LOGGER.error("Error reading " + entry.getKey() + ":");
 				e.printStackTrace();
+				return;
 			}
 			try {
 				entry.getValue().applyPostConstraints(value);
 			} catch (ConfigReadException e) {
-                System.err.println("Error reading " + entry.getKey() + " in post-constraints:");
+                Core.LOGGER.error("Error reading " + entry.getKey() + " in post-constraints:");
                 e.printStackTrace();
 			}
 		});
@@ -125,19 +147,18 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void write(JsonObject jsonObject, String key, ConfigEnvironment environment, ConfigScope scope) {
-		JsonObject categoryObject;
+	public void write(DataObject dataObject, String key, ConfigEnvironment environment, ConfigScope scope) {
+		DataObject category;
 		if(key.equals("")) {
-			categoryObject = jsonObject;
-		} else if(jsonObject.get(key) == null) {
-			categoryObject = new JsonObject();
-			jsonObject.add(key, categoryObject);
+			category = dataObject;
+		} else if(!dataObject.has(key)) {
+            category = dataObject.addCompound(key);
 		} else {
-			categoryObject = jsonObject.get(key).asObject();
+			category = dataObject.get(key).asCompound();
 		}
 		if(!comment.equals(""))
-			categoryObject.setComment(CommentType.BOL, CommentStyle.LINE, getComment());
-		entryStream(environment, scope).forEach(entry -> entry.getValue().write(categoryObject, entry.getKey(), environment, scope));
+			category.setComment(getComment());
+		entryStream(environment, scope).forEach(entry -> entry.getValue().write(category, entry.getKey(), environment, scope));
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry>> entryStream() {

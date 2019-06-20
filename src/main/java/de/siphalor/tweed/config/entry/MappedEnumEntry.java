@@ -1,8 +1,9 @@
 package de.siphalor.tweed.config.entry;
 
 import com.google.common.collect.HashBiMap;
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.JsonValue;
 
 public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, MappedEnumEntry> {
 	protected HashBiMap<String, T> stringToEnum;
@@ -25,7 +26,7 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	}
 
 	@Override
-	public T readValue(JsonValue json) {
+	public T readValue(DataValue json) {
 		return getValue(json.asString());
 	}
 
@@ -46,9 +47,17 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 		}
 	}
 
+	public String getValue(T value) {
+		if(!stringToEnum.inverse().containsKey(value)) {
+			return stringToEnum.inverse().get(defaultValue);
+		} else {
+			return stringToEnum.inverse().get(value);
+		}
+	}
+
 	@Override
-	public JsonValue writeValue(T value) {
-		return JsonValue.valueOf(stringToEnum.inverse().get(value));
+	public void writeValue(DataObject parent, String name, T value) {
+		parent.set(name, stringToEnum.inverse().get(value));
 	}
 
 	@Override

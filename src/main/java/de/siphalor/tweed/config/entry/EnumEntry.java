@@ -1,7 +1,8 @@
 package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.JsonValue;
 
 @SuppressWarnings("unchecked")
 public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntry> {
@@ -15,9 +16,9 @@ public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntr
 	}
 
 	@Override
-	public E readValue(JsonValue jsonValue) {
+	public E readValue(DataValue dataValue) {
 		for(E enumConstant : (E[]) defaultValue.getClass().getEnumConstants()) {
-			if(enumConstant.toString().equalsIgnoreCase(jsonValue.asString()))
+			if(enumConstant.toString().equalsIgnoreCase(dataValue.asString()))
 				return enumConstant;
 		}
 		return defaultValue;
@@ -34,8 +35,8 @@ public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntr
 	}
 
 	@Override
-	public JsonValue writeValue(E value) {
-		return JsonValue.valueOf(value.toString());
+	public void writeValue(DataObject parent, String name, E value) {
+		parent.set(name, value.toString());
 	}
 
 	@Override

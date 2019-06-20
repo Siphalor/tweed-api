@@ -1,17 +1,17 @@
 package de.siphalor.tweed.config.constraints;
 
 import de.siphalor.tweed.config.entry.AbstractValueEntry;
-import org.hjson.JsonValue;
+import de.siphalor.tweed.data.DataValue;
 
 public interface Constraint<T> {
 
 	/**
 	 * A constraint which may modify the {@link AbstractValueEntry} or if an error occurred should throw a {@link ConstraintException}.
-	 * @param jsonValue the {@link JsonValue} readValue in
+	 * @param dataValue the data value read in
 	 * @param configEntry the entry to check and/or modify
 	 * @throws ConstraintException a possible exception in case of problems
 	 */
-	void apply(JsonValue jsonValue, AbstractValueEntry<T, ?> configEntry) throws ConstraintException;
+	void apply(DataValue dataValue, AbstractValueEntry<T, ?> configEntry) throws ConstraintException;
 
 	default String getDescription() {
 		return "";
