@@ -1,7 +1,8 @@
 package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.JsonValue;
 
 public class BooleanEntry extends AbstractValueEntry<Boolean, BooleanEntry> {
 	public BooleanEntry(Boolean defaultValue) {
@@ -9,13 +10,13 @@ public class BooleanEntry extends AbstractValueEntry<Boolean, BooleanEntry> {
 	}
 
 	@Override
-	public Boolean readValue(JsonValue json) {
-		return json.asBoolean();
+	public Boolean readValue(DataValue dataValue) {
+		return dataValue.asBoolean();
 	}
 
 	@Override
-	public JsonValue writeValue(Boolean value) {
-		return JsonValue.valueOf(value);
+	public void writeValue(DataObject parent, String name, Boolean value) {
+        parent.set(name, value);
 	}
 
 	@Override

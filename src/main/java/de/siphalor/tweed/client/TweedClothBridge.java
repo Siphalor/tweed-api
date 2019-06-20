@@ -211,8 +211,8 @@ public class TweedClothBridge {
 				enumEntry::getClothyDescription
 			));
 		registerClothEntryMapping(MappedEnumEntry.class,
-			(mappedEnumEntry, key) -> new StringListEntry(key, mappedEnumEntry.writeValue((Enum) mappedEnumEntry.getMainConfigValue()).toString(), RESET_BUTTON_NAME,
-				() -> mappedEnumEntry.writeValue((Enum) mappedEnumEntry.getDefaultValue()).toString(),
+			(mappedEnumEntry, key) -> new StringListEntry(key, mappedEnumEntry.getValue((Enum) mappedEnumEntry.value), RESET_BUTTON_NAME,
+				() -> mappedEnumEntry.getValue((Enum) mappedEnumEntry.getDefaultValue()),
                 newVal -> mappedEnumEntry.setMainConfigValue(mappedEnumEntry.getValue(newVal)),
 				mappedEnumEntry::getClothyDescription
 			));

@@ -1,7 +1,8 @@
 package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.JsonValue;
 
 public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	public StringEntry(String defaultValue) {
@@ -9,7 +10,7 @@ public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	}
 
 	@Override
-	public String readValue(JsonValue json) {
+	public String readValue(DataValue json) {
         return json.asString();
 	}
 
@@ -19,8 +20,8 @@ public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	}
 
 	@Override
-	public JsonValue writeValue(String value) {
-		return JsonValue.valueOf(value);
+	public void writeValue(DataObject parent, String name, String value) {
+		parent.set(name, value);
 	}
 
 	@Override

@@ -3,6 +3,9 @@ package de.siphalor.tweed.config;
 import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.entry.ConfigEntry;
 import de.siphalor.tweed.config.fixers.ConfigEntryFixer;
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
+import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -13,31 +16,29 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import org.hjson.HjsonOptions;
 import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 
 /**
  * A configuration file.
- * @see TweedRegistry#registerConfigFile(String)
+ * @see TweedRegistry#registerConfigFile(String, ConfigDataSerializer)
  */
 public class ConfigFile {
 	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
-	private HjsonOptions hjsonOptions;
 	private Queue<Pair<String, ConfigEntryFixer>> configEntryFixers;
+	private ConfigDataSerializer dataSerializer;
 
 	protected ConfigCategory rootCategory;
 
-	protected ConfigFile(String name) {
+	protected ConfigFile(String name, ConfigDataSerializer dataSerializer) {
 		this.name = name;
 		rootCategory = new ConfigCategory();
-		hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
+		this.dataSerializer = dataSerializer;
 		configEntryFixers = new ConcurrentLinkedQueue<>();
 	}
 
@@ -53,15 +54,12 @@ public class ConfigFile {
 		return this;
 	}
 
-	public HjsonOptions getHjsonOptions() {
-		return hjsonOptions;
-	}
-
-	public void setHjsonOptions(HjsonOptions hjsonOptions) {
-		this.hjsonOptions = hjsonOptions;
+	public ConfigDataSerializer getDataSerializer() {
+		return dataSerializer;
 	}
 
 	public void finishReload(ConfigEnvironment environment, ConfigScope scope) {
+		Core.LOGGER.info("Reloaded configs for " + name);
 		if(reloadListener != null)
 			reloadListener.accept(environment, scope);
 	}
@@ -71,7 +69,7 @@ public class ConfigFile {
 	 * @return the identifier
 	 */
 	public Identifier getFileIdentifier() {
-		return new Identifier(Core.MODID, "config/" + name + ".hjson");
+		return new Identifier(Core.MOD_ID, "config/" + getFileName());
 	}
 
 	/**
@@ -80,7 +78,7 @@ public class ConfigFile {
 	 * @see ConfigFile#getName()
 	 */
 	public String getFileName() {
-		return name + ".hjson";
+		return name + "." + dataSerializer.getFileExtension();
 	}
 
 	/**
@@ -98,12 +96,12 @@ public class ConfigFile {
 
 	/**
 	 * Registers a new {@link ConfigEntry}.
-	 * @param name the property name or path of the entry ({@link Core#HJSON_PATH_DELIMITER}
+	 * @param name the property name or path of the entry ({@link Core#PATH_DELIMITER}
 	 * @param entry the entry itself
 	 * @return the entry (for chain calls) or <i>null</i> if the path to the entry is invalid
 	 */
 	public <T extends ConfigEntry> T register(String name, T entry) {
-        String[] parts = StringUtils.split(name, Core.HJSON_PATH_DELIMITER);
+        String[] parts = StringUtils.split(name, Core.PATH_DELIMITER);
         if(parts.length == 1)
         	rootCategory.register(name, entry);
         else {
@@ -132,15 +130,15 @@ public class ConfigFile {
 	/**
 	 * Writes to the {@link JsonObject} for handing it to the {@link Core#mainConfigDirectory}
 	 *
-	 * @param jsonObject the target json
+	 * @param dataObject the target data
 	 * @param environment the current environment
 	 * @param scope the current definition scope
 	 * @return the new {@link JsonObject}
 	 */
-	public JsonObject write(JsonObject jsonObject, ConfigEnvironment environment, ConfigScope scope) {
-		fixConfig(jsonObject);
-		rootCategory.write(jsonObject, "", environment, scope);
-		return jsonObject;
+	public DataObject write(DataObject dataObject, ConfigEnvironment environment, ConfigScope scope) {
+		fixConfig(dataObject);
+		rootCategory.write(dataObject, "", environment, scope);
+		return dataObject;
 	}
 
 	/**
@@ -156,49 +154,42 @@ public class ConfigFile {
      * @deprecated Is now done automatically
 	 */
 	@Deprecated
-	public void triggerInitialLoad() {
-		/*load(ConfigLoader.readMainConfigFile(this), ConfigEnvironment.SERVER, ConfigScope.GAME, ConfigOrigin.MAIN);
-		ConfigLoader.updateMainConfigFile(this, ConfigEnvironment.SERVER, ConfigScope.GAME);
-		finishReload(ConfigEnvironment.UNIVERSAL, ConfigScope.GAME);*/
-	}
+	public void triggerInitialLoad() {}
 
-	public void fixConfig(JsonObject jsonObject) {
+	public void fixConfig(DataObject dataObject) {
 		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
-			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Core.HJSON_PATH_DELIMITER);
-			JsonObject location = jsonObject;
+			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Core.PATH_DELIMITER);
+			DataObject location = dataObject;
 			for(int i = 0; i < parts.length - 1; i++) {
-				JsonValue jsonValue = location.get(parts[i]);
-				if(jsonValue == null || !jsonValue.isObject())
+				DataValue dataValue = location.get(parts[i]);
+				if(dataValue == null || !dataValue.isCompound())
 					return;
-				location = jsonValue.asObject();
+				location = dataValue.asCompound();
 			}
-			stringConfigEntryFixerPair.getRight().fix(location, parts[parts.length - 1], jsonObject);
+			stringConfigEntryFixerPair.getRight().fix(location, parts[parts.length - 1], dataObject);
 		});
 	}
 
 	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		JsonValue json;
+		DataObject dataObject = dataSerializer.read(resource.getInputStream());
 		try {
-			json = JsonValue.readHjson(new InputStreamReader(resource.getInputStream()));
-		} catch (Exception e) {
-            System.err.println("Couldn't load config file '" + name + "'");
-            e.printStackTrace();
-            return;
+			resource.close();
+		} catch (IOException e) {
+			Core.LOGGER.error("Failed to close config resource after reading it: " + resource.getId());
+			e.printStackTrace();
 		}
-        if(!json.isObject()) {
-        	System.err.println("Config files should contain an hjson object!");
-        	return;
-        }
-        load(json.asObject(), environment, scope, origin);
+		if(dataObject != null) {
+			load(dataObject, environment, scope, origin);
+		}
 	}
 
-	public void load(JsonObject json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		fixConfig(json);
+	public void load(DataObject dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		fixConfig(dataObject);
 
 		try {
-			rootCategory.read(json, environment, scope, origin);
+			rootCategory.read(dataObject, environment, scope, origin);
 		} catch (ConfigReadException e) {
-            System.err.println("The config file " + name + ".hjson must contain an object!");
+            Core.LOGGER.error("The config file " + name + ".hjson must contain an object!");
 		}
 	}
 
@@ -245,8 +236,9 @@ public class ConfigFile {
 	 * @param path the resource path to the background texture
 	 * @see ConfigCategory#setBackgroundTexture(Identifier)
 	 */
-	public void setBackgroundTexture(Identifier path) {
+	public ConfigFile setBackgroundTexture(Identifier path) {
 		rootCategory.setBackgroundTexture(path);
+		return this;
 	}
 
 	/**
@@ -254,7 +246,26 @@ public class ConfigFile {
 	 * @param comment the comment
 	 * @see ConfigCategory#setComment(String)
 	 */
-	public void setComment(String comment) {
+	public ConfigFile setComment(String comment) {
 		rootCategory.setComment(comment);
+		return this;
+	}
+
+	/**
+	 * Sets the default environment for config entries. Equivalent to <code>getRootCategory().setEnvironment(...)</code>
+	 * @param environment the environment
+	 */
+	public ConfigFile setEnvironment(ConfigEnvironment environment) {
+		rootCategory.setEnvironment(environment);
+		return this;
+	}
+
+	/**
+	 * Sets the default scope for config entries. Equivalent to <code>getRootCategory().setScope(...)</code>
+	 * @param scope the scope
+	 */
+	public ConfigFile setScope(ConfigScope scope) {
+		rootCategory.setScope(scope);
+		return this;
 	}
 }

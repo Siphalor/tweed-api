@@ -5,13 +5,17 @@ import de.siphalor.tweed.config.ConfigOrigin;
 import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.config.constraints.ConstraintException;
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 
 import java.util.Optional;
 
-public interface ConfigEntry {
+/**
+ * Interface for all config entries
+ * @param <T> The implementing class
+ */
+public interface ConfigEntry<T> {
 
 	/**
 	 * Resets this entry to its default
@@ -21,13 +25,13 @@ public interface ConfigEntry {
 	void reset(ConfigEnvironment environment, ConfigScope scope);
 
 	/**
-	 * Abstract method for reading the entry's value from a {@link JsonValue} object
-	 * @param json the given json value
+	 * Abstract method for reading the entry's value from a data object
+	 * @param dataValue the given data value
 	 * @param environment the current environment
 	 * @param scope the current reload scope
 	 * @throws ConfigReadException if an issue occurs during reading the value
 	 */
-	void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
+	void read(DataValue dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
 
 	/**
 	 * Read this kind of entry from a packet.
@@ -45,18 +49,34 @@ public interface ConfigEntry {
 
 	/**
 	 * Method to write the main config value of the entry to HJSON (to be read by the user).
-	 * @param jsonObject the object where this entry should be appended to
+	 * @param dataObject the object where this entry should be appended to
 	 * @param key the key under which this entry should be appended
 	 * @param environment the current environment (handled by the system, can be ignored in most cases)
 	 * @param scope the current scope (handled by the system, can be ignored in most cases)
 	 */
-	void write(JsonObject jsonObject, String key, ConfigEnvironment environment, ConfigScope scope);
+	void write(DataObject dataObject, String key, ConfigEnvironment environment, ConfigScope scope);
+
+	/**
+	 * Sets the environment where this entry is defined
+	 * @param environment the environment
+	 * @return the current entry for chain calls
+	 * @see ConfigEnvironment
+	 */
+	T setEnvironment(ConfigEnvironment environment);
 
 	/**
 	 * Gets the environment where this entry can be defined in.
 	 * @return the environment
 	 */
 	ConfigEnvironment getEnvironment();
+
+	/**
+	 * Sets the scope in which the config can be (re-)loaded
+	 * @param scope the scope to use
+	 * @return the current entry for chain calls
+	 * @see ConfigScope
+	 */
+	T setScope(ConfigScope scope);
 
 	/**
 	 * Gets the scope in which the entry gets reloaded.
@@ -80,15 +100,15 @@ public interface ConfigEntry {
 
 	/**
 	 * Method for handling possible constraints before reading in the value.
-	 * @param jsonValue the given value
+	 * @param dataValue the given value
 	 * @throws ConstraintException an exception
 	 */
-	default void applyPreConstraints(JsonValue jsonValue) throws ConstraintException {}
+	default void applyPreConstraints(DataValue dataValue) throws ConstraintException {}
 
 	/**
 	 * Method for handling possible constraints after reading in the value.
-	 * @param jsonValue the give value
+	 * @param dataValue the give value
 	 * @throws ConstraintException an exception
 	 */
-	default void applyPostConstraints(JsonValue jsonValue) throws ConstraintException {}
+	default void applyPostConstraints(DataValue dataValue) throws ConstraintException {}
 }

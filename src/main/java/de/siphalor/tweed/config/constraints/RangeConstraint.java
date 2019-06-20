@@ -1,7 +1,7 @@
 package de.siphalor.tweed.config.constraints;
 
 import de.siphalor.tweed.config.entry.AbstractValueEntry;
-import org.hjson.JsonValue;
+import de.siphalor.tweed.data.DataValue;
 
 public class RangeConstraint<T extends Number> implements Constraint<T> {
 
@@ -49,7 +49,7 @@ public class RangeConstraint<T extends Number> implements Constraint<T> {
 	}
 
 	@Override
-	public void apply(JsonValue jsonValue, AbstractValueEntry<T, ?> configEntry) throws ConstraintException {
+	public void apply(DataValue dataValue, AbstractValueEntry<T, ?> configEntry) throws ConstraintException {
         if(min != null && configEntry.value.doubleValue() < min.doubleValue()) {
         	configEntry.value = min;
         	throw new ConstraintException(configEntry.value + " is smaller than " + min, false);

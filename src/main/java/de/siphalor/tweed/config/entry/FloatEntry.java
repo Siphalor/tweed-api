@@ -1,7 +1,8 @@
 package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.JsonValue;
 
 public class FloatEntry extends AbstractValueEntry<Float, FloatEntry> {
 	public FloatEntry(Float defaultValue) {
@@ -9,8 +10,8 @@ public class FloatEntry extends AbstractValueEntry<Float, FloatEntry> {
 	}
 
 	@Override
-	public Float readValue(JsonValue json) {
-		return json.asFloat();
+	public Float readValue(DataValue dataValue) {
+		return dataValue.asFloat();
 	}
 
 	@Override
@@ -19,8 +20,8 @@ public class FloatEntry extends AbstractValueEntry<Float, FloatEntry> {
 	}
 
 	@Override
-	public JsonValue writeValue(Float value) {
-		return JsonValue.valueOf(value);
+	public void writeValue(DataObject parent, String name, Float value) {
+		parent.set(name, value);
 	}
 
 	@Override

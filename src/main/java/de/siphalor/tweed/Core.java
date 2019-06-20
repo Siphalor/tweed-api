@@ -13,17 +13,21 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.Objects;
 
 public class Core implements ModInitializer {
-	public static final String MODID = "tweed";
-	public static final Identifier CONFIG_SYNC_S2C_PACKET = new Identifier(MODID, "sync_config");
-	public static final Identifier REQUEST_SYNC_C2S_PACKET = new Identifier(MODID, "request_sync");
-	public static final Identifier TWEED_CLOTH_SYNC_C2S_PACKET = new Identifier(MODID, "sync_from_cloth_client");
+	public static final String MOD_ID = "tweed";
+	public static final Identifier CONFIG_SYNC_S2C_PACKET = new Identifier(MOD_ID, "sync_config");
+	public static final Identifier REQUEST_SYNC_C2S_PACKET = new Identifier(MOD_ID, "request_sync");
+	public static final Identifier TWEED_CLOTH_SYNC_C2S_PACKET = new Identifier(MOD_ID, "sync_from_cloth_client");
 
-	public static final char HJSON_PATH_DELIMITER = '.';
+	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+
+	public static final char PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
 
 	private static MinecraftServer minecraftServer;
@@ -41,7 +45,7 @@ public class Core implements ModInitializer {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
-				return new Identifier(Core.MODID, "resource_reload");
+				return new Identifier(Core.MOD_ID, "resource_reload");
 			}
 
 			@Override
@@ -49,6 +53,7 @@ public class Core implements ModInitializer {
 				try {
 					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
 				} catch (Throwable e) {
+					Core.LOGGER.error("Tweed failed to load config files:");
 					e.printStackTrace();
 				}
 			}

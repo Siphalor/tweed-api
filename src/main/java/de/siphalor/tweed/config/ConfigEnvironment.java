@@ -7,9 +7,10 @@ package de.siphalor.tweed.config;
  * SERVER: only serverside
  * SYNCED: configured at server side but synchronized to the clients
  * UNIVERSAL: on both sides
+ * DEFAULT: only to be used internally
  */
 public enum ConfigEnvironment {
-	UNIVERSAL(null), CLIENT(UNIVERSAL), SERVER(UNIVERSAL), SYNCED(SERVER);
+	UNIVERSAL(null), CLIENT(UNIVERSAL), SERVER(UNIVERSAL), SYNCED(SERVER), DEFAULT(null);
 
 	public final ConfigEnvironment parent;
 

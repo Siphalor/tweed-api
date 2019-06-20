@@ -1,14 +1,13 @@
 package de.siphalor.tweed.config;
 
 import de.siphalor.tweed.Core;
+import de.siphalor.tweed.data.DataObject;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
-import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,48 +48,78 @@ public final class ConfigLoader {
 		}
 	}
 
+	/**
+	 * Updates the main file of a {@link ConfigFile}
+	 * @param configFile the config file
+	 * @param environment the current environment
+	 * @param scope the definition scope
+	 */
 	public static void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
-        JsonObject jsonObject = readMainConfigFile(configFile);
-        configFile.write(jsonObject, environment, scope);
+        DataObject dataObject = readMainConfigFile(configFile);
+        configFile.write(dataObject, environment, scope);
+		File mainConfigFile = getMainConfigFile(configFile);
 		//noinspection ResultOfMethodCallIgnored
-		getMainConfigPath(configFile).toPath().getParent().toFile().mkdirs();
+		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
-			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
-			jsonObject.writeTo(writer, configFile.getHjsonOptions());
-			writer.close();
+			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
+			configFile.getDataSerializer().write(outputStream, dataObject);
+            outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+			Core.LOGGER.error("Failed to update config file " + configFile.getFileName());
 		}
 	}
 
-	public static JsonObject readMainConfigFile(ConfigFile configFile) {
-		File mainConfig = getMainConfigPath(configFile);
+	/**
+	 * Reads data from the main config file
+	 * @param configFile the config file
+	 * @return the read in data
+	 */
+	public static DataObject readMainConfigFile(ConfigFile configFile) {
+		File mainConfig = getMainConfigFile(configFile);
 		if(mainConfig.exists()) {
 			try {
-				FileReader reader = new FileReader(mainConfig);
-				JsonObject json = (JsonObject) JsonValue.readHjson(reader);
-				reader.close();
-				return json;
+				FileInputStream inputStream = new FileInputStream(mainConfig);
+				DataObject dataObject = configFile.getDataSerializer().read(inputStream);
+                inputStream.close();
+                if(dataObject == null) {
+                	Core.LOGGER.error("Failed to read config file " + configFile.getFileName());
+					return configFile.getDataSerializer().newCompound();
+				}
+				return dataObject;
 			} catch (Exception ignored) {
-
+				Core.LOGGER.error("Failed to read config file " + configFile.getFileName());
 			}
 		}
-		return new JsonObject();
+		return configFile.getDataSerializer().newCompound();
 	}
 
+	/**
+	 * Writes the current data to the main config file
+	 * @param configFile the config file
+	 * @param environment the current environment
+	 * @param scope the definition scope
+	 */
 	public static void writeMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
+		File mainConfigFile = getMainConfigFile(configFile);
 		//noinspection ResultOfMethodCallIgnored
-		getMainConfigPath(configFile).toPath().getParent().toFile().mkdirs();
+		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
-			FileWriter writer = new FileWriter(getMainConfigPath(configFile));
-			configFile.write(new JsonObject(), environment, scope).writeTo(writer, configFile.getHjsonOptions());
-			writer.close();
+			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
+			configFile.getDataSerializer().write(outputStream, configFile.write(configFile.getDataSerializer().newCompound(), environment, scope));
+            outputStream.close();
 		} catch (Exception e) {
+			Core.LOGGER.error("Failed to load config file " + configFile.getFileName());
 			e.printStackTrace();
 		}
 	}
 
-	public static File getMainConfigPath(ConfigFile configFile) {
+	/**
+	 * Gets the main file for a {@link ConfigFile}
+	 * @param configFile the config file
+	 * @return a {@link File} for the main config file
+	 */
+	public static File getMainConfigFile(ConfigFile configFile) {
 		return new File(Core.mainConfigDirectory, configFile.getFileName());
 	}
 }

@@ -1,10 +1,13 @@
 package de.siphalor.tweed.config.fixers;
 
 import de.siphalor.tweed.Core;
+import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataValue;
 import org.apache.commons.lang3.StringUtils;
-import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 
+/**
+ * Fixes a relocated or old config file.
+ */
 public class ConfigEntryLocationFixer extends ConfigEntryFixer {
 	private final String newName;
 	private final String newLocation;
@@ -19,30 +22,29 @@ public class ConfigEntryLocationFixer extends ConfigEntryFixer {
 	}
 
 	@Override
-	public void fix(JsonObject jsonObject, String propertyName, JsonObject mainObject) {
-		JsonValue jsonValue = jsonObject.get(propertyName);
-		if(jsonValue == null) return;
-		jsonObject.remove(propertyName);
+	public void fix(DataObject dataObject, String propertyName, DataObject mainCompound) {
+		DataValue dataValue = dataObject.get(propertyName);
+		if(dataValue == null) return;
+		dataObject.remove(propertyName);
 
 		if(newLocation == null) {
-			jsonObject.add(newName, jsonValue);
+			dataObject.set(newName, dataValue);
 		} else {
-			JsonObject location = mainObject;
-			String[] parts = StringUtils.split(newLocation, Core.HJSON_PATH_DELIMITER);
+			DataObject location = mainCompound;
+			String[] parts = StringUtils.split(newLocation, Core.PATH_DELIMITER);
 			for(String part : parts) {
 				if(location.get(part) == null) {
-					location.add(part, new JsonObject());
-					location = location.get(part).asObject();
+					location = location.addCompound(part);
 				} else {
-					if(location.get(part).isObject()) {
-						location = location.get(part).asObject();
+					if(location.get(part).isCompound()) {
+						location = location.get(part).asCompound();
 					} else {
-						System.err.println("Unable to fix Tweed config file");
+						Core.LOGGER.error("Unable to fix Tweed config file");
 						return;
 					}
 				}
 			}
-            location.set(newName, jsonValue);
+            location.set(newName, dataValue);
 		}
 	}
 }
