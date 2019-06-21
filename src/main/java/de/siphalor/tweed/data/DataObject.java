@@ -2,25 +2,41 @@ package de.siphalor.tweed.data;
 
 import com.mojang.datafixers.util.Pair;
 
-public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<RawValue>>>, DataValue<RawValue> {
+public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<RawValue>>>, DataContainer<RawValue, String> {
+	@Override
 	boolean has(String key);
-	DataValue<RawValue> get(String key);
 
-	DataValue<RawValue> set(String key, int value);
-	DataValue<RawValue> set(String key, float value);
-	DataValue<RawValue> set(String key, String value);
-	DataValue<RawValue> set(String key, boolean value);
+	@Override
 	DataValue<RawValue> set(String key, DataValue<RawValue> value);
 
-	DataObject<RawValue> addCompound(String key);
+	@Override
+	DataValue<RawValue> set(String key, boolean value);
+
+	@Override
+	DataValue<RawValue> set(String key, String value);
+
+	@Override
+	DataValue<RawValue> set(String key, float value);
+
+	@Override
+	DataValue<RawValue> set(String key, int value);
+
+	@Override
+	DataObject<RawValue> addObject(String key);
+
+	@Override
 	DataList<RawValue> addList(String key);
 
+	@Override
+	DataValue<RawValue> get(String key);
+
+	@Override
 	void remove(String key);
 
 	@Override
 	default boolean isNumber() {
 		return false;
-	};
+	}
 
 	@Override
 	default boolean isString() {
@@ -33,7 +49,7 @@ public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<Ra
 	}
 
 	@Override
-	default boolean isCompound() {
+	default boolean isObject() {
 		return true;
 	}
 
@@ -58,7 +74,7 @@ public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<Ra
 	}
 
 	@Override
-	default DataObject<RawValue> asCompound() {
+	default DataObject<RawValue> asObject() {
 		return this;
 	}
 

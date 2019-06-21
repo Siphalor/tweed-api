@@ -2,8 +2,8 @@ package de.siphalor.tweed.data.serializer;
 
 import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed.Core;
-import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataList;
+import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
 import org.hjson.*;
 
@@ -16,7 +16,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 	private HjsonOptions hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
 
 	@Override
-	public DataObject<JsonValue> newCompound() {
+	public DataObject<JsonValue> newObject() {
         return new HjsonObject(new JsonObject());
 	}
 
@@ -88,7 +88,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
-		public boolean isCompound() {
+		public boolean isObject() {
 			return jsonValue.isObject();
 		}
 
@@ -118,7 +118,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
-		public DataObject<JsonValue> asCompound() {
+		public DataObject<JsonValue> asObject() {
 			return new HjsonObject(jsonValue.asObject());
 		}
 
@@ -141,6 +141,11 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		@Override
 		public boolean has(String key) {
 			return jsonValue.asObject().has(key);
+		}
+
+		@Override
+		public int size() {
+			return jsonValue.asObject().size();
 		}
 
 		@Override
@@ -180,7 +185,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
-		public DataObject<JsonValue> addCompound(String key) {
+		public DataObject<JsonValue> addObject(String key) {
             JsonObject jsonObject = new JsonObject();
             jsonValue.asObject().set(key, jsonObject);
 			return new HjsonObject(jsonObject);
@@ -216,38 +221,55 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
-		public DataValue<JsonValue> get(int index) {
+		public DataValue<JsonValue> get(Integer index) {
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
-		public DataValue<JsonValue> set(int index, int value) {
+		public DataValue<JsonValue> set(Integer index, int value) {
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
-		public DataValue<JsonValue> set(int index, float value) {
+		public DataValue<JsonValue> set(Integer index, float value) {
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
-		public DataValue<JsonValue> set(int index, String value) {
+		public DataValue<JsonValue> set(Integer index, String value) {
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
-		public DataValue<JsonValue> set(int index, boolean value) {
+		public DataValue<JsonValue> set(Integer index, boolean value) {
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
-		public DataValue<JsonValue> set(int index, DataValue<JsonValue> value) {
+		public DataValue<JsonValue> set(Integer index, DataValue<JsonValue> value) {
 			jsonValue.asArray().set(index, value.getRaw());
 			return new HjsonValue(jsonValue.asArray().get(index));
+		}
+
+		@Override
+		public DataObject<JsonValue> addObject(Integer index) {
+			jsonValue.asArray().set(index, new JsonObject());
+			return new HjsonObject(jsonValue.asArray().get(index));
+		}
+
+		@Override
+		public DataList<JsonValue> addList(Integer index) {
+			jsonValue.asArray().set(index, new JsonArray());
+			return new HjsonList(jsonValue.asArray().get(index));
+		}
+
+		@Override
+		public void remove(Integer index) {
+			jsonValue.asArray().remove(index);
 		}
 
 		@Override

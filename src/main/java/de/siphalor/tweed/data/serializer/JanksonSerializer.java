@@ -4,8 +4,8 @@ import blue.endless.jankson.*;
 import blue.endless.jankson.impl.SyntaxError;
 import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed.Core;
-import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataList;
+import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
     public static final JanksonSerializer INSTANCE = new JanksonSerializer();
 
 	@Override
-	public DataObject<JsonElement> newCompound() {
+	public DataObject<JsonElement> newObject() {
 		return new JanksonObject(new JsonObject(), (comment) -> {}, () -> "", (clazz) -> null);
 	}
 
@@ -91,7 +91,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public boolean isCompound() {
+		public boolean isObject() {
 			return element instanceof JsonObject;
 		}
 
@@ -121,7 +121,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public DataObject<JsonElement> asCompound() {
+		public DataObject<JsonElement> asObject() {
 			return new JanksonObject(element, setComment, getComment, as);
 		}
 
@@ -147,6 +147,11 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		@Override
 		public boolean has(String key) {
 			return self.containsKey(key);
+		}
+
+		@Override
+		public int size() {
+			return self.size();
 		}
 
 		@Override
@@ -189,10 +194,10 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public DataObject<JsonElement> addCompound(String key) {
+		public DataObject<JsonElement> addObject(String key) {
 			JsonObject jsonObject = new JsonObject();
 			self.put(key, jsonObject);
-			return createDataValue(jsonObject, key).asCompound();
+			return createDataValue(jsonObject, key).asObject();
 		}
 
 		@Override
@@ -231,42 +236,61 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public DataValue<JsonElement> get(int index) {
+		public DataValue<JsonElement> get(Integer index) {
 			return createDataValue(self.get(index), index);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(int index, int value) {
+		public DataValue<JsonElement> set(Integer index, int value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
             self.add(jsonPrimitive);
             return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(int index, float value) {
+		public DataValue<JsonElement> set(Integer index, float value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(int index, String value) {
+		public DataValue<JsonElement> set(Integer index, String value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(int index, boolean value) {
+		public DataValue<JsonElement> set(Integer index, boolean value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(int index, DataValue<JsonElement> value) {
+		public DataValue<JsonElement> set(Integer index, DataValue<JsonElement> value) {
 			self.add(value.getRaw());
 			return createDataValue(value.getRaw(), self.size() - 1);
+		}
+
+		@Override
+		public DataObject<JsonElement> addObject(Integer index) {
+			JsonObject jsonObject = new JsonObject();
+			self.add(jsonObject);
+			return createDataValue(jsonObject, self.size() - 1).asObject();
+		}
+
+		@Override
+		public DataList<JsonElement> addList(Integer index) {
+			JsonArray jsonArray = new JsonArray();
+			self.add(jsonArray);
+			return createDataValue(jsonArray, self.size() - 1).asList();
+		}
+
+		@Override
+		public void remove(Integer index) {
+			self.remove(self.get(index));
 		}
 
 		@Override

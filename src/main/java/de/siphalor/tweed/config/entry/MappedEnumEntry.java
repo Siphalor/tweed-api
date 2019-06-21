@@ -1,7 +1,7 @@
 package de.siphalor.tweed.config.entry;
 
 import com.google.common.collect.HashBiMap;
-import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
@@ -56,7 +56,7 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	}
 
 	@Override
-	public void writeValue(DataObject parent, String name, T value) {
+	public <Key> void writeValue(DataContainer<?, Key> parent, Key name, T value) {
 		parent.set(name, stringToEnum.inverse().get(value));
 	}
 

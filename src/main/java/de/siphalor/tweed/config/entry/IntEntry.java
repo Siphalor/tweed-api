@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config.entry;
 
-import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
@@ -21,7 +21,7 @@ public class IntEntry extends AbstractValueEntry<Integer, IntEntry> {
 	}
 
 	@Override
-	public void writeValue(DataObject parent, String name, Integer value) {
+	public <Key> void writeValue(DataContainer<?, Key> parent, Key name, Integer value) {
         parent.set(name, value);
 	}
 

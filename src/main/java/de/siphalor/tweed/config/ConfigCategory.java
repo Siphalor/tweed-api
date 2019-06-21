@@ -4,6 +4,7 @@ import de.siphalor.tweed.Core;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
+import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.Identifier;
@@ -95,10 +96,10 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 
 	@Override
 	public void read(DataValue dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
-		if(!dataValue.isCompound()) {
+		if(!dataValue.isObject()) {
 			throw new ConfigReadException("The entry should be an object (category)");
 		}
-		DataObject dataObject = dataValue.asCompound();
+		DataObject dataObject = dataValue.asObject();
 		entryStream(environment, scope).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
 			DataValue value = dataObject.get(entry.getKey());
 			try {
@@ -147,14 +148,14 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void write(DataObject dataObject, String key, ConfigEnvironment environment, ConfigScope scope) {
-		DataObject category;
+	public <Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
+		DataContainer category;
 		if(key.equals("")) {
-			category = dataObject;
-		} else if(!dataObject.has(key)) {
-            category = dataObject.addCompound(key);
+			category = dataContainer;
+		} else if(!dataContainer.has(key)) {
+            category = dataContainer.addObject(key);
 		} else {
-			category = dataObject.get(key).asCompound();
+			category = dataContainer.get(key).asObject();
 		}
 		if(!comment.equals(""))
 			category.setComment(getComment());

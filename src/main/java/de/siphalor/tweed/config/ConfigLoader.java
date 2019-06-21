@@ -84,14 +84,14 @@ public final class ConfigLoader {
                 inputStream.close();
                 if(dataObject == null) {
                 	Core.LOGGER.error("Failed to read config file " + configFile.getFileName());
-					return configFile.getDataSerializer().newCompound();
+					return configFile.getDataSerializer().newObject();
 				}
 				return dataObject;
 			} catch (Exception ignored) {
 				Core.LOGGER.error("Failed to read config file " + configFile.getFileName());
 			}
 		}
-		return configFile.getDataSerializer().newCompound();
+		return configFile.getDataSerializer().newObject();
 	}
 
 	/**
@@ -106,7 +106,7 @@ public final class ConfigLoader {
 		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
 			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
-			configFile.getDataSerializer().write(outputStream, configFile.write(configFile.getDataSerializer().newCompound(), environment, scope));
+			configFile.getDataSerializer().write(outputStream, configFile.write(configFile.getDataSerializer().newObject(), environment, scope));
             outputStream.close();
 		} catch (Exception e) {
 			Core.LOGGER.error("Failed to load config file " + configFile.getFileName());

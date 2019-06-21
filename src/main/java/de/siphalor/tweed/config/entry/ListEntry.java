@@ -4,10 +4,10 @@ import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigOrigin;
 import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.config.ConfigScope;
+import de.siphalor.tweed.data.DataContainer;
+import de.siphalor.tweed.data.DataList;
+import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
-import org.hjson.JsonArray;
-import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,28 +31,28 @@ public class ListEntry<T extends ConfigEntry> extends AbstractBasicEntry<ListEnt
 	}
 
 	@Override
-	public void read(JsonValue json, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
-		if(json.isArray()) {
-			JsonArray jsonArray = json.asArray();
-			valueList = new ArrayList<>(jsonArray.size());
+	public void read(DataValue dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
+		if(dataValue.isList()) {
+			DataList dataList = dataValue.asList();
+			valueList = new ArrayList<>(dataList.size());
 
-			for(int i = 0; i < jsonArray.size(); i++) {
+			for(int i = 0; i < dataList.size(); i++) {
 				T entry = entrySupplier.get();
 				try {
-					entry.read(jsonArray.get(i), environment, scope, origin);
+					entry.read(dataList.get(i), environment, scope, origin);
 					valueList.add(entry);
 				} catch (ConfigReadException e) {
 					e.printStackTrace();
 				}
 			}
 		} else
-			throw new ConfigReadException(json.asString() + " is not an array");
+			throw new ConfigReadException(dataValue.asString() + " is not an array");
 	}
 
 	@Override
 	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		List<T> list;
-		list = new ArrayList();
+		list = new ArrayList<>();
 		if(origin == ConfigOrigin.MAIN)
 			mainValueList = list;
 		else
@@ -74,13 +74,12 @@ public class ListEntry<T extends ConfigEntry> extends AbstractBasicEntry<ListEnt
 	}
 
 	@Override
-	public void write(JsonObject jsonObject, String key, ConfigEnvironment environment, ConfigScope scope) {
-		JsonArray jsonArray = new JsonArray();
-		for(T entry : mainValueList) {
-			JsonObject tempObject = new JsonObject();
-            entry.write(tempObject, "_", environment, scope);
-            jsonArray.add(tempObject.get("_"));
+	public <Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
+		DataList dataList = dataContainer.addList(key);
+		for(int i = 0; i < mainValueList.size(); i++) {
+			mainValueList.get(i).write(dataList, i, environment, scope);
 		}
+		dataContainer.set(key, dataList);
 	}
 
 	@Override

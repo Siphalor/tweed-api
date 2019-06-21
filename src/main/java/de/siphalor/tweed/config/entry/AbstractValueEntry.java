@@ -4,7 +4,7 @@ import com.google.common.collect.Iterators;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.Constraint;
 import de.siphalor.tweed.config.constraints.ConstraintException;
-import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
@@ -193,17 +193,16 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 
 	/**
 	 * Abstract method to add the generic value to the given data structure
-	 *
-	 * @param parent the data object to target
+	 *  @param parent the data object to target
 	 * @param name the name/key where to store the converted data;
 	 * @param value the value to convert
 	 */
-	public abstract void writeValue(DataObject parent, String name, V value);
+	public abstract <Key> void writeValue(DataContainer<?, Key> parent, Key name, V value);
 
 	@Override
-    public final void write(DataObject dataObject, String key, ConfigEnvironment environment, ConfigScope scope) {
-		writeValue(dataObject, key, mainConfigValue);
-        if(dataObject.has(key)) dataObject.get(key).setComment(getDescription());
+    public final <Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
+		writeValue(dataContainer, key, mainConfigValue);
+        if(dataContainer.has(key)) dataContainer.get(key).setComment(getDescription());
     }
 
     public abstract void writeValue(V value, PacketByteBuf buf);

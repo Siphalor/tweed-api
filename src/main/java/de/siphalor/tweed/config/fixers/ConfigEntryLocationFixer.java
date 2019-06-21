@@ -34,10 +34,10 @@ public class ConfigEntryLocationFixer extends ConfigEntryFixer {
 			String[] parts = StringUtils.split(newLocation, Core.PATH_DELIMITER);
 			for(String part : parts) {
 				if(location.get(part) == null) {
-					location = location.addCompound(part);
+					location = location.addObject(part);
 				} else {
-					if(location.get(part).isCompound()) {
-						location = location.get(part).asCompound();
+					if(location.get(part).isObject()) {
+						location = location.get(part).asObject();
 					} else {
 						Core.LOGGER.error("Unable to fix Tweed config file");
 						return;

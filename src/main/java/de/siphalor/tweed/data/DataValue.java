@@ -7,13 +7,13 @@ public interface DataValue<RawValue> {
 	boolean isNumber();
 	boolean isString();
 	boolean isBoolean();
-	boolean isCompound();
+	boolean isObject();
 	boolean isList();
 
 	default boolean isEmpty() {
 		if(isString()) return asString().isEmpty();
 		if(isBoolean()) return asBoolean();
-		if(isCompound()) return asCompound().isEmpty();
+		if(isObject()) return asObject().isEmpty();
 		if(isList()) return asList().isEmpty();
 		return false;
 	}
@@ -22,13 +22,12 @@ public interface DataValue<RawValue> {
 	float asFloat();
 	String asString();
 	boolean asBoolean();
-	DataObject<RawValue> asCompound();
+	DataObject<RawValue> asObject();
 	DataList<RawValue> asList();
 
 	/**
-	 * @deprecated Should only be used in {@link de.siphalor.tweed.data.serializer.ConfigDataSerializer}
+	 * Should only be used in {@link de.siphalor.tweed.data.serializer.ConfigDataSerializer}
 	 * @return the raw value
 	 */
-	@Deprecated
 	RawValue getRaw();
 }

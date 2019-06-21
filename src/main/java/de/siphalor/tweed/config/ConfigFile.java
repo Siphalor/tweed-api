@@ -162,9 +162,9 @@ public class ConfigFile {
 			DataObject location = dataObject;
 			for(int i = 0; i < parts.length - 1; i++) {
 				DataValue dataValue = location.get(parts[i]);
-				if(dataValue == null || !dataValue.isCompound())
+				if(dataValue == null || !dataValue.isObject())
 					return;
-				location = dataValue.asCompound();
+				location = dataValue.asObject();
 			}
 			stringConfigEntryFixerPair.getRight().fix(location, parts[parts.length - 1], dataObject);
 		});

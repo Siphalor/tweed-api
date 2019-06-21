@@ -5,7 +5,7 @@ import de.siphalor.tweed.config.ConfigOrigin;
 import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.config.constraints.ConstraintException;
-import de.siphalor.tweed.data.DataObject;
+import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
@@ -36,25 +36,29 @@ public interface ConfigEntry<T> {
 	/**
 	 * Read this kind of entry from a packet.
 	 * @param buf the packet's buffer
-	 * @param origin
+	 * @param environment the current environment
+	 * @param scope the current reload scope
+	 * @param origin the kind of source where this data comes from/should go to
 	 */
 	void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin);
 
 	/**
 	 * Write this kind of entry to a packet.
 	 * @param buf the packet's buffer
-	 * @param origin
+	 * @param environment the current environment
+	 * @param scope the current reload scope
+	 * @param origin the kind of source where this data comes from/should go to
 	 */
 	void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin);
 
 	/**
 	 * Method to write the main config value of the entry to HJSON (to be read by the user).
-	 * @param dataObject the object where this entry should be appended to
+	 * @param dataContainer the object where this entry should be appended to
 	 * @param key the key under which this entry should be appended
 	 * @param environment the current environment (handled by the system, can be ignored in most cases)
 	 * @param scope the current scope (handled by the system, can be ignored in most cases)
 	 */
-	void write(DataObject dataObject, String key, ConfigEnvironment environment, ConfigScope scope);
+	<Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope);
 
 	/**
 	 * Sets the environment where this entry is defined
