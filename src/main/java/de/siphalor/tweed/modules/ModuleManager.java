@@ -1,10 +1,12 @@
 package de.siphalor.tweed.modules;
 
+import de.siphalor.tweed.client.TweedClothBridge;
 import de.siphalor.tweed.config.ConfigCategory;
 import de.siphalor.tweed.config.ConfigFile;
 import de.siphalor.tweed.config.TweedRegistry;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed.modules.api.MainModule;
+import net.minecraft.client.gui.screen.Screen;
 
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,6 +15,7 @@ public class ModuleManager {
     protected final String modId;
     protected final ConfigDataSerializer configDataSerializer;
     protected final boolean multiFile;
+    protected TweedClothBridge tweedClothBridge;
 
     protected ConcurrentLinkedQueue<ConfigFile> configFiles = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<MainModule> modules = new ConcurrentLinkedQueue<>();
@@ -42,6 +45,14 @@ public class ModuleManager {
                 mainModule.setRootCategory(configFiles.peek().register(mainModule.getId(), new ConfigCategory()));
             });
         }
+    }
+
+    public void setup() {
+        tweedClothBridge = new TweedClothBridge(modId, configFiles.toArray(new ConfigFile[0]));
+    }
+
+    public Screen buildConfigScreen() {
+        return tweedClothBridge.buildScreen();
     }
 
     public ConcurrentLinkedQueue<MainModule> getModules() {
