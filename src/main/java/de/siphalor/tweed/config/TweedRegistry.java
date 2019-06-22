@@ -17,7 +17,7 @@ public class TweedRegistry {
 
 	/**
 	 * Registers a new {@link ConfigFile}.
-	 * @param fileName the file name which is used (no extension; no subdirectories for now)
+	 * @param fileName the file id which is used (no extension; no subdirectories for now)
 	 * @param dataSerializer a serializer for this config file
 	 * @return the new {@link ConfigFile}
 	 */

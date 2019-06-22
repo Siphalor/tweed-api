@@ -73,8 +73,8 @@ public class ConfigFile {
 	}
 
 	/**
-	 * Gets the file name
-	 * @return the file name <b>with extension</b>
+	 * Gets the file id
+	 * @return the file id <b>with extension</b>
 	 * @see ConfigFile#getName()
 	 */
 	public String getFileName() {
@@ -82,8 +82,8 @@ public class ConfigFile {
 	}
 
 	/**
-	 * Gets the name
-	 * @return the (file) name <b>without extension</b>
+	 * Gets the id
+	 * @return the (file) id <b>without extension</b>
 	 * @see ConfigFile#getFileName()
 	 */
 	public String getName() {
@@ -96,7 +96,7 @@ public class ConfigFile {
 
 	/**
 	 * Registers a new {@link ConfigEntry}.
-	 * @param name the property name or path of the entry ({@link Core#PATH_DELIMITER}
+	 * @param name the property id or path of the entry ({@link Core#PATH_DELIMITER}
 	 * @param entry the entry itself
 	 * @return the entry (for chain calls) or <i>null</i> if the path to the entry is invalid
 	 */
@@ -120,7 +120,7 @@ public class ConfigFile {
 
 	/**
 	 * Registers a new {@link ConfigEntryFixer}
-	 * @param path the name/path of the value to be fixed
+	 * @param path the id/path of the value to be fixed
 	 * @param configEntryFixer a fixer
 	 */
 	public void register(String path, ConfigEntryFixer configEntryFixer) {

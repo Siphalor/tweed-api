@@ -166,6 +166,7 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 		if(origin == ConfigOrigin.MAIN) {
 			mainConfigValue = value;
 		}
+		onReload();
 	}
 
 	/**
@@ -194,7 +195,7 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 	/**
 	 * Abstract method to add the generic value to the given data structure
 	 *  @param parent the data object to target
-	 * @param name the name/key where to store the converted data;
+	 * @param name the id/key where to store the converted data;
 	 * @param value the value to convert
 	 */
 	public abstract <Key> void writeValue(DataContainer<?, Key> parent, Key name, V value);
