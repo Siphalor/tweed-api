@@ -180,9 +180,10 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 	public final void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		if(environment.contains(getEnvironment())) {
 			if(scope.triggers(getScope())) {
-				value = readValue(buf);
 				if(origin == ConfigOrigin.MAIN)
-					mainConfigValue = value;
+					mainConfigValue = readValue(buf);
+				else
+					value = readValue(buf);
 				onReload();
 			}
 			else if(origin == ConfigOrigin.MAIN)
