@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config;
 
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.data.DataObject;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -66,7 +66,7 @@ public final class ConfigLoader {
             outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			Core.LOGGER.error("Failed to update config file " + configFile.getFileName());
+			Tweed.LOGGER.error("Failed to update config file " + configFile.getFileName());
 		}
 	}
 
@@ -83,12 +83,12 @@ public final class ConfigLoader {
 				DataObject dataObject = configFile.getDataSerializer().read(inputStream);
                 inputStream.close();
                 if(dataObject == null) {
-                	Core.LOGGER.error("Failed to read config file " + configFile.getFileName());
+                	Tweed.LOGGER.error("Failed to read config file " + configFile.getFileName());
 					return configFile.getDataSerializer().newObject();
 				}
 				return dataObject;
 			} catch (Exception ignored) {
-				Core.LOGGER.error("Failed to read config file " + configFile.getFileName());
+				Tweed.LOGGER.error("Failed to read config file " + configFile.getFileName());
 			}
 		}
 		return configFile.getDataSerializer().newObject();
@@ -109,7 +109,7 @@ public final class ConfigLoader {
 			configFile.getDataSerializer().write(outputStream, configFile.write(configFile.getDataSerializer().newObject(), environment, scope));
             outputStream.close();
 		} catch (Exception e) {
-			Core.LOGGER.error("Failed to load config file " + configFile.getFileName());
+			Tweed.LOGGER.error("Failed to load config file " + configFile.getFileName());
 			e.printStackTrace();
 		}
 	}
@@ -120,6 +120,6 @@ public final class ConfigLoader {
 	 * @return a {@link File} for the main config file
 	 */
 	public static File getMainConfigFile(ConfigFile configFile) {
-		return new File(Core.mainConfigDirectory, configFile.getFileName());
+		return new File(Tweed.mainConfigDirectory, configFile.getFileName());
 	}
 }

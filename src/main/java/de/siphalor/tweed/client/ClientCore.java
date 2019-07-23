@@ -1,6 +1,6 @@
 package de.siphalor.tweed.client;
 
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.event.server.ServerStartCallback;
@@ -28,7 +28,7 @@ public class ClientCore implements ClientModInitializer {
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
-				return new Identifier(Core.MOD_ID, "assets_listener");
+				return new Identifier(Tweed.MOD_ID, "assets_listener");
 			}
 
 			@Override
@@ -36,14 +36,14 @@ public class ClientCore implements ClientModInitializer {
 				try {
 					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
 				} catch (Throwable e) {
-					Core.LOGGER.error("Tweed failed to load config files");
+					Tweed.LOGGER.error("Tweed failed to load config files");
 					e.printStackTrace();
 				}
 			}
 		});
 		ServerStartCallback.EVENT.register(minecraftServer -> ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD));
 
-		ClientSidePacketRegistry.INSTANCE.register(Core.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
+		ClientSidePacketRegistry.INSTANCE.register(Tweed.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
 			ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);
 			String fileName = packetByteBuf.readString();
             for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {

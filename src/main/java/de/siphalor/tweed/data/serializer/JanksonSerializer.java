@@ -3,7 +3,7 @@ package de.siphalor.tweed.data.serializer;
 import blue.endless.jankson.*;
 import blue.endless.jankson.impl.SyntaxError;
 import com.mojang.datafixers.util.Pair;
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
@@ -31,7 +31,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 			JsonObject jsonObject = Jankson.builder().build().load(inputStream);
             return new JanksonObject(jsonObject, (comment) -> {}, () -> "", (clazz) -> null);
 		} catch (IOException | SyntaxError e) {
-			Core.LOGGER.error("Failed to read jankson config file");
+			Tweed.LOGGER.error("Failed to read jankson config file");
 			e.printStackTrace();
 		}
 		return null;
@@ -42,7 +42,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		try {
 			outputStream.write(dataObject.getRaw().toJson(true, true).getBytes());
 		} catch (IOException e) {
-			Core.LOGGER.error("Failed to write jankson config file");
+			Tweed.LOGGER.error("Failed to write jankson config file");
 			e.printStackTrace();
 		}
 	}

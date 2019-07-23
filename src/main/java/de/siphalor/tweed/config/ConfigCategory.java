@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config;
 
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
@@ -105,7 +105,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 			try {
 				entry.getValue().applyPreConstraints(value);
 			} catch (ConstraintException e) {
-				Core.LOGGER.error("Error reading " + entry.getKey() + " in pre-constraints:");
+				Tweed.LOGGER.error("Error reading " + entry.getKey() + " in pre-constraints:");
 				e.printStackTrace();
 				if(e.fatal)
 					return;
@@ -113,14 +113,14 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 			try {
 				entry.getValue().read(value, environment, scope, origin);
 			} catch (ConfigReadException e) {
-				Core.LOGGER.error("Error reading " + entry.getKey() + ":");
+				Tweed.LOGGER.error("Error reading " + entry.getKey() + ":");
 				e.printStackTrace();
 				return;
 			}
 			try {
 				entry.getValue().applyPostConstraints(value);
 			} catch (ConfigReadException e) {
-                Core.LOGGER.error("Error reading " + entry.getKey() + " in post-constraints:");
+                Tweed.LOGGER.error("Error reading " + entry.getKey() + " in post-constraints:");
                 e.printStackTrace();
 			}
 		});

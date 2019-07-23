@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config;
 
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.entry.ConfigEntry;
 import de.siphalor.tweed.config.fixers.ConfigEntryFixer;
 import de.siphalor.tweed.data.DataObject;
@@ -59,7 +59,7 @@ public class ConfigFile {
 	}
 
 	public void finishReload(ConfigEnvironment environment, ConfigScope scope) {
-		Core.LOGGER.info("Reloaded configs for " + name);
+		Tweed.LOGGER.info("Reloaded configs for " + name);
 		if(reloadListener != null)
 			reloadListener.accept(environment, scope);
 	}
@@ -69,7 +69,7 @@ public class ConfigFile {
 	 * @return the identifier
 	 */
 	public Identifier getFileIdentifier() {
-		return new Identifier(Core.MOD_ID, "config/" + getFileName());
+		return new Identifier(Tweed.MOD_ID, "config/" + getFileName());
 	}
 
 	/**
@@ -96,12 +96,12 @@ public class ConfigFile {
 
 	/**
 	 * Registers a new {@link ConfigEntry}.
-	 * @param name the property id or path of the entry ({@link Core#PATH_DELIMITER}
+	 * @param name the property id or path of the entry ({@link Tweed#PATH_DELIMITER}
 	 * @param entry the entry itself
 	 * @return the entry (for chain calls) or <i>null</i> if the path to the entry is invalid
 	 */
 	public <T extends ConfigEntry> T register(String name, T entry) {
-        String[] parts = StringUtils.split(name, Core.PATH_DELIMITER);
+        String[] parts = StringUtils.split(name, Tweed.PATH_DELIMITER);
         if(parts.length == 1)
         	rootCategory.register(name, entry);
         else {
@@ -128,7 +128,7 @@ public class ConfigFile {
 	}
 
 	/**
-	 * Writes to the {@link JsonObject} for handing it to the {@link Core#mainConfigDirectory}
+	 * Writes to the {@link JsonObject} for handing it to the {@link Tweed#mainConfigDirectory}
 	 *
 	 * @param dataObject the target data
 	 * @param environment the current environment
@@ -158,7 +158,7 @@ public class ConfigFile {
 
 	public void fixConfig(DataObject dataObject) {
 		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
-			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Core.PATH_DELIMITER);
+			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Tweed.PATH_DELIMITER);
 			DataObject location = dataObject;
 			for(int i = 0; i < parts.length - 1; i++) {
 				DataValue dataValue = location.get(parts[i]);
@@ -175,7 +175,7 @@ public class ConfigFile {
 		try {
 			resource.close();
 		} catch (IOException e) {
-			Core.LOGGER.error("Failed to close config resource after reading it: " + resource.getId());
+			Tweed.LOGGER.error("Failed to close config resource after reading it: " + resource.getId());
 			e.printStackTrace();
 		}
 		if(dataObject != null) {
@@ -189,7 +189,7 @@ public class ConfigFile {
 		try {
 			rootCategory.read(dataObject, environment, scope, origin);
 		} catch (ConfigReadException e) {
-            Core.LOGGER.error("The config file " + name + ".hjson must contain an object!");
+            Tweed.LOGGER.error("The config file " + name + ".hjson must contain an object!");
 		}
 	}
 
@@ -199,7 +199,7 @@ public class ConfigFile {
 		packetByteBuf.writeString(name);
 		write(packetByteBuf, environment, scope, origin);
 
-		PlayerStream.all(Core.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Core.CONFIG_SYNC_S2C_PACKET, packetByteBuf));
+		PlayerStream.all(Tweed.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf));
 	}
 
 	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
@@ -208,7 +208,7 @@ public class ConfigFile {
 		packetByteBuf.writeString(name);
 		write(packetByteBuf, environment, scope, origin);
 
-		ServerSidePacketRegistry.INSTANCE.sendToPlayer(playerEntity, Core.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
+		ServerSidePacketRegistry.INSTANCE.sendToPlayer(playerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
 	}
 
 	public void syncToServer(ConfigEnvironment environment, ConfigScope scope) {
@@ -218,7 +218,7 @@ public class ConfigFile {
 		packetByteBuf.writeEnumConstant(scope);
 		write(packetByteBuf, environment, scope, ConfigOrigin.MAIN);
 
-		ClientSidePacketRegistry.INSTANCE.sendToServer(Core.TWEED_CLOTH_SYNC_C2S_PACKET, packetByteBuf);
+		ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.TWEED_CLOTH_SYNC_C2S_PACKET, packetByteBuf);
 	}
 
 	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {

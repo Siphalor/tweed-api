@@ -42,8 +42,8 @@ dependencies {
 
 	// hjson
 	//compile 'org.hjson:hjson:3.0.0'
-	shadow 'com.github.PersonTheCat:hjson-java:master-SNAPSHOT'
-	implementation 'com.github.PersonTheCat:hjson-java:master-SNAPSHOT'
+	shadow 'com.github.Siphalor:hjson-java:master-SNAPSHOT'
+	implementation 'com.github.Siphalor:hjson-java:master-SNAPSHOT'
 	
 	// Jankson
 	shadow 'blue.endless:jankson:1.1.0'

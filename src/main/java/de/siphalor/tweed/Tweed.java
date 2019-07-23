@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.util.Objects;
 
-public class Core implements ModInitializer {
+public class Tweed implements ModInitializer {
 	public static final String MOD_ID = "tweed";
 	public static final Identifier CONFIG_SYNC_S2C_PACKET = new Identifier(MOD_ID, "sync_config");
 	public static final Identifier REQUEST_SYNC_C2S_PACKET = new Identifier(MOD_ID, "request_sync");
@@ -45,7 +45,7 @@ public class Core implements ModInitializer {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
-				return new Identifier(Core.MOD_ID, "resource_reload");
+				return new Identifier(Tweed.MOD_ID, "resource_reload");
 			}
 
 			@Override
@@ -53,7 +53,7 @@ public class Core implements ModInitializer {
 				try {
 					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
 				} catch (Throwable e) {
-					Core.LOGGER.error("Tweed failed to load config files:");
+					Tweed.LOGGER.error("Tweed failed to load config files:");
 					e.printStackTrace();
 				}
 			}

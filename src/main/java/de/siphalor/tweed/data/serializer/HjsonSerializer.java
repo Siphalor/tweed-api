@@ -1,7 +1,7 @@
 package de.siphalor.tweed.data.serializer;
 
 import com.mojang.datafixers.util.Pair;
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
@@ -28,12 +28,12 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 			json = JsonValue.readHjson(inputStreamReader);
 			inputStreamReader.close();
 		} catch (Exception e) {
-			Core.LOGGER.error("Couldn't load hjson config file");
+			Tweed.LOGGER.error("Couldn't load hjson config file");
             e.printStackTrace();
             return null;
 		}
         if(!json.isObject()) {
-        	Core.LOGGER.error("Config files should contain an hjson object!");
+        	Tweed.LOGGER.error("Config files should contain an hjson object!");
         	return null;
         }
         return new HjsonObject(json.asObject());

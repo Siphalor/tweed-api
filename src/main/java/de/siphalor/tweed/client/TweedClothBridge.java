@@ -1,6 +1,6 @@
 package de.siphalor.tweed.client;
 
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.Constraint;
 import de.siphalor.tweed.config.constraints.RangeConstraint;
@@ -74,7 +74,7 @@ public class TweedClothBridge {
 				buffer.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
 				buffer.writeEnumConstant(ConfigScope.SMALLEST);
 				buffer.writeEnumConstant(ConfigOrigin.MAIN);
-				ClientSidePacketRegistry.INSTANCE.sendToServer(Core.REQUEST_SYNC_C2S_PACKET, buffer);
+				ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, buffer);
                 entry.awaitSync = true;
 			}
             ClientCore.scheduledClothBridge = this;

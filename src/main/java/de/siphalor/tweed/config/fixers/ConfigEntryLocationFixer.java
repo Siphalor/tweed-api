@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config.fixers;
 
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +31,7 @@ public class ConfigEntryLocationFixer extends ConfigEntryFixer {
 			dataObject.set(newName, dataValue);
 		} else {
 			DataObject location = mainCompound;
-			String[] parts = StringUtils.split(newLocation, Core.PATH_DELIMITER);
+			String[] parts = StringUtils.split(newLocation, Tweed.PATH_DELIMITER);
 			for(String part : parts) {
 				if(location.get(part) == null) {
 					location = location.addObject(part);
@@ -39,7 +39,7 @@ public class ConfigEntryLocationFixer extends ConfigEntryFixer {
 					if(location.get(part).isObject()) {
 						location = location.get(part).asObject();
 					} else {
-						Core.LOGGER.error("Unable to fix Tweed config file");
+						Tweed.LOGGER.error("Unable to fix Tweed config file");
 						return;
 					}
 				}

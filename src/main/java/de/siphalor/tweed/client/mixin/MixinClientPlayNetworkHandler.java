@@ -1,6 +1,6 @@
 package de.siphalor.tweed.client.mixin;
 
-import de.siphalor.tweed.Core;
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.*;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
@@ -22,7 +22,7 @@ public class MixinClientPlayNetworkHandler {
 			packetByteBuf.writeEnumConstant(ConfigEnvironment.SYNCED);
 			packetByteBuf.writeEnumConstant(ConfigScope.WORLD);
 			packetByteBuf.writeEnumConstant(ConfigOrigin.DATAPACK);
-			ClientSidePacketRegistry.INSTANCE.sendToServer(Core.REQUEST_SYNC_C2S_PACKET, packetByteBuf);
+			ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, packetByteBuf);
 		}
 	}
 }
