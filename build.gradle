@@ -57,7 +57,7 @@ dependencies {
 	modImplementation "io.github.prospector.modmenu:ModMenu:${project.modmenu_version}"
 
 	// Cloth Config
-    modImplementation "cloth-config:ClothConfig2:0.2.0"
+    modApi "me.shedaniel.cloth:config-2:${project.clothconfig_version}"
 }
 
 processResources {
