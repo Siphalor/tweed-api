@@ -95,7 +95,7 @@ public interface ConfigEntry<T> {
 	String getDescription();
 
 	default Optional<String[]> getClothyDescription() {
-		return Optional.of(getDescription().split(System.lineSeparator()));
+		return Optional.of(getDescription().split("[\n\r]\r?"));
 	}
 
 	default String getCleanedDescription() {

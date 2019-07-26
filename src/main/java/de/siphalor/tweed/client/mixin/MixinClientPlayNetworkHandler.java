@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class MixinClientPlayNetworkHandler {
-	@Inject(method = "onGameJoin", at = @At("RETURN"))
+	@Inject(method = "onGameJoin", at = @At("RETURN"), require = 1)
 	public void onGameJoined(GameJoinS2CPacket packet, CallbackInfo callbackInfo) {
 		for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
 			PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());

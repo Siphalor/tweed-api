@@ -53,9 +53,6 @@ dependencies {
 	//shadow 'com.moandjiezana.toml:toml4j:0.7.2'
 	//modImplementation 'com.moandjiezana.toml:toml4j:0.7.2'
 
-	// ModMenu
-	modImplementation "io.github.prospector.modmenu:ModMenu:${project.modmenu_version}"
-
 	// Cloth Config
     modApi "me.shedaniel.cloth:config-2:${project.clothconfig_version}"
 }
