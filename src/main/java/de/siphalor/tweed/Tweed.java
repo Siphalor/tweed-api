@@ -67,8 +67,9 @@ public class Tweed implements ModInitializer {
 						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class), packetByteBuf.readEnumConstant(ConfigOrigin.class));
 					} else {
             			packetByteBuf.readEnumConstant(ConfigEnvironment.class);
+            			ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
             			packetByteBuf.readEnumConstant(ConfigOrigin.class);
-						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), ConfigEnvironment.SYNCED, packetByteBuf.readEnumConstant(ConfigScope.class), ConfigOrigin.DATAPACK);
+						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
 					}
             		break;
 				}
