@@ -179,4 +179,8 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	public Stream<Map.Entry<String, ConfigEntry>> sortedEntryStream(ConfigEnvironment environment, ConfigScope scope) {
 		return entryStream(environment, scope).sorted((o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey()));
 	}
+
+	public boolean isEmpty() {
+		return entries.isEmpty();
+	}
 }

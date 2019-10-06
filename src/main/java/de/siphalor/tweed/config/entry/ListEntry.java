@@ -16,12 +16,14 @@ import java.util.function.Supplier;
 public class ListEntry<T extends ConfigEntry> extends AbstractBasicEntry<ListEntry<T>> {
 	protected Supplier<T> entrySupplier;
 
-	protected List<T> valueList;
+	public List<T> valueList;
 	protected List<T> mainValueList;
 	protected final List<T> defaultList;
 
 	public ListEntry(List<T> defaultList, Supplier<T> entrySupplier) {
+		this.valueList = defaultList;
 		this.defaultList = defaultList;
+		this.mainValueList = defaultList;
 		this.entrySupplier = entrySupplier;
 	}
 

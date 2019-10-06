@@ -227,44 +227,59 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 
 		@Override
 		public DataValue<JsonValue> set(Integer index, int value) {
+			adjustLength(index);
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
 		public DataValue<JsonValue> set(Integer index, float value) {
+			adjustLength(index);
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
 		public DataValue<JsonValue> set(Integer index, String value) {
+			adjustLength(index);
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
 		public DataValue<JsonValue> set(Integer index, boolean value) {
+			adjustLength(index);
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
 		public DataValue<JsonValue> set(Integer index, DataValue<JsonValue> value) {
+			adjustLength(index);
 			jsonValue.asArray().set(index, value.getRaw());
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
 		@Override
 		public DataObject<JsonValue> addObject(Integer index) {
+			adjustLength(index);
 			jsonValue.asArray().set(index, new JsonObject());
 			return new HjsonObject(jsonValue.asArray().get(index));
 		}
 
 		@Override
 		public DataList<JsonValue> addList(Integer index) {
+			adjustLength(index);
 			jsonValue.asArray().set(index, new JsonArray());
 			return new HjsonList(jsonValue.asArray().get(index));
+		}
+
+		private void adjustLength(int index) {
+			JsonArray jsonArray = jsonValue.asArray();
+			int length = jsonArray.size();
+			for(int i = length; i <= index; i++) {
+				jsonArray.add(JsonValue.valueOf(null));
+			}
 		}
 
 		@Override
