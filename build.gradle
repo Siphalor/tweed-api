@@ -22,6 +22,7 @@ version = project.mod_version
 group = project.maven_group
 
 minecraft {
+	refmapName = project.mod_id
 }
 
 dependencies {
