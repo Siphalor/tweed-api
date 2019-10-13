@@ -29,9 +29,11 @@ public abstract class OptionalFeature extends Feature {
 	}
 
 	public final void onReload(boolean enabled) {
-		apply();
-		if(!applied) applyOnce();
-		applied = true;
+		if(enabled) {
+			apply();
+			if (!applied) applyOnce();
+			applied = true;
+		}
 	}
 
 	public void apply() {
