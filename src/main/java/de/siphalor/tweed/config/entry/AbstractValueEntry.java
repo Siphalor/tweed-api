@@ -28,8 +28,9 @@ import java.util.function.Consumer;
 public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 
 	/**
-	 * The value of this entry
+	 * The value of this entry. Use {@link AbstractValueEntry#getValue()} and {@link AbstractValueEntry#setValue(Object)} to access it.
 	 */
+	@Deprecated
 	public V value;
 
 	protected V mainConfigValue;
@@ -52,6 +53,14 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 		this.environment = ConfigEnvironment.UNIVERSAL;
 		this.preConstraints = new ConcurrentLinkedQueue<>();
 		this.postConstraints = new ConcurrentLinkedQueue<>();
+	}
+
+	public void setValue(V value) {
+		this.value = value;
+	}
+
+	public V getValue() {
+		return value;
 	}
 
 	/**
