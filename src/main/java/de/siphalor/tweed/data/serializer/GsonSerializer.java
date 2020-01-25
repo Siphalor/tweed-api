@@ -14,6 +14,8 @@ import java.util.Iterator;
 public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 	protected static final Gson GSON = new GsonBuilder().create();
 
+	public static final GsonSerializer INSTANCE = new GsonSerializer();
+
 	@Override
 	public DataObject<JsonElement> newObject() {
 		return new GsonObject(new JsonObject());

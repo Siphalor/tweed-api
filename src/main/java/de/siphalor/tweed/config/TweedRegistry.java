@@ -1,15 +1,21 @@
 package de.siphalor.tweed.config;
 
+import de.siphalor.tweed.config.annotated.ATweedConfig;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed.data.serializer.GsonSerializer;
 import de.siphalor.tweed.data.serializer.HjsonSerializer;
+import de.siphalor.tweed.data.serializer.JanksonSerializer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Used to register {@link ConfigFile}s.
  */
 public class TweedRegistry {
 	private static ArrayList<ConfigFile> configFiles = new ArrayList<>();
+	private static final Map<String, ConfigDataSerializer<?>> SERIALIZERS = new HashMap<>();
 
 	public static ConfigFile registerConfigFile(String fileName) {
 		return registerConfigFile(fileName, HjsonSerializer.INSTANCE);
@@ -27,8 +33,19 @@ public class TweedRegistry {
         return configFile;
 	}
 
-	public static ConfigFile registerPOJO(Object pojo) {
-
+	public static ConfigFile registerPOJO(String fileName, Object pojo) {
+		ConfigCategory configCategory = POJOConverter.toCategory(pojo);
+		if (configCategory != null) {
+			ConfigDataSerializer<?> configDataSerializer = null;
+			if (pojo.getClass().isAnnotationPresent(ATweedConfig.class)) {
+				configDataSerializer = SERIALIZERS.get(pojo.getClass().getAnnotation(ATweedConfig.class).serializer());
+			}
+			if (configDataSerializer == null) {
+				configDataSerializer = HjsonSerializer.INSTANCE;
+			}
+			ConfigFile configFile = registerConfigFile(fileName, configDataSerializer);
+			return configFile;
+		}
 		return null;
 	}
 
@@ -39,5 +56,15 @@ public class TweedRegistry {
 	 */
 	public static ArrayList<ConfigFile> getConfigFiles() {
 		return configFiles;
+	}
+
+	public static void registerDataSerializer(String id, ConfigDataSerializer<?> configDataSerializer) {
+			SERIALIZERS.put(id, configDataSerializer);
+	}
+
+	static {
+		SERIALIZERS.put("gson", GsonSerializer.INSTANCE);
+		SERIALIZERS.put("hjson", HjsonSerializer.INSTANCE);
+		SERIALIZERS.put("jankson", JanksonSerializer.INSTANCE);
 	}
 }

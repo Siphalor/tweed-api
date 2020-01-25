@@ -2,6 +2,10 @@ package de.siphalor.tweed;
 
 import de.siphalor.tweed.client.TweedClient;
 import de.siphalor.tweed.config.*;
+import de.siphalor.tweed.config.annotated.AConfigEntry;
+import de.siphalor.tweed.config.annotated.AConfigExclude;
+import de.siphalor.tweed.config.annotated.AConfigTransitive;
+import de.siphalor.tweed.config.annotated.ATweedConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -29,12 +33,6 @@ public class Tweed implements ModInitializer {
 
 	public static final char PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
-
-	private static MinecraftServer minecraftServer;
-
-	public static boolean isMinecraftServerReady() {
-		return minecraftServer != null;
-	}
 
 	public static MinecraftServer getMinecraftServer() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? TweedClient.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
@@ -91,5 +89,34 @@ public class Tweed implements ModInitializer {
 				}
 			}
 		}));
+
+		Test test = new Test();
+		TweedRegistry.registerPOJO("hey", test);
+	}
+
+	@ATweedConfig(serializer = "jankson")
+	public static class Test {
+		@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
+		Boolean aBoolean = true;
+
+		boolean primBool = false;
+
+		@AConfigExclude
+		String test = "abc";
+
+		Integer number = 123;
+
+		A a;
+
+		@AConfigTransitive
+		Trans trans;
+
+		public static class A {
+			String name = "Siphalor";
+		}
+
+		public static class Trans {
+			String type = "blob";
+		}
 	}
 }
