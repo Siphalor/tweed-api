@@ -107,7 +107,7 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 	}
 
 	@Override
-	public final void applyPreConstraints(DataValue dataValue) throws ConstraintException {
+	public final void applyPreConstraints(DataValue<?> dataValue) throws ConstraintException {
 		for(Constraint<V> constraint : preConstraints) {
 			try {
 				constraint.apply(dataValue, this);
@@ -119,7 +119,7 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 	}
 
 	@Override
-    public final void applyPostConstraints(DataValue dataValue) throws ConstraintException {
+    public final void applyPostConstraints(DataValue<?> dataValue) throws ConstraintException {
 		for(Constraint<V> constraint : postConstraints) {
 			try {
 				constraint.apply(dataValue, this);
@@ -158,10 +158,10 @@ public abstract class AbstractValueEntry<V, T> extends AbstractBasicEntry<T> {
 	 * @param dataValue The data to read from.
 	 * @return The read and converted value;
 	 */
-	public abstract V readValue(DataValue dataValue) throws ConfigReadException;
+	public abstract V readValue(DataValue<?> dataValue) throws ConfigReadException;
 
 	@Override
-	public final void read(DataValue dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
+	public final void read(DataValue<?> dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
 		value = readValue(dataValue);
 		if(origin == ConfigOrigin.MAIN) {
 			mainConfigValue = value;

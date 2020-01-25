@@ -10,7 +10,7 @@ public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	}
 
 	@Override
-	public String readValue(DataValue json) {
+	public String readValue(DataValue<?> json) {
         return json.asString();
 	}
 

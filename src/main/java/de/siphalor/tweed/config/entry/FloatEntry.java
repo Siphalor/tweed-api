@@ -10,7 +10,7 @@ public class FloatEntry extends AbstractValueEntry<Float, FloatEntry> {
 	}
 
 	@Override
-	public Float readValue(DataValue dataValue) {
+	public Float readValue(DataValue<?> dataValue) {
 		return dataValue.asFloat();
 	}
 

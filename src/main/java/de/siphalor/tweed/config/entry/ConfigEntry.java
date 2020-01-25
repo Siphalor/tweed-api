@@ -31,7 +31,7 @@ public interface ConfigEntry<T> {
 	 * @param scope the current reload scope
 	 * @throws ConfigReadException if an issue occurs during reading the value
 	 */
-	void read(DataValue dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
+	void read(DataValue<?> dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
 
 	/**
 	 * Read this kind of entry from a packet.
@@ -107,12 +107,12 @@ public interface ConfigEntry<T> {
 	 * @param dataValue the given value
 	 * @throws ConstraintException an exception
 	 */
-	default void applyPreConstraints(DataValue dataValue) throws ConstraintException {}
+	default void applyPreConstraints(DataValue<?> dataValue) throws ConstraintException {}
 
 	/**
 	 * Method for handling possible constraints after reading in the value.
 	 * @param dataValue the give value
 	 * @throws ConstraintException an exception
 	 */
-	default void applyPostConstraints(DataValue dataValue) throws ConstraintException {}
+	default void applyPostConstraints(DataValue<?> dataValue) throws ConstraintException {}
 }

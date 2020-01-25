@@ -26,7 +26,7 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	}
 
 	@Override
-	public T readValue(DataValue json) {
+	public T readValue(DataValue<?> json) {
 		return getValue(json.asString());
 	}
 

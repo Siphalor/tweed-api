@@ -33,7 +33,7 @@ public class ListEntry<T extends ConfigEntry> extends AbstractBasicEntry<ListEnt
 	}
 
 	@Override
-	public void read(DataValue dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
+	public void read(DataValue<?> dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
 		if(dataValue.isList()) {
 			DataList dataList = dataValue.asList();
 			valueList = new ArrayList<>(dataList.size());

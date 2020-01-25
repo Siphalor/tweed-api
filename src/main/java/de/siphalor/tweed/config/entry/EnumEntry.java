@@ -16,7 +16,7 @@ public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntr
 	}
 
 	@Override
-	public E readValue(DataValue dataValue) {
+	public E readValue(DataValue<?> dataValue) {
 		for(E enumConstant : (E[]) defaultValue.getClass().getEnumConstants()) {
 			if(enumConstant.toString().equalsIgnoreCase(dataValue.asString()))
 				return enumConstant;

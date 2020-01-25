@@ -16,7 +16,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import org.hjson.JsonObject;
 
 import java.io.IOException;
 import java.util.Queue;
@@ -31,11 +30,11 @@ public class ConfigFile {
 	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
 	private Queue<Pair<String, ConfigEntryFixer>> configEntryFixers;
-	private ConfigDataSerializer dataSerializer;
+	private ConfigDataSerializer<?> dataSerializer;
 
 	protected ConfigCategory rootCategory;
 
-	protected ConfigFile(String name, ConfigDataSerializer dataSerializer) {
+	protected ConfigFile(String name, ConfigDataSerializer<?> dataSerializer) {
 		this.name = name;
 		rootCategory = new ConfigCategory();
 		this.dataSerializer = dataSerializer;
@@ -54,7 +53,7 @@ public class ConfigFile {
 		return this;
 	}
 
-	public ConfigDataSerializer getDataSerializer() {
+	public ConfigDataSerializer<?> getDataSerializer() {
 		return dataSerializer;
 	}
 
@@ -100,14 +99,14 @@ public class ConfigFile {
 	 * @param entry the entry itself
 	 * @return the entry (for chain calls) or <i>null</i> if the path to the entry is invalid
 	 */
-	public <T extends ConfigEntry> T register(String name, T entry) {
+	public <T extends ConfigEntry<?>> T register(String name, T entry) {
         String[] parts = StringUtils.split(name, Tweed.PATH_DELIMITER);
         if(parts.length == 1)
         	rootCategory.register(name, entry);
         else {
         	ConfigCategory category = rootCategory;
         	for(int i = 0; i < parts.length - 1; i++) {
-        		ConfigEntry iEntry = category.entries.get(parts[i]);
+        		ConfigEntry<?> iEntry = category.entries.get(parts[i]);
                 if(!(iEntry instanceof ConfigCategory)) {
                 	return null;
 				}
@@ -128,14 +127,14 @@ public class ConfigFile {
 	}
 
 	/**
-	 * Writes to the {@link JsonObject} for handing it to the {@link Tweed#mainConfigDirectory}
+	 * Writes to the {@link DataObject} for handing it to the {@link Tweed#mainConfigDirectory}
 	 *
 	 * @param dataObject the target data
 	 * @param environment the current environment
 	 * @param scope the current definition scope
-	 * @return the new {@link JsonObject}
+	 * @return the new {@link DataObject}
 	 */
-	public DataObject write(DataObject dataObject, ConfigEnvironment environment, ConfigScope scope) {
+	public DataObject<?> write(DataObject<?> dataObject, ConfigEnvironment environment, ConfigScope scope) {
 		fixConfig(dataObject);
 		rootCategory.write(dataObject, "", environment, scope);
 		return dataObject;
@@ -156,12 +155,12 @@ public class ConfigFile {
 	@Deprecated
 	public void triggerInitialLoad() {}
 
-	public void fixConfig(DataObject dataObject) {
+	public void fixConfig(DataObject<?> dataObject) {
 		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
 			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Tweed.PATH_DELIMITER);
-			DataObject location = dataObject;
+			DataObject<?> location = dataObject;
 			for(int i = 0; i < parts.length - 1; i++) {
-				DataValue dataValue = location.get(parts[i]);
+				DataValue<?> dataValue = location.get(parts[i]);
 				if(dataValue == null || !dataValue.isObject())
 					return;
 				location = dataValue.asObject();
@@ -171,7 +170,7 @@ public class ConfigFile {
 	}
 
 	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		DataObject dataObject = dataSerializer.read(resource.getInputStream());
+		DataObject<?> dataObject = dataSerializer.read(resource.getInputStream());
 		try {
 			resource.close();
 		} catch (IOException e) {
@@ -183,7 +182,7 @@ public class ConfigFile {
 		}
 	}
 
-	public void load(DataObject dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void load(DataObject<?> dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		fixConfig(dataObject);
 
 		try {

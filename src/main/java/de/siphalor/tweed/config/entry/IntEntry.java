@@ -11,7 +11,7 @@ public class IntEntry extends AbstractValueEntry<Integer, IntEntry> {
 	}
 
 	@Override
-	public Integer readValue(DataValue json) {
+	public Integer readValue(DataValue<?> json) {
         return json.asInt();
 	}
 

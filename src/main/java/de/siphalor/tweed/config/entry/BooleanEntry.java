@@ -10,7 +10,7 @@ public class BooleanEntry extends AbstractValueEntry<Boolean, BooleanEntry> {
 	}
 
 	@Override
-	public Boolean readValue(DataValue dataValue) {
+	public Boolean readValue(DataValue<?> dataValue) {
 		return dataValue.asBoolean();
 	}
 
