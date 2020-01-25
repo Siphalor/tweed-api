@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.2.4-SNAPSHOT'
+	id 'fabric-loom' version '0.2.6-SNAPSHOT'
 	id 'maven-publish'
 	id 'java-library'
 	id 'com.github.johnrengelman.shadow' version '4.0.0'
@@ -96,16 +96,14 @@ jar {
 
 shadowJar {
 	configurations = [project.configurations.shadow]
-	classifier = ""
+	classifier = "dev"
 	relocate 'org.hjson', 'de.siphalor.tweed.shadow.org.hjson'
 	relocate 'blue.endless.jankson', 'de.siphalor.tweed.shadow.blue.endless.jankson'
 	//relocate 'com.moandjiezana.toml', 'de.siphalor.tweed.shadow.com.moandjiezana.toml'
 }
 
 remapJar {
-	dependsOn shadowJar
-	input shadowJar.archivePath
-	output jar.archivePath
+	dependsOn(shadowJar)
 }
 
 // configure the maven publication

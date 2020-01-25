@@ -106,7 +106,7 @@ public final class ConfigLoader {
 		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
 			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
-			configFile.getDataSerializer().write(outputStream, configFile.write(configFile.getDataSerializer().newObject(), environment, scope));
+			configFile.getDataSerializer().write(outputStream, (DataObject) configFile.write(configFile.getDataSerializer().newObject(), environment, scope));
             outputStream.close();
 		} catch (Exception e) {
 			Tweed.LOGGER.error("Failed to load config file " + configFile.getFileName());
