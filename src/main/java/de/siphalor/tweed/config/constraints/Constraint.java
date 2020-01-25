@@ -1,6 +1,5 @@
 package de.siphalor.tweed.config.constraints;
 
-import de.siphalor.tweed.config.entry.AbstractValueEntry;
 import de.siphalor.tweed.config.entry.ValueEntry;
 import de.siphalor.tweed.data.DataValue;
 

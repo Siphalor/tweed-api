@@ -44,7 +44,7 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 	 * @param defaultValue The default value to use
 	 */
 	public ValueEntry(V defaultValue) {
-		this(new SimpleConfigValue<>(defaultValue), (ConfigValueSerializer<V>) ConfigValue.serializer(defaultValue));
+		this(new SimpleConfigValue<>(defaultValue), (ConfigValueSerializer<V>) ConfigValue.serializer(defaultValue, defaultValue.getClass()));
 	}
 
 	public ValueEntry(V defaultValue, ConfigValueSerializer<V> configValueSerializer) {

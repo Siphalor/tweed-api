@@ -35,8 +35,12 @@ public class ConfigFile {
 	protected ConfigCategory rootCategory;
 
 	protected ConfigFile(String name, ConfigDataSerializer<?> dataSerializer) {
+		this(name, dataSerializer, new ConfigCategory());
+	}
+
+	protected ConfigFile(String name, ConfigDataSerializer<?> dataSerializer, ConfigCategory rootCategory) {
 		this.name = name;
-		rootCategory = new ConfigCategory();
+		this.rootCategory = rootCategory;
 		this.dataSerializer = dataSerializer;
 		configEntryFixers = new ConcurrentLinkedQueue<>();
 	}
@@ -91,6 +95,14 @@ public class ConfigFile {
 
 	public ConfigCategory getRootCategory() {
 		return rootCategory;
+	}
+
+	/**
+	 * Sets the root category. <b>Use with extreme caution!</b>
+	 * @param rootCategory the new root category
+	 */
+	public void setRootCategory(ConfigCategory rootCategory) {
+		this.rootCategory = rootCategory;
 	}
 
 	/**

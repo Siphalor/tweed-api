@@ -94,7 +94,7 @@ public class Tweed implements ModInitializer {
 		TweedRegistry.registerPOJO("hey", test);
 	}
 
-	@ATweedConfig(serializer = "jankson")
+	@ATweedConfig(serializer = "hjson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL)
 	public static class Test {
 		@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
 		Boolean aBoolean = true;
@@ -106,6 +106,7 @@ public class Tweed implements ModInitializer {
 
 		Integer number = 123;
 
+		@AConfigEntry(comment = "This is an object")
 		A a;
 
 		@AConfigTransitive

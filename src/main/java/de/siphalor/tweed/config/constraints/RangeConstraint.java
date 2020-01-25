@@ -1,6 +1,6 @@
 package de.siphalor.tweed.config.constraints;
 
-import de.siphalor.tweed.config.entry.AbstractValueEntry;
+import de.siphalor.tweed.config.entry.ValueEntry;
 import de.siphalor.tweed.data.DataValue;
 
 public class RangeConstraint<T extends Number> implements Constraint<T> {
@@ -49,14 +49,14 @@ public class RangeConstraint<T extends Number> implements Constraint<T> {
 	}
 
 	@Override
-	public void apply(DataValue dataValue, AbstractValueEntry<T, ?> configEntry) throws ConstraintException {
-        if(min != null && configEntry.value.doubleValue() < min.doubleValue()) {
-        	configEntry.value = min;
-        	throw new ConstraintException(configEntry.value + " is smaller than " + min, false);
+	public void apply(DataValue<?> dataValue, ValueEntry<T, ?> configEntry) throws ConstraintException {
+        if(min != null && configEntry.getValue().doubleValue() < min.doubleValue()) {
+        	configEntry.setValue(min);
+        	throw new ConstraintException(configEntry.getValue() + " is smaller than " + min, false);
 		}
-        if(max != null && configEntry.value.doubleValue() > max.doubleValue()) {
-        	configEntry.value = min;
-        	throw new ConstraintException(configEntry.value + " is greater than" + max, false);
+        if(max != null && configEntry.getValue().doubleValue() > max.doubleValue()) {
+        	configEntry.setValue(max);
+        	throw new ConstraintException(configEntry.getValue() + " is greater than" + max, false);
 		}
 	}
 

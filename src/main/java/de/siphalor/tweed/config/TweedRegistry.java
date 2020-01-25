@@ -38,12 +38,16 @@ public class TweedRegistry {
 		if (configCategory != null) {
 			ConfigDataSerializer<?> configDataSerializer = null;
 			if (pojo.getClass().isAnnotationPresent(ATweedConfig.class)) {
-				configDataSerializer = SERIALIZERS.get(pojo.getClass().getAnnotation(ATweedConfig.class).serializer());
+				ATweedConfig aTweedConfig = pojo.getClass().getAnnotation(ATweedConfig.class);
+				configDataSerializer = SERIALIZERS.get(aTweedConfig.serializer());
+				configCategory.setScope(aTweedConfig.scope());
+				configCategory.setEnvironment(aTweedConfig.environment());
 			}
 			if (configDataSerializer == null) {
 				configDataSerializer = HjsonSerializer.INSTANCE;
 			}
-			ConfigFile configFile = registerConfigFile(fileName, configDataSerializer);
+			ConfigFile configFile = new ConfigFile(fileName, configDataSerializer, configCategory);
+			configFiles.add(configFile);
 			return configFile;
 		}
 		return null;
@@ -59,7 +63,7 @@ public class TweedRegistry {
 	}
 
 	public static void registerDataSerializer(String id, ConfigDataSerializer<?> configDataSerializer) {
-			SERIALIZERS.put(id, configDataSerializer);
+		SERIALIZERS.put(id, configDataSerializer);
 	}
 
 	static {

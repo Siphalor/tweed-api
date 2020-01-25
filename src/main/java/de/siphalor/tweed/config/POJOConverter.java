@@ -6,6 +6,7 @@ import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
 import de.siphalor.tweed.config.entry.ValueEntry;
 import de.siphalor.tweed.config.value.ConfigValue;
+import de.siphalor.tweed.config.value.ReferenceConfigValue;
 import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -49,7 +50,19 @@ public class POJOConverter {
 		if (field.isAnnotationPresent(AConfigTransitive.class)) {
 			try {
 				Object o = field.get(pojo);
-				Arrays.stream(o.getClass().getFields()).forEach(field1 -> addToCategory(configCategory, pojo, field1));
+				if (o == null) {
+					try {
+						Constructor<?> constructor = field.getType().getConstructor();
+						o = constructor.newInstance();
+						field.set(pojo, o);
+					} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+						e.printStackTrace();
+						return;
+					}
+				}
+				Object finalO = o;
+
+				Arrays.stream(o.getClass().getDeclaredFields()).forEach(field1 -> addToCategory(configCategory, finalO, field1));
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
@@ -65,15 +78,25 @@ public class POJOConverter {
 	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field) {
 		try {
 			Object entryObject = field.get(pojo);
-			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject);
+			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getType());
 			if (valueSerializer == null) {
-				 valueSerializer = SERIALIZER_MAP.get(entryObject.getClass());
+				 valueSerializer = SERIALIZER_MAP.get(field.getType());
 			}
 			AbstractBasicEntry basicEntry;
 			if (valueSerializer == null) {
-				 basicEntry = toCategory(entryObject);
+				if (entryObject == null) {
+					try {
+						Constructor<?> constructor = field.getType().getConstructor();
+						entryObject = constructor.newInstance();
+						field.set(pojo, entryObject);
+					} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+						e.printStackTrace();
+						return null;
+					}
+				}
+				basicEntry = toCategory(entryObject);
 			} else {
-				basicEntry = new ValueEntry(entryObject, valueSerializer);
+				basicEntry = new ValueEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
 			}
 
 			String name = field.getName();

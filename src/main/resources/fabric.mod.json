@@ -21,13 +21,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"client": [
-			"de.siphalor.tweed.client.ClientCore"
+			"de.siphalor.tweed.client.TweedClient"
 		],
 		"main": [
 			"de.siphalor.tweed.Tweed"
 		],
 		"server": [
-			"de.siphalor.tweed.server.ServerCore"
+			"de.siphalor.tweed.server.TweedServer"
 		]
 	},
 	"mixins": [

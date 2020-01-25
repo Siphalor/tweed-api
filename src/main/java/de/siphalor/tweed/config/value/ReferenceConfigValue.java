@@ -6,7 +6,7 @@ public class ReferenceConfigValue<V> extends ConfigValue<V> {
 	Field field;
 	Object object;
 
-	private ReferenceConfigValue(Object object, Field field) {
+	public ReferenceConfigValue(Object object, Field field) {
 		this.object = object;
 		this.field = field;
 	}
