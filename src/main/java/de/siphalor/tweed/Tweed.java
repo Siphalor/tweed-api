@@ -112,6 +112,8 @@ public class Tweed implements ModInitializer {
 		@AConfigTransitive
 		Trans trans;
 
+		ConfigScope scope = ConfigScope.DEFAULT;
+
 		public static class A {
 			String name = "Siphalor";
 		}

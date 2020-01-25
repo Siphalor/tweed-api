@@ -1,28 +1,30 @@
 package de.siphalor.tweed.config.entry;
 
 import de.siphalor.tweed.config.*;
+import de.siphalor.tweed.config.value.ConfigValue;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
 /**
- * An entry to register at a {@link de.siphalor.tweed.config.ConfigFile} or {@link ConfigCategory}.
- * @param <V> the type which is used for maintaining the value of the entry. Use {@link AbstractValueEntry#value} to access
- * @param <T> the derived class (to support chain calls)
- * @see BooleanEntry
- * @see FloatEntry
- * @see IntEntry
- * @see MappedEnumEntry
- * @see StringEntry
+ * This base class and all derived classes are highly deprecated - Use {@link ValueEntry} and the {@link de.siphalor.tweed.config.value.serializer.ConfigValueSerializer}s instead.
  */
 @Deprecated
 public abstract class AbstractValueEntry<V, T> extends ValueEntry<V, T> {
+	/**
+	 * Dummy member for backwards compatibility.
+	 */
+	public V value;
+
 	public AbstractValueEntry(V defaultValue) {
-		super(defaultValue);
+		super((V) null, null);
+		this.value = defaultValue;
+		this.defaultValue = defaultValue;
+		this.currentValue = new DummyValue();
 	}
 
 	/**
-	 * Abstract method to read in a value and <b>return it</b>. <i>Do not change {@link AbstractValueEntry#value}.</i>
+	 * Abstract method to read in a value and <b>return it</b>. <i>Do not change {@link AbstractValueEntry#currentValue}.</i>
 	 * @param dataValue The data to read from.
 	 * @return The read and converted value;
 	 */
@@ -30,15 +32,15 @@ public abstract class AbstractValueEntry<V, T> extends ValueEntry<V, T> {
 
 	@Override
 	public void read(DataValue<?> dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
-		value.set(readValue(dataValue));
+		currentValue.set(readValue(dataValue));
 		if(origin == ConfigOrigin.MAIN) {
-			mainConfigValue = value.get();
+			mainConfigValue = currentValue.get();
 		}
 		onReload();
 	}
 
 	/**
-	 * Abstract method to read in a value and <b>return it</b>. <i>Do not change {@link AbstractValueEntry#value}.</i>
+	 * Abstract method to read in a value and <b>return it</b>. <i>Do not change {@link AbstractValueEntry#currentValue}.</i>
 	 * @param buf The buffer to read from.
 	 * @return The read and converted value;
 	 */
@@ -51,7 +53,7 @@ public abstract class AbstractValueEntry<V, T> extends ValueEntry<V, T> {
 				if(origin == ConfigOrigin.MAIN)
 					mainConfigValue = readValue(buf);
 				else
-					value.set(readValue(buf));
+					currentValue.set(readValue(buf));
 				onReload();
 			}
 			else if(origin == ConfigOrigin.MAIN)
@@ -82,6 +84,18 @@ public abstract class AbstractValueEntry<V, T> extends ValueEntry<V, T> {
 		if(origin == ConfigOrigin.MAIN)
 			writeValue(mainConfigValue, buf);
 		else
-			writeValue(value.get(), buf);
+			writeValue(currentValue.get(), buf);
+	}
+
+	private class DummyValue extends ConfigValue<V> {
+		@Override
+		public V get() {
+			return value;
+		}
+
+		@Override
+		public void set(V v) {
+			value = v;
+		}
 	}
 }

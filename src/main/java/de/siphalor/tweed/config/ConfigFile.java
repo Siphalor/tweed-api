@@ -161,12 +161,6 @@ public class ConfigFile {
         rootCategory.reset(environment, scope);
 	}
 
-	/**
-     * @deprecated Is now done automatically
-	 */
-	@Deprecated
-	public void triggerInitialLoad() {}
-
 	public void fixConfig(DataObject<?> dataObject) {
 		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
 			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Tweed.PATH_DELIMITER);

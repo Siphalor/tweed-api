@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 /**
  * An entry to register at a {@link ConfigFile} or {@link ConfigCategory}.
- * @param <V> the type which is used for maintaining the value of the entry. Use {@link ValueEntry#value} to access
+ * @param <V> the type which is used for maintaining the value of the entry. Use {@link ValueEntry#currentValue} to access
  * @param <T> the derived class (to support chain calls)
  */
 @SuppressWarnings("unchecked")
@@ -27,9 +27,9 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 	private ConfigValueSerializer<V> valueSerializer;
 
 	/**
-	 * The value of this entry
+	 * The value of this entry. Will be renamed when backwards compatibility is dropped.
 	 */
-	protected ConfigValue<V> value;
+	ConfigValue<V> currentValue;
 
 	protected V mainConfigValue;
 
@@ -53,8 +53,8 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 
 	public ValueEntry(ConfigValue<V> configValue, ConfigValueSerializer<V> valueSerializer) {
 		this.valueSerializer = valueSerializer;
-		this.value = configValue;
-		this.defaultValue = value.get();
+		this.currentValue = configValue;
+		this.defaultValue = currentValue.get();
 		this.mainConfigValue = defaultValue;
 		this.comment = "";
 		this.environment = ConfigEnvironment.UNIVERSAL;
@@ -63,11 +63,11 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 	}
 
 	public V getValue() {
-		return value.get();
+		return currentValue.get();
 	}
 
 	public void setValue(V value) {
-		this.value.set(value);
+		this.currentValue.set(value);
 	}
 
 	/**
@@ -91,13 +91,13 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 	}
 
 	public void setBothValues(V value) {
-		this.value.set(value);
+		this.currentValue.set(value);
 		this.mainConfigValue = value;
 	}
 
 	@Override
 	public void reset(ConfigEnvironment environment, ConfigScope scope) {
-		value.set(defaultValue);
+		currentValue.set(defaultValue);
 		mainConfigValue = defaultValue;
 	}
 
@@ -171,9 +171,9 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 
 	@Override
 	public void read(DataValue<?> dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
-		value.set(valueSerializer.read(dataValue));
+		currentValue.set(valueSerializer.read(dataValue));
 		if(origin == ConfigOrigin.MAIN) {
-			mainConfigValue = value.get();
+			mainConfigValue = currentValue.get();
 		}
 		onReload();
 	}
@@ -185,7 +185,7 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 				if(origin == ConfigOrigin.MAIN)
 					mainConfigValue = valueSerializer.read(buf);
 				else
-					value.set(valueSerializer.read(buf));
+					currentValue.set(valueSerializer.read(buf));
 				onReload();
 			}
 			else if(origin == ConfigOrigin.MAIN)
@@ -206,7 +206,7 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 		if(origin == ConfigOrigin.MAIN)
 			valueSerializer.write(buf, mainConfigValue);
 		else
-			valueSerializer.write(buf, value.get());
+			valueSerializer.write(buf, currentValue.get());
 	}
 
 	public T setReloadListener(Consumer<V> listener) {
@@ -216,6 +216,6 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 
     public void onReload() {
 		if(reloadListener != null)
-			reloadListener.accept(value.get());
+			reloadListener.accept(currentValue.get());
 	}
 }
