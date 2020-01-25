@@ -5,7 +5,8 @@ import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
 @SuppressWarnings("unchecked")
-public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntry> {
+@Deprecated
+public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntry<?>> {
 	/**
 	 * Constructs a new entry
 	 *

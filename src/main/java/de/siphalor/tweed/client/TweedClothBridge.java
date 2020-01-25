@@ -77,12 +77,12 @@ public class TweedClothBridge {
 				ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, buffer);
                 entry.awaitSync = true;
 			}
-            ClientCore.scheduledClothBridge = this;
+            TweedClient.scheduledClothBridge = this;
 
 			return new NoticeScreen(
 				() -> {
 					MinecraftClient.getInstance().openScreen(parentScreen);
-                    ClientCore.scheduledClothBridge = null;
+                    TweedClient.scheduledClothBridge = null;
 				},
 				new TranslatableText("tweed.gui.screen.syncFromServer"),
 				new TranslatableText("tweed.gui.screen.syncFromServer.note")
@@ -102,7 +102,7 @@ public class TweedClothBridge {
 			}
 		}
         if(Arrays.stream(configFiles).noneMatch(entry -> entry.awaitSync)) {
-        	ClientCore.scheduledClothBridge = null;
+        	TweedClient.scheduledClothBridge = null;
 			MinecraftClient.getInstance().openScreen(buildScreen());
 		}
 	}

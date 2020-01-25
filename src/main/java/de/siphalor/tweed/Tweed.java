@@ -1,6 +1,6 @@
 package de.siphalor.tweed;
 
-import de.siphalor.tweed.client.ClientCore;
+import de.siphalor.tweed.client.TweedClient;
 import de.siphalor.tweed.config.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -37,7 +37,7 @@ public class Tweed implements ModInitializer {
 	}
 
 	public static MinecraftServer getMinecraftServer() {
-        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? ClientCore.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
+        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? TweedClient.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
 	}
 
 	@Override

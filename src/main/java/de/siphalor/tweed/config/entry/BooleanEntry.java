@@ -4,6 +4,7 @@ import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
+@Deprecated
 public class BooleanEntry extends AbstractValueEntry<Boolean, BooleanEntry> {
 	public BooleanEntry(Boolean defaultValue) {
 		super(defaultValue);

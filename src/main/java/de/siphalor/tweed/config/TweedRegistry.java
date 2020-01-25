@@ -21,10 +21,15 @@ public class TweedRegistry {
 	 * @param dataSerializer a serializer for this config file
 	 * @return the new {@link ConfigFile}
 	 */
-	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer dataSerializer) {
+	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer<?> dataSerializer) {
         ConfigFile configFile = new ConfigFile(fileName, dataSerializer);
         configFiles.add(configFile);
         return configFile;
+	}
+
+	public static ConfigFile registerPOJO(Object pojo) {
+
+		return null;
 	}
 
 	/**

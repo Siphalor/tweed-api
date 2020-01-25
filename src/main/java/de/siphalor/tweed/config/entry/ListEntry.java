@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+@Deprecated
 public class ListEntry<T extends ConfigEntry> extends AbstractBasicEntry<ListEntry<T>> {
 	protected Supplier<T> entrySupplier;
 

@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 
-	protected Map<String, ConfigEntry> entries = new LinkedHashMap<>();
+	protected Map<String, ConfigEntry<?>> entries = new LinkedHashMap<>();
 	protected Identifier backgroundTexture;
 
 	/**
@@ -26,7 +26,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	 * @param configEntry the entry to add
 	 * @see ConfigFile#register(String, ConfigEntry)
 	 */
-	public <T extends ConfigEntry> T register(String name, T configEntry) {
+	public <T extends ConfigEntry<?>> T register(String name, T configEntry) {
 		entries.put(name, configEntry);
 		if(configEntry.getEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
 		if(configEntry.getScope() == ConfigScope.DEFAULT) configEntry.setScope(scope);
@@ -71,7 +71,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	@Override
 	public ConfigEnvironment getEnvironment() {
 		if(entries.isEmpty()) return environment;
-		Iterator<ConfigEntry> iterator = entries.values().iterator();
+		Iterator<ConfigEntry<?>> iterator = entries.values().iterator();
 		ConfigEnvironment environment = iterator.next().getEnvironment();
 		while(iterator.hasNext()) {
 			ConfigEnvironment itEnvironment = iterator.next().getEnvironment();
@@ -99,9 +99,9 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		if(!dataValue.isObject()) {
 			throw new ConfigReadException("The entry should be an object (category)");
 		}
-		DataObject dataObject = dataValue.asObject();
+		DataObject<?> dataObject = dataValue.asObject();
 		entryStream(environment, scope).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
-			DataValue value = dataObject.get(entry.getKey());
+			DataValue<?> value = dataObject.get(entry.getKey());
 			try {
 				entry.getValue().applyPreConstraints(value);
 			} catch (ConstraintException e) {
@@ -129,7 +129,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	@Override
 	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		while(buf.readBoolean()) {
-			ConfigEntry entry = entries.get(buf.readString(32767));
+			ConfigEntry<?> entry = entries.get(buf.readString(32767));
 			if(entry != null)
 				entry.read(buf, environment, scope, origin);
 			else
@@ -162,21 +162,21 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		entryStream(environment, scope).forEach(entry -> entry.getValue().write(category, entry.getKey(), environment, scope));
 	}
 
-	public Stream<Map.Entry<String, ConfigEntry>> entryStream() {
+	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream() {
 		return entries.entrySet().stream();
 	}
 
 	@Deprecated
-	public Stream<Map.Entry<String, ConfigEntry>> sortedEntryStream() {
+	public Stream<Map.Entry<String, ConfigEntry<?>>> sortedEntryStream() {
 		return entryStream().sorted((o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey()));
 	}
 
-	public Stream<Map.Entry<String, ConfigEntry>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
+	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
 		return entryStream().filter(entry -> environment.contains(entry.getValue().getEnvironment()) && scope.triggers(entry.getValue().getScope()));
 	}
 
 	@Deprecated
-	public Stream<Map.Entry<String, ConfigEntry>> sortedEntryStream(ConfigEnvironment environment, ConfigScope scope) {
+	public Stream<Map.Entry<String, ConfigEntry<?>>> sortedEntryStream(ConfigEnvironment environment, ConfigScope scope) {
 		return entryStream(environment, scope).sorted((o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey()));
 	}
 

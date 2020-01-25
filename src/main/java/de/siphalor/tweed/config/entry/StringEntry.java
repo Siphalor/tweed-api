@@ -4,6 +4,7 @@ import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
+@Deprecated
 public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	public StringEntry(String defaultValue) {
 		super(defaultValue);

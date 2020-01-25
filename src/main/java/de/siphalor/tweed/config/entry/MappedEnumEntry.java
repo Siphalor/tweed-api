@@ -5,6 +5,7 @@ import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
+@Deprecated
 public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, MappedEnumEntry> {
 	protected HashBiMap<String, T> stringToEnum;
 
@@ -33,10 +34,6 @@ public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, Mappe
 	@Override
 	public T readValue(PacketByteBuf buf) {
 		return getValue(buf.readString(32767));
-	}
-
-	public void readValue(String key) {
-		value = getValue(key);
 	}
 
 	public T getValue(String string) {

@@ -14,7 +14,7 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 
-public class ClientCore implements ClientModInitializer {
+public class TweedClient implements ClientModInitializer {
 	public static TweedClothBridge scheduledClothBridge;
 
 	public static MinecraftServer getMinecraftServer() {
