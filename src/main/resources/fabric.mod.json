@@ -28,6 +28,11 @@
 		],
 		"server": [
 			"de.siphalor.tweed.server.TweedServer"
+		],
+		"modmenu": [
+			{
+				"value": "de.siphalor.tweed.MMT"
+			}
 		]
 	},
 	"mixins": [

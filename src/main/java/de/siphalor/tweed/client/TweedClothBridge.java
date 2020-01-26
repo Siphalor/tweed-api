@@ -35,7 +35,6 @@ public class TweedClothBridge {
 	protected static HashMap<Class, BiFunction<ConfigEntry, String, AbstractConfigListEntry>> tweedEntryToClothEntry = new HashMap<>();
 
 	protected ConfigFileEntry[] configFiles;
-	boolean openingScheduled = false;
 	protected String id;
 	protected String screenId;
 	protected ConfigBuilder screenBuilder;

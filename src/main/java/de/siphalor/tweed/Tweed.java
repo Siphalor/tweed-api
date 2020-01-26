@@ -1,6 +1,7 @@
 package de.siphalor.tweed;
 
 import de.siphalor.tweed.client.TweedClient;
+import de.siphalor.tweed.client.TweedClothBridge;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.annotated.AConfigEntry;
 import de.siphalor.tweed.config.annotated.AConfigExclude;
@@ -33,6 +34,9 @@ public class Tweed implements ModInitializer {
 
 	public static final char PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
+
+	public static ConfigFile configFile;
+	public static TweedClothBridge tweedClothBridge;
 
 	public static MinecraftServer getMinecraftServer() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? TweedClient.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
@@ -91,10 +95,11 @@ public class Tweed implements ModInitializer {
 		}));
 
 		Test test = new Test();
-		TweedRegistry.registerPOJO("hey", test);
+		configFile = TweedRegistry.registerPOJO("hey", test);
+		tweedClothBridge = new TweedClothBridge(configFile);
 	}
 
-	@ATweedConfig(serializer = "hjson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL)
+	@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL)
 	public static class Test {
 		@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
 		Boolean aBoolean = true;
