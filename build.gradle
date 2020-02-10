@@ -32,14 +32,14 @@ dependencies {
 	modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modCompile "net.fabricmc.fabric-api:fabric-networking-v0:+"
-	include "net.fabricmc.fabric-api:fabric-networking-v0:+"
-	modCompile "net.fabricmc.fabric-api:fabric-api-base:+"
-	include "net.fabricmc.fabric-api:fabric-api-base:+"
-	modCompile "net.fabricmc.fabric-api:fabric-resource-loader-v0:+"
-	include "net.fabricmc.fabric-api:fabric-resource-loader-v0:+"
-	modCompile "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:+"
-	include "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:+"
+	modCompile "net.fabricmc.fabric-api:fabric-networking-v0:0.1.8+9421522dbf"
+	include "net.fabricmc.fabric-api:fabric-networking-v0:0.1.8+9421522dbf"
+	modCompile "net.fabricmc.fabric-api:fabric-api-base:0.1.2+b7f9825dbf"
+	include "net.fabricmc.fabric-api:fabric-api-base:0.1.2+b7f9825dbf"
+	modCompile "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.1.10+06c939b3bf"
+	include "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.1.10+06c939b3bf"
+	modCompile "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:0.1.2+b7f9825dbf"
+	include "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:+0.1.2+b7f9825dbf"
 
 	// hjson
 	//compile 'org.hjson:hjson:3.0.0'
