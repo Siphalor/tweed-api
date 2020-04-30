@@ -31,8 +31,14 @@
 		],
 		"modmenu": [
 			{
-				"value": "de.siphalor.tweed.MMT"
+				"value": "de.siphalor.tweed.tailor.ModMenuEntry"
 			}
+		],
+		"tweed:config": [
+			"de.siphalor.tweed.Tweed\$Test"
+		],
+		"tweed:client_init": [
+			"de.siphalor.tweed.client.TweedClient"
 		]
 	},
 	"mixins": [

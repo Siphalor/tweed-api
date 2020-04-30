@@ -4,6 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AConfigListener {
-	String value() default "";
+public @interface AConfigConstraint {
+	Class<?> value();
+	String param() default "";
 }

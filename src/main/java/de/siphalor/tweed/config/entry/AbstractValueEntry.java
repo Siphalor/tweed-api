@@ -2,22 +2,28 @@ package de.siphalor.tweed.config.entry;
 
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.value.ConfigValue;
+import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 /**
- * This base class and all derived classes are highly deprecated - Use {@link ValueEntry} and the {@link de.siphalor.tweed.config.value.serializer.ConfigValueSerializer}s instead.
+ * This base class and all derived classes are highly deprecated - Use {@link ValueConfigEntry} and the {@link de.siphalor.tweed.config.value.serializer.ConfigValueSerializer}s instead.
  */
 @Deprecated
-public abstract class AbstractValueEntry<V, T> extends ValueEntry<V, T> {
+public abstract class AbstractValueEntry<V, T> extends ValueConfigEntry<V, T> {
 	/**
 	 * Dummy member for backwards compatibility.
 	 */
 	public V value;
 
+	@SuppressWarnings("unchecked")
 	public AbstractValueEntry(V defaultValue) {
-		super((V) null, null);
+		this(defaultValue, (ConfigValueSerializer<V>) ConfigValue.serializer(defaultValue, defaultValue.getClass()));
+	}
+
+	public AbstractValueEntry(V defaultValue, ConfigValueSerializer<V> serializer) {
+		super((V) null, serializer);
 		this.value = defaultValue;
 		this.defaultValue = defaultValue;
 		this.currentValue = new DummyValue();

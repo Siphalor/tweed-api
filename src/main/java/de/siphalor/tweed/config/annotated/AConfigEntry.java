@@ -15,5 +15,5 @@ public @interface AConfigEntry {
 	String comment() default "";
 	ConfigScope scope() default ConfigScope.DEFAULT;
 	ConfigEnvironment environment() default ConfigEnvironment.DEFAULT;
-	Class<?>[] constraints() default {};
+	AConfigConstraint[] constraints() default {};
 }

@@ -1,8 +1,9 @@
 package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.config.value.ConfigValue;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 @SuppressWarnings("unchecked")
 @Deprecated
@@ -13,7 +14,7 @@ public class EnumEntry<E extends Enum<?>> extends AbstractValueEntry<E, EnumEntr
 	 * @param defaultValue The default value to use
 	 */
 	public EnumEntry(E defaultValue) {
-		super(defaultValue);
+		super(defaultValue, ConfigValue.enumSerializer(defaultValue));
 	}
 
 	@Override

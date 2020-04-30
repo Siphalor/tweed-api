@@ -37,15 +37,19 @@ public abstract class ConfigValue<V> {
 		return STRING_SERIALIZER;
 	}
 
+	public static ConfigValueSerializer<?> serializer(Object value) {
+		return serializer(value, value.getClass());
+	}
+
 	public static ConfigValueSerializer<?> serializer(Object value, Class<?> clazz) {
 		ConfigValueSerializer<?> serializer = serializerByClass(clazz);
 		if (serializer == null) {
-			return serializer(value);
+			return specialSerializer(value);
 		}
 		return serializer;
 	}
 
-	public static ConfigValueSerializer<?> serializer(Object defaultValue) {
+	public static ConfigValueSerializer<?> specialSerializer(Object defaultValue) {
 		if (defaultValue instanceof Enum) {
 			return enumSerializer((Enum<?>) defaultValue);
 		}

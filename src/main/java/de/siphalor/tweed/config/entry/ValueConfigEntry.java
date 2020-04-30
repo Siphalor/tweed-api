@@ -1,6 +1,5 @@
 package de.siphalor.tweed.config.entry;
 
-import com.google.common.collect.Iterators;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.Constraint;
 import de.siphalor.tweed.config.constraints.ConstraintException;
@@ -9,21 +8,22 @@ import de.siphalor.tweed.config.value.SimpleConfigValue;
 import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An entry to register at a {@link ConfigFile} or {@link ConfigCategory}.
- * @param <V> the type which is used for maintaining the value of the entry. Use {@link ValueEntry#currentValue} to access
+ * @param <V> the type which is used for maintaining the value of the entry. Use {@link ValueConfigEntry#currentValue} to access
  * @param <T> the derived class (to support chain calls)
  */
 @SuppressWarnings("unchecked")
-public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
+public class ValueConfigEntry<V, T> extends AbstractBasicEntry<T> {
 	private ConfigValueSerializer<V> valueSerializer;
 
 	/**
@@ -34,8 +34,7 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 	protected V mainConfigValue;
 
 	protected V defaultValue;
-	protected Queue<Constraint<V>> preConstraints;
-	protected Queue<Constraint<V>> postConstraints;
+	protected Queue<Constraint<V>> constraints;
 
 	protected Consumer<V> reloadListener;
 
@@ -43,23 +42,22 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 	 * Constructs a new entry
 	 * @param defaultValue The default value to use
 	 */
-	public ValueEntry(V defaultValue) {
+	public ValueConfigEntry(V defaultValue) {
 		this(new SimpleConfigValue<>(defaultValue), (ConfigValueSerializer<V>) ConfigValue.serializer(defaultValue, defaultValue.getClass()));
 	}
 
-	public ValueEntry(V defaultValue, ConfigValueSerializer<V> configValueSerializer) {
+	public ValueConfigEntry(V defaultValue, ConfigValueSerializer<V> configValueSerializer) {
 		this(new SimpleConfigValue<>(defaultValue), configValueSerializer);
 	}
 
-	public ValueEntry(ConfigValue<V> configValue, ConfigValueSerializer<V> valueSerializer) {
+	public ValueConfigEntry(ConfigValue<V> configValue, ConfigValueSerializer<V> valueSerializer) {
 		this.valueSerializer = valueSerializer;
 		this.currentValue = configValue;
 		this.defaultValue = currentValue.get();
 		this.mainConfigValue = defaultValue;
 		this.comment = "";
 		this.environment = ConfigEnvironment.UNIVERSAL;
-		this.preConstraints = new ConcurrentLinkedQueue<>();
-		this.postConstraints = new ConcurrentLinkedQueue<>();
+		this.constraints = new ConcurrentLinkedQueue<>();
 	}
 
 	public V getValue() {
@@ -82,17 +80,22 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 		return defaultValue;
 	}
 
-	public final V getMainConfigValue() {
-		return mainConfigValue;
-	}
-
 	public void setMainConfigValue(V mainConfigValue) {
 		this.mainConfigValue = mainConfigValue;
 	}
 
+	public final V getMainConfigValue() {
+		return mainConfigValue;
+	}
+
+	@Deprecated
 	public void setBothValues(V value) {
 		this.currentValue.set(value);
 		this.mainConfigValue = value;
+	}
+
+	public Class<V> getType() {
+		return valueSerializer.getType();
 	}
 
 	@Override
@@ -107,38 +110,23 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 	 * @return this entry for chain calls
 	 */
 	public final T addConstraint(Constraint<V> constraint) {
-    	if(constraint.getConstraintType() == Constraint.Type.PRE)
-    		preConstraints.add(constraint);
-    	else
-    		postConstraints.add(constraint);
+        constraints.add(constraint);
     	return (T) this;
     }
 
-	public Queue<Constraint<V>> getPreConstraints() {
-		return preConstraints;
-	}
-
-	public Queue<Constraint<V>> getPostConstraints() {
-		return postConstraints;
+	public Queue<Constraint<V>> getConstraints() {
+		return constraints;
 	}
 
 	@Override
-	public final void applyPreConstraints(DataValue<?> dataValue) throws ConstraintException {
-		for(Constraint<V> constraint : preConstraints) {
-			try {
-				constraint.apply(dataValue, this);
-			} catch (ConstraintException e) {
-				if(e.fatal)
-					throw e;
-			}
-		}
+	public final void applyConstraints() throws ConstraintException {
+		applyConstraints(getValue());
 	}
 
-	@Override
-    public final void applyPostConstraints(DataValue<?> dataValue) throws ConstraintException {
-		for(Constraint<V> constraint : postConstraints) {
+	public final void applyConstraints(V value) throws ConstraintException {
+		for(Constraint<V> constraint : constraints) {
 			try {
-				constraint.apply(dataValue, this);
+				constraint.apply(value, this);
 			} catch (ConstraintException e) {
 				if(e.fatal)
 					throw e;
@@ -152,20 +140,17 @@ public class ValueEntry<V, T> extends AbstractBasicEntry<T> {
 		if(comment.length() > 0)
 			description.append(getComment()).append(System.lineSeparator());
 		description.append("default: ").append(valueSerializer != null ? valueSerializer.asString(defaultValue) : defaultValue.toString());
-		ArrayList<String> constraintDescriptions = new ArrayList<>();
-		for(Iterator<Constraint<V>> it = Iterators.concat(preConstraints.iterator(), postConstraints.iterator()); it.hasNext(); ) {
-			Constraint<V> constraint = it.next();
+
+		String constraintDesc = constraints.stream().flatMap(constraint -> {
 			String desc = constraint.getDescription();
-			if(desc.isEmpty())
-				continue;
-			constraintDescriptions.add(desc.replace(System.lineSeparator(), System.lineSeparator() + "\t"));
+			if (desc.isEmpty())
+				return Stream.empty();
+			return Arrays.stream(desc.split("\n"));
+		}).collect(Collectors.joining(System.lineSeparator() + "\t"));
+		if (!constraintDesc.isEmpty()) {
+			description.append('\n').append(constraintDesc);
 		}
-		if(constraintDescriptions.size() > 0) {
-			description.append(System.lineSeparator()).append("constraints:");
-			for(String desc : constraintDescriptions) {
-				description.append(System.lineSeparator()).append(desc);
-			}
-		}
+
 		return description.toString();
 	}
 

@@ -1,14 +1,15 @@
 package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.config.value.ConfigValue;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 @Deprecated
 public class IntEntry extends AbstractValueEntry<Integer, IntEntry> {
 
 	public IntEntry(Integer defaultValue) {
-		super(defaultValue);
+		super(defaultValue, ConfigValue.integerSerializer());
 	}
 
 	@Override

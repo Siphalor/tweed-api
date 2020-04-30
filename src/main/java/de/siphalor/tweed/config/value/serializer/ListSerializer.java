@@ -1,9 +1,10 @@
 package de.siphalor.tweed.config.value.serializer;
 
+import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -18,7 +19,7 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
-	public L read(DataValue<?> data) {
+	public L read(DataValue<?> data) throws ConfigReadException {
 		L list = listSupplier.get();
 		if (data.isList()) {
 			DataList<?> dataList = data.asList();
@@ -63,5 +64,10 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 			stringBuilder.append(valueSerializer.asString(element)).append(", ");
 		}
 		return stringBuilder.append(" ]").toString();
+	}
+
+	@Override
+	public Class<L> getType() {
+		return (Class<L>) listSupplier.get().getClass();
 	}
 }

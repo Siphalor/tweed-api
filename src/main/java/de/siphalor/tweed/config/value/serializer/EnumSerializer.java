@@ -2,7 +2,7 @@ package de.siphalor.tweed.config.value.serializer;
 
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 import java.util.Locale;
 
@@ -35,7 +35,7 @@ public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> 
 	@SuppressWarnings("unchecked")
 	@Override
 	public E read(PacketByteBuf packetByteBuf) {
-		String str = packetByteBuf.readString();
+		String str = packetByteBuf.readString(32767);
 		for (E value : (E[]) fallback.getClass().getEnumConstants()) {
 			if (value.name().toLowerCase(Locale.ENGLISH).equals(str)) {
 				return value;
@@ -52,5 +52,10 @@ public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> 
 	@Override
 	public String asString(E value) {
 		return value.name();
+	}
+
+	@Override
+	public Class<E> getType() {
+		return (Class<E>) fallback.getClass();
 	}
 }

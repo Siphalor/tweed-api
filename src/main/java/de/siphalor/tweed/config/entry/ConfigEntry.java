@@ -7,8 +7,11 @@ import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -94,25 +97,13 @@ public interface ConfigEntry<T> {
 	 */
 	String getDescription();
 
-	default Optional<String[]> getClothyDescription() {
-		return Optional.of(getDescription().split("[\n\r]\r?"));
+	default Optional<Text[]> getClothyDescription() {
+		return Optional.of(Arrays.stream(getDescription().split("[\n\r]\r?")).map(LiteralText::new).toArray(Text[]::new));
 	}
-
-	default String getCleanedDescription() {
-		return getDescription().replace(System.lineSeparator(), "\n").replace("\t", "   ");
-	}
-
-	/**
-	 * Method for handling possible constraints before reading in the value.
-	 * @param dataValue the given value
-	 * @throws ConstraintException an exception
-	 */
-	default void applyPreConstraints(DataValue<?> dataValue) throws ConstraintException {}
 
 	/**
 	 * Method for handling possible constraints after reading in the value.
-	 * @param dataValue the give value
 	 * @throws ConstraintException an exception
 	 */
-	default void applyPostConstraints(DataValue<?> dataValue) throws ConstraintException {}
+	default void applyConstraints() throws ConstraintException {}
 }

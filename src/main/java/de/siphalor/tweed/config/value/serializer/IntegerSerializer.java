@@ -2,7 +2,7 @@ package de.siphalor.tweed.config.value.serializer;
 
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 public class IntegerSerializer extends ConfigValueSerializer<Integer> {
 	@Override
@@ -30,5 +30,10 @@ public class IntegerSerializer extends ConfigValueSerializer<Integer> {
 	@Override
 	public String asString(Integer value) {
 		return value.toString();
+	}
+
+	@Override
+	public Class<Integer> getType() {
+		return Integer.class;
 	}
 }

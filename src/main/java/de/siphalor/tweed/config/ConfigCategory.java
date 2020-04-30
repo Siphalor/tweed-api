@@ -1,14 +1,13 @@
 package de.siphalor.tweed.config;
 
 import de.siphalor.tweed.Tweed;
-import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.PacketByteBuf;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -103,14 +102,6 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		entryStream(environment, scope).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
 			DataValue<?> value = dataObject.get(entry.getKey());
 			try {
-				entry.getValue().applyPreConstraints(value);
-			} catch (ConstraintException e) {
-				Tweed.LOGGER.error("Error reading " + entry.getKey() + " in pre-constraints:");
-				e.printStackTrace();
-				if(e.fatal)
-					return;
-			}
-			try {
 				entry.getValue().read(value, environment, scope, origin);
 			} catch (ConfigReadException e) {
 				Tweed.LOGGER.error("Error reading " + entry.getKey() + ":");
@@ -118,7 +109,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 				return;
 			}
 			try {
-				entry.getValue().applyPostConstraints(value);
+				entry.getValue().applyConstraints();
 			} catch (ConfigReadException e) {
                 Tweed.LOGGER.error("Error reading " + entry.getKey() + " in post-constraints:");
                 e.printStackTrace();

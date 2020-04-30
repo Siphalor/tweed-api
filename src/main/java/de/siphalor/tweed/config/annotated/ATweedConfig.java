@@ -13,6 +13,10 @@ import java.lang.annotation.Target;
 public @interface ATweedConfig {
 	String serializer() default "hjson";
 
+	String file() default "";
+
 	ConfigScope scope() default ConfigScope.DEFAULT;
 	ConfigEnvironment environment() default ConfigEnvironment.DEFAULT;
+
+	String[] tailors() default {};
 }

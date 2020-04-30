@@ -1,16 +1,17 @@
 package de.siphalor.tweed.config.entry;
 
 import com.google.common.collect.HashBiMap;
+import de.siphalor.tweed.config.value.ConfigValue;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 @Deprecated
 public class MappedEnumEntry<T extends Enum> extends AbstractValueEntry<T, MappedEnumEntry> {
 	protected HashBiMap<String, T> stringToEnum;
 
 	public MappedEnumEntry(T defaultValue) {
-		super(defaultValue);
+		super(defaultValue, ConfigValue.enumSerializer(defaultValue));
 		stringToEnum = HashBiMap.create();
 	}
 

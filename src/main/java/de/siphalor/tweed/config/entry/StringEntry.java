@@ -1,13 +1,14 @@
 package de.siphalor.tweed.config.entry;
 
+import de.siphalor.tweed.config.value.ConfigValue;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 @Deprecated
 public class StringEntry extends AbstractValueEntry<String, StringEntry> {
 	public StringEntry(String defaultValue) {
-		super(defaultValue);
+		super(defaultValue, ConfigValue.stringSerializer());
 	}
 
 	@Override

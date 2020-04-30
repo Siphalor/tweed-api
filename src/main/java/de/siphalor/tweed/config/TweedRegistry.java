@@ -1,12 +1,19 @@
 package de.siphalor.tweed.config;
 
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.annotated.ATweedConfig;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed.data.serializer.GsonSerializer;
 import de.siphalor.tweed.data.serializer.HjsonSerializer;
 import de.siphalor.tweed.data.serializer.JanksonSerializer;
+import de.siphalor.tweed.tailor.ClothTailor;
+import de.siphalor.tweed.tailor.Tailor;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.SimpleRegistry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,8 +21,9 @@ import java.util.Map;
  * Used to register {@link ConfigFile}s.
  */
 public class TweedRegistry {
-	private static ArrayList<ConfigFile> configFiles = new ArrayList<>();
-	private static final Map<String, ConfigDataSerializer<?>> SERIALIZERS = new HashMap<>();
+	private static final ArrayList<ConfigFile> CONFIG_FILES = new ArrayList<>();
+	public static final Registry<ConfigDataSerializer<?>> SERIALIZERS = new SimpleRegistry<>();
+	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>();
 
 	public static ConfigFile registerConfigFile(String fileName) {
 		return registerConfigFile(fileName, HjsonSerializer.INSTANCE);
@@ -29,28 +37,14 @@ public class TweedRegistry {
 	 */
 	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer<?> dataSerializer) {
         ConfigFile configFile = new ConfigFile(fileName, dataSerializer);
-        configFiles.add(configFile);
+        CONFIG_FILES.add(configFile);
         return configFile;
 	}
 
-	public static ConfigFile registerPOJO(String fileName, Object pojo) {
-		ConfigCategory configCategory = POJOConverter.toCategory(pojo);
-		if (configCategory != null) {
-			ConfigDataSerializer<?> configDataSerializer = null;
-			if (pojo.getClass().isAnnotationPresent(ATweedConfig.class)) {
-				ATweedConfig aTweedConfig = pojo.getClass().getAnnotation(ATweedConfig.class);
-				configDataSerializer = SERIALIZERS.get(aTweedConfig.serializer());
-				configCategory.setScope(aTweedConfig.scope());
-				configCategory.setEnvironment(aTweedConfig.environment());
-			}
-			if (configDataSerializer == null) {
-				configDataSerializer = HjsonSerializer.INSTANCE;
-			}
-			ConfigFile configFile = new ConfigFile(fileName, configDataSerializer, configCategory);
-			configFiles.add(configFile);
-			return configFile;
-		}
-		return null;
+	public static ConfigFile registerConfigPOJO(Object pojo, String modId) throws RuntimeException {
+		ConfigFile configFile = POJOConverter.toConfigFile(pojo, modId);
+		CONFIG_FILES.add(configFile);
+		return configFile;
 	}
 
 	/**
@@ -59,16 +53,12 @@ public class TweedRegistry {
 	 * @see #registerConfigFile(String, ConfigDataSerializer)
 	 */
 	public static ArrayList<ConfigFile> getConfigFiles() {
-		return configFiles;
-	}
-
-	public static void registerDataSerializer(String id, ConfigDataSerializer<?> configDataSerializer) {
-		SERIALIZERS.put(id, configDataSerializer);
+		return CONFIG_FILES;
 	}
 
 	static {
-		SERIALIZERS.put("gson", GsonSerializer.INSTANCE);
-		SERIALIZERS.put("hjson", HjsonSerializer.INSTANCE);
-		SERIALIZERS.put("jankson", JanksonSerializer.INSTANCE);
+		Registry.register(SERIALIZERS, "gson", GsonSerializer.INSTANCE);
+		Registry.register(SERIALIZERS, "hjson", HjsonSerializer.INSTANCE);
+		Registry.register(SERIALIZERS, "jankson", JanksonSerializer.INSTANCE);
 	}
 }

@@ -2,7 +2,7 @@ package de.siphalor.tweed.config.value.serializer;
 
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 public class BooleanSerializer extends ConfigValueSerializer<Boolean> {
 	@Override
@@ -30,5 +30,10 @@ public class BooleanSerializer extends ConfigValueSerializer<Boolean> {
 	@Override
 	public String asString(Boolean value) {
 		return value.toString();
+	}
+
+	@Override
+	public Class<Boolean> getType() {
+		return Boolean.class;
 	}
 }

@@ -1,18 +1,17 @@
 package de.siphalor.tweed;
 
 import de.siphalor.tweed.client.TweedClient;
-import de.siphalor.tweed.client.TweedClothBridge;
 import de.siphalor.tweed.config.*;
-import de.siphalor.tweed.config.annotated.AConfigEntry;
-import de.siphalor.tweed.config.annotated.AConfigExclude;
-import de.siphalor.tweed.config.annotated.AConfigTransitive;
-import de.siphalor.tweed.config.annotated.ATweedConfig;
+import de.siphalor.tweed.config.annotated.*;
+import de.siphalor.tweed.config.constraints.RangeConstraint;
+import de.siphalor.tweed.tailor.ClothData;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
@@ -22,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 
 public class Tweed implements ModInitializer {
@@ -34,9 +34,6 @@ public class Tweed implements ModInitializer {
 
 	public static final char PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
-
-	public static ConfigFile configFile;
-	public static TweedClothBridge tweedClothBridge;
 
 	public static MinecraftServer getMinecraftServer() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? TweedClient.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
@@ -94,30 +91,55 @@ public class Tweed implements ModInitializer {
 			}
 		}));
 
-		Test test = new Test();
-		configFile = TweedRegistry.registerPOJO("hey", test);
-		tweedClothBridge = new TweedClothBridge(configFile);
+		Tweed.runEntryPoints();
 	}
 
-	@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL)
+	public static void runEntryPoints() {
+		FabricLoader loaderAPI = FabricLoader.getInstance();
+
+		{
+			List<TweedInitializer> initializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":init", TweedInitializer.class);
+			initializers.forEach(TweedInitializer::register);
+			initializers.forEach(TweedInitializer::init);
+		}
+
+		if (loaderAPI.getEnvironmentType() == EnvType.CLIENT) {
+			List<TweedClientInitializer> initializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":client_init", TweedClientInitializer.class);
+			initializers.forEach(TweedClientInitializer::registerClient);
+		}
+
+		List<EntrypointContainer<Object>> entrypoints = loaderAPI.getEntrypointContainers(Tweed.MOD_ID + ":config", Object.class);
+
+		for (EntrypointContainer<Object> entrypoint : entrypoints) {
+			try {
+				TweedRegistry.registerConfigPOJO(entrypoint.getEntrypoint(), entrypoint.getProvider().getMetadata().getId());
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth")
+	@ClothData(modid = "fabric-api-base")
 	public static class Test {
 		@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
-		Boolean aBoolean = true;
+		static Boolean aBoolean = true;
 
-		boolean primBool = false;
+		static boolean primBool = false;
 
 		@AConfigExclude
-		String test = "abc";
+		static String test = "abc";
 
-		Integer number = 123;
+		@AConfigEntry(constraints = @AConfigConstraint(value = RangeConstraint.class, param = "100..200"))
+		static Integer number = 123;
 
 		@AConfigEntry(comment = "This is an object")
-		A a;
+		static A a;
 
 		@AConfigTransitive
-		Trans trans;
+		static Trans trans;
 
-		ConfigScope scope = ConfigScope.DEFAULT;
+		static ConfigScope scope = ConfigScope.DEFAULT;
 
 		public static class A {
 			String name = "Siphalor";

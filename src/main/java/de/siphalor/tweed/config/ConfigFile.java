@@ -10,14 +10,18 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.fabricmc.fabric.api.server.PlayerStream;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.Resource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
@@ -26,11 +30,14 @@ import java.util.function.BiConsumer;
  * A configuration file.
  * @see TweedRegistry#registerConfigFile(String, ConfigDataSerializer)
  */
+@SuppressWarnings("unused")
 public class ConfigFile {
 	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
 	private Queue<Pair<String, ConfigEntryFixer>> configEntryFixers;
 	private ConfigDataSerializer<?> dataSerializer;
+
+	private Map<Class<? extends Annotation>, Annotation> tailorAnnotations;
 
 	protected ConfigCategory rootCategory;
 
@@ -180,7 +187,7 @@ public class ConfigFile {
 		try {
 			resource.close();
 		} catch (IOException e) {
-			Tweed.LOGGER.error("Failed to close config resource after reading it: " + resource.getId());
+			Tweed.LOGGER.error("Failed to close config resource after reading it in resource pack: " + resource.getResourcePackName());
 			e.printStackTrace();
 		}
 		if(dataObject != null) {
@@ -272,5 +279,36 @@ public class ConfigFile {
 	public ConfigFile setScope(ConfigScope scope) {
 		rootCategory.setScope(scope);
 		return this;
+	}
+
+	public void addTailorData(Annotation annotation) {
+		if (tailorAnnotations == null) {
+			tailorAnnotations = new HashMap<>();
+		}
+		tailorAnnotations.put(annotation.annotationType(), annotation);
+	}
+
+	public void addTailorAnnotations(Collection<Annotation> annotations) {
+		if (tailorAnnotations == null) {
+			tailorAnnotations = new HashMap<>();
+		}
+		annotations.forEach(a -> tailorAnnotations.put(a.annotationType(), a));
+	}
+
+	public void addTailorAnnotations(Annotation... annotations) {
+		if (tailorAnnotations == null) {
+			tailorAnnotations = new HashMap<>();
+		}
+		for (Annotation a : annotations) {
+			tailorAnnotations.put(a.annotationType(), a);
+		}
+	}
+
+	public <T extends Annotation> T getTailorAnnotation(Class<T> clazz) {
+		if (clazz == null || tailorAnnotations == null) {
+			return null;
+		}
+		//noinspection unchecked
+		return (T) tailorAnnotations.get(clazz);
 	}
 }

@@ -7,7 +7,7 @@ import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.util.PacketByteBuf;
+import net.minecraft.network.PacketByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,4 +89,5 @@ public class ListEntry<T extends ConfigEntry> extends AbstractBasicEntry<ListEnt
 	public String getDescription() {
 		return getComment();
 	}
+
 }

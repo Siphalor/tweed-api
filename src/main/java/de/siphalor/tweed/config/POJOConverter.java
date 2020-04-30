@@ -1,13 +1,16 @@
 package de.siphalor.tweed.config;
 
 import de.siphalor.tweed.config.annotated.*;
-import de.siphalor.tweed.config.constraints.Constraint;
+import de.siphalor.tweed.config.constraints.AnnotationConstraint;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
-import de.siphalor.tweed.config.entry.ValueEntry;
+import de.siphalor.tweed.config.entry.ValueConfigEntry;
 import de.siphalor.tweed.config.value.ConfigValue;
 import de.siphalor.tweed.config.value.ReferenceConfigValue;
 import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
+import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed.data.serializer.HjsonSerializer;
+import de.siphalor.tweed.tailor.Tailor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
@@ -21,8 +24,40 @@ import java.util.Map;
 public class POJOConverter {
 	private static final Map<Class<?>, ConfigValueSerializer<?>> SERIALIZER_MAP = new HashMap<>();
 
+	/**
+	 * Registers a custom serializer for a type.
+	 * @param clazz The class that should be captured
+	 * @param serializer The serializer to use
+	 */
 	public static void registerSerializer(Class<?> clazz, ConfigValueSerializer<?> serializer) {
 		SERIALIZER_MAP.put(clazz, serializer);
+	}
+
+	public static ConfigFile toConfigFile(Object pojo, String fallbackFileName) throws RuntimeException {
+		ATweedConfig tweedConfig = pojo.getClass().getAnnotation(ATweedConfig.class);
+		if (tweedConfig == null) {
+			throw new RuntimeException("Tweed POJOs need the ATweedConfig annotation!");
+		}
+		ConfigCategory rootCategory = toCategory(pojo);
+		rootCategory.setScope(tweedConfig.scope());
+		rootCategory.setEnvironment(tweedConfig.environment());
+		String file = tweedConfig.file();
+		if (file.isEmpty()) {
+			file = fallbackFileName;
+		}
+		ConfigDataSerializer<?> serializer = TweedRegistry.SERIALIZERS.getOrEmpty(new Identifier(tweedConfig.serializer())).orElse(HjsonSerializer.INSTANCE);
+
+		ConfigFile configFile = new ConfigFile(file, serializer, rootCategory);
+		configFile.addTailorAnnotations(pojo.getClass().getAnnotations());
+
+		Tailor tailor;
+		for (String tailorId : tweedConfig.tailors()) {
+			tailor = TweedRegistry.TAILORS.get(new Identifier(tailorId));
+			if (tailor != null)
+				tailor.process(configFile);
+		}
+
+		return configFile;
 	}
 
 	public static ConfigCategory toCategory(Object pojo) {
@@ -96,7 +131,7 @@ public class POJOConverter {
 				}
 				basicEntry = toCategory(entryObject);
 			} else {
-				basicEntry = new ValueEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
+				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
 			}
 
 			String name = field.getName();
@@ -109,13 +144,18 @@ public class POJOConverter {
 				basicEntry.setScope(configData.scope());
 				basicEntry.setEnvironment(configData.environment());
 
-				if (basicEntry instanceof ValueEntry) {
-					for (Class<?> clazz : configData.constraints()) {
-						if (Constraint.class.isAssignableFrom(clazz)) {
+				if (basicEntry instanceof ValueConfigEntry) {
+					Class<?> clazz;
+					for (AConfigConstraint aConstraint : configData.constraints()) {
+						clazz = aConstraint.value();
+						if (AnnotationConstraint.class.isAssignableFrom(clazz)) {
 							try {
-								Constructor constructor = clazz.getConstructor();
+								Constructor<AnnotationConstraint> constructor = (Constructor<AnnotationConstraint>) clazz.getConstructor();
 								constructor.setAccessible(true);
-								((ValueEntry) basicEntry).addConstraint((Constraint) constructor.newInstance());
+								AnnotationConstraint<?> constraint = constructor.newInstance();
+								constraint.fromAnnotationParam(aConstraint.param(), ((ValueConfigEntry) basicEntry).getType());
+
+								((ValueConfigEntry) basicEntry).addConstraint(constraint);
 							} catch (NoSuchMethodException | InstantiationException | InvocationTargetException ignored) {
 							}
 						}
@@ -128,4 +168,5 @@ public class POJOConverter {
 		}
 		return null;
 	}
+
 }

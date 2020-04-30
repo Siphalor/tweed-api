@@ -1,24 +1,33 @@
 package de.siphalor.tweed.client;
 
 import de.siphalor.tweed.Tweed;
+import de.siphalor.tweed.TweedClientInitializer;
 import de.siphalor.tweed.config.*;
+import de.siphalor.tweed.tailor.ClothTailor;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.server.ServerStartCallback;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
-public class TweedClient implements ClientModInitializer {
-	public static TweedClothBridge scheduledClothBridge;
+@Environment(EnvType.CLIENT)
+public class TweedClient implements ClientModInitializer, TweedClientInitializer {
 
 	public static MinecraftServer getMinecraftServer() {
-		return ((MinecraftClient) FabricLoader.getInstance().getGameInstance()).getServer();
+		return MinecraftClient.getInstance().getServer();
+	}
+
+	@Override
+	public void registerClient() {
+		Registry.register(TweedRegistry.TAILORS, new Identifier(Tweed.MOD_ID, "cloth"), ClothTailor.INSTANCE);
 	}
 
 	@Override
@@ -50,10 +59,7 @@ public class TweedClient implements ClientModInitializer {
             	if(configFile.getName().equals(fileName)) {
 					configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
 
-					if(scheduledClothBridge != null) {
-						scheduledClothBridge.onSync(configFile);
-					}
-					break;
+					// Trigger screens?
 				}
 			}
 		});
