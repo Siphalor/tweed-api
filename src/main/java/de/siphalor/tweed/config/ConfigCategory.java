@@ -19,6 +19,8 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	protected Map<String, ConfigEntry<?>> entries = new LinkedHashMap<>();
 	protected Identifier backgroundTexture;
 
+	private Runnable reloadListener;
+
 	/**
 	 * Adds a new entry to the category
 	 * @param name the key used in the data architecture
@@ -30,6 +32,10 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		if(configEntry.getEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
 		if(configEntry.getScope() == ConfigScope.DEFAULT) configEntry.setScope(scope);
 		return configEntry;
+	}
+
+	public ConfigEntry<?> get(String name) {
+		return entries.get(name);
 	}
 
 	@Override
@@ -115,6 +121,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
                 e.printStackTrace();
 			}
 		});
+		onReload();
 	}
 
 	@Override
@@ -124,8 +131,9 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 			if(entry != null)
 				entry.read(buf, environment, scope, origin);
 			else
-				return;
+				throw new RuntimeException("Attempt to sync unknown entry! Aborting.");
 		}
+		onReload();
 	}
 
 	@Override
@@ -163,5 +171,15 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 
 	public boolean isEmpty() {
 		return entries.isEmpty();
+	}
+
+	public ConfigCategory setReloadListener(Runnable reloadListener) {
+		this.reloadListener = reloadListener;
+		return this;
+	}
+
+	public void onReload() {
+		if (reloadListener != null)
+			reloadListener.run();
 	}
 }

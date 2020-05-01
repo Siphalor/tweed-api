@@ -1,5 +1,6 @@
 package de.siphalor.tweed.config;
 
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.annotated.*;
 import de.siphalor.tweed.config.constraints.AnnotationConstraint;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
@@ -11,12 +12,14 @@ import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed.data.serializer.HjsonSerializer;
 import de.siphalor.tweed.tailor.Tailor;
+import de.siphalor.tweed.util.ReflectionUtil;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,8 +73,54 @@ public class POJOConverter {
 			}
 		}
 
-		for (Field field : pojo.getClass().getDeclaredFields()) {
+		for (Field field : ReflectionUtil.getAllDeclaredFields(pojo.getClass())) {
 			addToCategory(configCategory, pojo, field);
+		}
+
+		for (Method method : ReflectionUtil.getAllDeclaredMethods(pojo.getClass())) {
+			// Check for listening methods
+			AConfigListener configListener = method.getAnnotation(AConfigListener.class);
+			if (configListener != null) {
+				if (method.getParameterCount() > 0) {
+					Tweed.LOGGER.error("Method " + method.getName() + " on " + pojo.getClass().getCanonicalName() + " must have no parameters to be a listener!");
+				} else {
+					if (configListener.value().isEmpty()) {
+						method.setAccessible(true);
+						configCategory.setReloadListener(() -> {
+							try {
+								method.invoke(pojo);
+							} catch (IllegalAccessException | InvocationTargetException e) {
+								e.printStackTrace();
+							}
+						});
+					} else {
+						ConfigEntry<?> configEntry = configCategory.get(configListener.value());
+						if (configEntry != null) {
+							if (configEntry instanceof ConfigCategory) {
+								((ConfigCategory) configEntry).setReloadListener(() -> {
+									try {
+										method.invoke(pojo);
+									} catch (IllegalAccessException | InvocationTargetException e) {
+										e.printStackTrace();
+									}
+								});
+							} else if (configEntry instanceof ValueConfigEntry) {
+								((ValueConfigEntry<?, ?>) configEntry).setReloadListener(o -> {
+									try {
+										method.invoke(pojo);
+									} catch (IllegalAccessException | InvocationTargetException e) {
+										e.printStackTrace();
+									}
+								});
+							} else {
+								Tweed.LOGGER.error("Couldn't bind config reload listener on " + pojo.getClass().getCanonicalName() + " for " + configListener.value() + " to an entry.");
+							}
+						} else {
+							Tweed.LOGGER.error("Couldn't find a config entry to bind the reload listener to in " + pojo.getClass().getCanonicalName());
+						}
+					}
+				}
+			}
 		}
 
 		return configCategory;
@@ -97,7 +146,7 @@ public class POJOConverter {
 				}
 				Object finalO = o;
 
-				Arrays.stream(o.getClass().getDeclaredFields()).forEach(field1 -> addToCategory(configCategory, finalO, field1));
+				Arrays.stream(ReflectionUtil.getAllDeclaredFields(o.getClass())).forEach(field1 -> addToCategory(configCategory, finalO, field1));
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
@@ -144,6 +193,7 @@ public class POJOConverter {
 				basicEntry.setScope(configData.scope());
 				basicEntry.setEnvironment(configData.environment());
 
+				// Add constraints
 				if (basicEntry instanceof ValueConfigEntry) {
 					Class<?> clazz;
 					for (AConfigConstraint aConstraint : configData.constraints()) {

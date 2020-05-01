@@ -31,11 +31,11 @@
 		],
 		"modmenu": [
 			{
-				"value": "de.siphalor.tweed.tailor.ModMenuEntry"
+				"value": "de.siphalor.tweed.client.ModMenuEntry"
 			}
 		],
 		"tweed:config": [
-			"de.siphalor.tweed.Tweed\$Test"
+			"de.siphalor.tweed.Tweed::TEST"
 		],
 		"tweed:client_init": [
 			"de.siphalor.tweed.client.TweedClient"

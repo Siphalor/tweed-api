@@ -35,6 +35,8 @@ public class Tweed implements ModInitializer {
 	public static final char PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
 
+	public static final Test TEST = new Test();
+
 	public static MinecraftServer getMinecraftServer() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? TweedClient.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
 	}
@@ -120,26 +122,26 @@ public class Tweed implements ModInitializer {
 	}
 
 	@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth")
-	@ClothData(modid = "fabric-api-base")
+	@ClothData(modid = "tweed")
 	public static class Test {
 		@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
-		static Boolean aBoolean = true;
+		Boolean aBoolean = true;
 
-		static boolean primBool = false;
+		boolean primBool = false;
 
 		@AConfigExclude
-		static String test = "abc";
+		String test = "abc";
 
 		@AConfigEntry(constraints = @AConfigConstraint(value = RangeConstraint.class, param = "100..200"))
-		static Integer number = 123;
+		Integer number = 123;
 
 		@AConfigEntry(comment = "This is an object")
-		static A a;
+		A a;
 
 		@AConfigTransitive
-		static Trans trans;
+		Trans trans;
 
-		static ConfigScope scope = ConfigScope.DEFAULT;
+		ConfigScope scope = ConfigScope.DEFAULT;
 
 		public static class A {
 			String name = "Siphalor";
