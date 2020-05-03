@@ -65,7 +65,7 @@ public class ClothTailor extends Tailor {
 		configBuilder.setSavingRunnable(() -> save(configFile));
 		configBuilder.setTitle(new TranslatableText(path));
 
-		if (configFile.getRootCategory().entryStream().allMatch(entry -> entry instanceof ConfigCategory)) {
+		if (configFile.getRootCategory().entryStream().allMatch(entry -> entry.getValue() instanceof ConfigCategory)) {
 			configFile.getRootCategory().entryStream().forEach(entry -> createCategory(configBuilder, (ConfigCategory) entry.getValue(), path + "." + entry.getKey()));
 		} else {
 			createCategory(configBuilder, configFile.getRootCategory(), path + ".main");
