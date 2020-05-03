@@ -20,6 +20,7 @@ import net.minecraft.util.registry.Registry;
 
 @Environment(EnvType.CLIENT)
 public class TweedClient implements ClientModInitializer, TweedClientInitializer {
+	private static Runnable syncRunnable;
 
 	public static MinecraftServer getMinecraftServer() {
 		return MinecraftClient.getInstance().getServer();
@@ -28,6 +29,10 @@ public class TweedClient implements ClientModInitializer, TweedClientInitializer
 	@Override
 	public void registerClient() {
 		Registry.register(TweedRegistry.TAILORS, new Identifier(Tweed.MOD_ID, "cloth"), ClothTailor.INSTANCE);
+	}
+
+	public static void setSyncRunnable(Runnable syncRunnable) {
+		TweedClient.syncRunnable = syncRunnable;
 	}
 
 	@Override
@@ -59,7 +64,10 @@ public class TweedClient implements ClientModInitializer, TweedClientInitializer
             	if(configFile.getName().equals(fileName)) {
 					configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
 
-					// Trigger screens?
+					if (syncRunnable != null) {
+						syncRunnable.run();
+						syncRunnable = null;
+					}
 				}
 			}
 		});
