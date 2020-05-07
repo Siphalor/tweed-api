@@ -21,7 +21,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import org.apache.http.cookie.SM;
 
 import java.util.HashMap;
 import java.util.Map;

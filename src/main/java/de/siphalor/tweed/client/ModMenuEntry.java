@@ -18,7 +18,7 @@ public class ModMenuEntry implements ModMenuApi {
 
 	@Override
 	public ConfigScreenFactory<?> getModConfigScreenFactory() {
-		return ClothTailor.INSTANCE.getScreenFactories().get(Tweed.MOD_ID);
+		return ClothTailor.INSTANCE.getScreenFactories().getOrDefault(Tweed.MOD_ID, parent -> null);
 	}
 
 	@Override

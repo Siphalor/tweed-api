@@ -48,11 +48,13 @@
 		}
 	],
 	"requires": {
-		"fabricloader": ">=0.4.0",
-		"fabric": "*"
+		"fabricloader": ">=0.4.0"
 	},
 	"suggests": {
 		"modmenu": "*"
+	},
+	"breaks": {
+		"cloth-config2": "<4"
 	},
 
 	"custom": {
