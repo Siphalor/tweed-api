@@ -1,6 +1,7 @@
 package de.siphalor.tweed.config.constraints;
 
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
+import org.apache.commons.lang3.StringUtils;
 
 public class RangeConstraint<T extends Number> implements AnnotationConstraint<T> {
 	private final boolean autoCorrect;
@@ -80,18 +81,18 @@ public class RangeConstraint<T extends Number> implements AnnotationConstraint<T
 
 	@Override
 	public void fromAnnotationParam(String param, Class<?> valueType) {
-		String[] parts = param.split("\\.\\.");
-		if (parts.length != 2) {
+		String[] parts = StringUtils.splitByWholeSeparator(param, "..", 2);
+		if (parts.length == 0) {
 			throw new RuntimeException("Invalid value \"" + param + "\" for number range constraint");
 		}
 		if (parts[0].isEmpty()) {
-			if (parts[1].isEmpty()) {
+			if (parts.length < 2 || parts[1].isEmpty()) {
 				everything();
 			} else {
 				smallerThan((T)(Object) Double.parseDouble(parts[1]));
 			}
 		} else {
-			if (parts[1].isEmpty()) {
+			if (parts.length < 2 || parts[1].isEmpty()) {
 				greaterThan((T)(Object) Double.parseDouble(parts[0]));
 			} else {
 				between((T)(Object) Double.parseDouble(parts[0]), (T)(Object) Double.parseDouble(parts[1]));
