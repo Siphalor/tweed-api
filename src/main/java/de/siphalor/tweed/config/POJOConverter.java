@@ -1,14 +1,17 @@
 package de.siphalor.tweed.config;
 
+import com.google.common.base.CaseFormat;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.annotated.*;
 import de.siphalor.tweed.config.constraints.AnnotationConstraint;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
+import de.siphalor.tweed.config.fixers.ConfigEntryFixer;
 import de.siphalor.tweed.config.value.ConfigValue;
 import de.siphalor.tweed.config.value.ReferenceConfigValue;
 import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
+import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed.data.serializer.HjsonSerializer;
 import de.siphalor.tweed.tailor.Tailor;
@@ -41,7 +44,7 @@ public class POJOConverter {
 		if (tweedConfig == null) {
 			throw new RuntimeException("Tweed POJOs need the ATweedConfig annotation!");
 		}
-		ConfigCategory rootCategory = toCategory(pojo);
+		ConfigCategory rootCategory = toCategory(pojo, tweedConfig.casing());
 		rootCategory.setScope(tweedConfig.scope());
 		rootCategory.setEnvironment(tweedConfig.environment());
 		String file = tweedConfig.file();
@@ -51,6 +54,30 @@ public class POJOConverter {
 		ConfigDataSerializer<?> serializer = TweedRegistry.SERIALIZERS.getOrEmpty(new Identifier(tweedConfig.serializer())).orElse(HjsonSerializer.INSTANCE);
 
 		ConfigFile configFile = new ConfigFile(file, serializer, rootCategory);
+
+		for (Method method : configFile.getClass().getDeclaredMethods()) {
+			AConfigFixer configFixer = method.getAnnotation(AConfigFixer.class);
+			if (configFixer != null && method.getParameterCount() == 3) {
+				Class<?>[] args = method.getParameterTypes();
+				if (args[0] == DataObject.class && args[1] == String.class && args[2] == DataObject.class) {
+					method.setAccessible(true);
+
+					ConfigEntryFixer configEntryFixer = new ConfigEntryFixer() {
+						@Override
+						public void fix(DataObject<?> dataObject, String propertyName, DataObject<?> mainCompound) {
+							try {
+								method.invoke(pojo, dataObject, mainCompound);
+							} catch (IllegalAccessException | InvocationTargetException e) {
+								e.printStackTrace();
+							}
+						}
+					};
+
+					configFile.register(configFixer.value(), configEntryFixer);
+				}
+			}
+		}
+
 		configFile.addTailorAnnotations(pojo.getClass().getAnnotations());
 
 		Tailor tailor;
@@ -63,7 +90,7 @@ public class POJOConverter {
 		return configFile;
 	}
 
-	public static ConfigCategory toCategory(Object pojo) {
+	public static ConfigCategory toCategory(Object pojo, CaseFormat casing) {
 		ConfigCategory configCategory = new ConfigCategory();
 
 		if (pojo.getClass().isAnnotationPresent(AConfigBackground.class)) {
@@ -74,7 +101,7 @@ public class POJOConverter {
 		}
 
 		for (Field field : ReflectionUtil.getAllDeclaredFields(pojo.getClass())) {
-			addToCategory(configCategory, pojo, field);
+			addToCategory(configCategory, pojo, field, casing);
 		}
 
 		for (Method method : ReflectionUtil.getAllDeclaredMethods(pojo.getClass())) {
@@ -105,7 +132,7 @@ public class POJOConverter {
 									}
 								});
 							} else if (configEntry instanceof ValueConfigEntry) {
-								((ValueConfigEntry<?, ?>) configEntry).setReloadListener(o -> {
+								((ValueConfigEntry<?>) configEntry).setReloadListener(o -> {
 									try {
 										method.invoke(pojo);
 									} catch (IllegalAccessException | InvocationTargetException e) {
@@ -126,7 +153,7 @@ public class POJOConverter {
 		return configCategory;
 	}
 
-	public static void addToCategory(ConfigCategory configCategory, Object pojo, Field field) {
+	public static void addToCategory(ConfigCategory configCategory, Object pojo, Field field, CaseFormat casing) {
 		field.setAccessible(true);
 
 		if (field.isAnnotationPresent(AConfigExclude.class)) return;
@@ -146,12 +173,12 @@ public class POJOConverter {
 				}
 				Object finalO = o;
 
-				Arrays.stream(ReflectionUtil.getAllDeclaredFields(o.getClass())).forEach(field1 -> addToCategory(configCategory, finalO, field1));
+				Arrays.stream(ReflectionUtil.getAllDeclaredFields(o.getClass())).forEach(field1 -> addToCategory(configCategory, finalO, field1, casing));
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
 		} else {
-			Pair<String, ConfigEntry<?>> converted = toEntry(pojo, field);
+			Pair<String, ConfigEntry<?>> converted = toEntry(pojo, field, casing);
 			if (converted == null) return;
 
 			configCategory.register(converted.getLeft(), converted.getRight());
@@ -159,7 +186,7 @@ public class POJOConverter {
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field) {
+	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field, CaseFormat casing) {
 		try {
 			Object entryObject = field.get(pojo);
 			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getType());
@@ -178,12 +205,12 @@ public class POJOConverter {
 						return null;
 					}
 				}
-				basicEntry = toCategory(entryObject);
+				basicEntry = toCategory(entryObject, casing);
 			} else {
 				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
 			}
 
-			String name = field.getName();
+			String name = casing.to(CaseFormat.LOWER_CAMEL, field.getName());
 			if (field.isAnnotationPresent(AConfigEntry.class)) {
 				AConfigEntry configData = field.getAnnotation(AConfigEntry.class);
 				if (!"".equals(configData.name())) {

@@ -113,8 +113,8 @@ public class ClothTailor extends Tailor {
 
 				registry.accept(categoryBuilder.build());
 
-			} else if (entry.getValue() instanceof ValueConfigEntry<?, ?>) {
-				Class<?> clazz = ((ValueConfigEntry<?, ?>) entry.getValue()).getType();
+			} else if (entry.getValue() instanceof ValueConfigEntry<?>) {
+				Class<?> clazz = ((ValueConfigEntry<?>) entry.getValue()).getType();
 				EntryConverter<?> entryConverter;
 
 				entryConverter = ENTRY_CONVERTERS.get(clazz);
@@ -126,7 +126,7 @@ public class ClothTailor extends Tailor {
 				if (entryConverter != null) {
 					registry.accept(entryConverter.convert((ValueConfigEntry) entry.getValue(), entryBuilder, subPath));
 				} else {
-					Tweed.LOGGER.warn("Couldn't convert config entry of type " + ((ValueConfigEntry<?, ?>) entry.getValue()).getType().getSimpleName() + " to cloth entry!");
+					Tweed.LOGGER.warn("Couldn't convert config entry of type " + ((ValueConfigEntry<?>) entry.getValue()).getType().getSimpleName() + " to cloth entry!");
 				}
 			}
 		});
@@ -155,7 +155,7 @@ public class ClothTailor extends Tailor {
 		ENTRY_CONVERTERS.put(valueType, converter);
 	}
 
-	public static <V> Optional<Text> errorSupplier(V value, ValueConfigEntry<V, ?> configEntry) {
+	public static <V> Optional<Text> errorSupplier(V value, ValueConfigEntry<V> configEntry) {
 		try {
 			configEntry.applyConstraints(value);
 		} catch (ConstraintException e) {
@@ -166,7 +166,7 @@ public class ClothTailor extends Tailor {
 
 	@FunctionalInterface
 	public interface EntryConverter<V> {
-		AbstractConfigListEntry<?> convert(ValueConfigEntry<V, ?> configEntry, ConfigEntryBuilder entryBuilder, String langKey);
+		AbstractConfigListEntry<?> convert(ValueConfigEntry<V> configEntry, ConfigEntryBuilder entryBuilder, String langKey);
 	}
 
 	static {

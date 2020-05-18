@@ -75,7 +75,7 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 
 		@Override
 		public boolean isString() {
-			return JsonHelper.isString(jsonElement);
+			return jsonElement.isJsonPrimitive() && jsonElement.getAsJsonPrimitive().isString();
 		}
 
 		@Override

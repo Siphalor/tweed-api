@@ -20,10 +20,9 @@ import java.util.stream.Stream;
 /**
  * An entry to register at a {@link ConfigFile} or {@link ConfigCategory}.
  * @param <V> the type which is used for maintaining the value of the entry. Use {@link ValueConfigEntry#currentValue} to access
- * @param <T> the derived class (to support chain calls)
  */
 @SuppressWarnings("unchecked")
-public class ValueConfigEntry<V, T> extends AbstractBasicEntry<T> {
+public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>> {
 	private ConfigValueSerializer<V> valueSerializer;
 
 	/**
@@ -109,9 +108,9 @@ public class ValueConfigEntry<V, T> extends AbstractBasicEntry<T> {
 	 * @param constraint the new constraint
 	 * @return this entry for chain calls
 	 */
-	public final T addConstraint(Constraint<V> constraint) {
+	public final ValueConfigEntry<V> addConstraint(Constraint<V> constraint) {
         constraints.add(constraint);
-    	return (T) this;
+    	return this;
     }
 
 	public Queue<Constraint<V>> getConstraints() {
@@ -194,9 +193,9 @@ public class ValueConfigEntry<V, T> extends AbstractBasicEntry<T> {
 			valueSerializer.write(buf, currentValue.get());
 	}
 
-	public T setReloadListener(Consumer<V> listener) {
+	public ValueConfigEntry<V> setReloadListener(Consumer<V> listener) {
 		this.reloadListener = listener;
-		return (T) this;
+		return this;
 	}
 
     public void onReload() {

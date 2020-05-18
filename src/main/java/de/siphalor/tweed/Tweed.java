@@ -1,5 +1,6 @@
 package de.siphalor.tweed;
 
+import com.google.common.base.CaseFormat;
 import de.siphalor.tweed.client.TweedClient;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.annotated.*;
@@ -37,6 +38,7 @@ public class Tweed implements ModInitializer {
 
 	public static final Test TEST = new Test();
 
+	@SuppressWarnings("MethodCallSideOnly")
 	public static MinecraftServer getMinecraftServer() {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? TweedClient.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
 	}
@@ -121,7 +123,7 @@ public class Tweed implements ModInitializer {
 		}
 	}
 
-	@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth")
+	@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth", casing = CaseFormat.LOWER_HYPHEN)
 	@ClothData(modid = "tweed")
 	public static class Test {
 		@AConfigEntry(name = "bool", comment = "Some kind of Boolean")

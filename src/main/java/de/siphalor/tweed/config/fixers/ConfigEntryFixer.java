@@ -12,5 +12,5 @@ public abstract class ConfigEntryFixer {
 	 * @param propertyName The id of the entry to be fixed
 	 * @param mainCompound The main object which was read in. This object should be changed to represent the new data structure
 	 */
-	public abstract void fix(DataObject dataObject, String propertyName, DataObject mainCompound);
+	public abstract void fix(DataObject<?> dataObject, String propertyName, DataObject<?> mainCompound);
 }

@@ -22,7 +22,7 @@ public class ConfigEntryLocationFixer extends ConfigEntryFixer {
 	}
 
 	@Override
-	public void fix(DataObject dataObject, String propertyName, DataObject mainCompound) {
+	public void fix(DataObject<?> dataObject, String propertyName, DataObject<?> mainCompound) {
 		DataValue dataValue = dataObject.get(propertyName);
 		if(dataValue == null) return;
 		dataObject.remove(propertyName);

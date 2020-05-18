@@ -1,5 +1,6 @@
 package de.siphalor.tweed.config.annotated;
 
+import com.google.common.base.CaseFormat;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
 
@@ -17,6 +18,8 @@ public @interface ATweedConfig {
 
 	ConfigScope scope() default ConfigScope.DEFAULT;
 	ConfigEnvironment environment() default ConfigEnvironment.DEFAULT;
+
+	CaseFormat casing() default CaseFormat.LOWER_CAMEL;
 
 	String[] tailors() default {};
 }

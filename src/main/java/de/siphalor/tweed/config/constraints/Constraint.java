@@ -10,7 +10,7 @@ public interface Constraint<T> {
 	 * @param configEntry the entry to check and/or modify
 	 * @throws ConstraintException a possible exception in case of problems
 	 */
-	void apply(T value, ValueConfigEntry<T, ?> configEntry) throws ConstraintException;
+	void apply(T value, ValueConfigEntry<T> configEntry) throws ConstraintException;
 
 	String getDescription();
 }

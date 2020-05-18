@@ -54,7 +54,7 @@ public class RangeConstraint<T extends Number> implements AnnotationConstraint<T
 	}
 
 	@Override
-	public void apply(T value, ValueConfigEntry<T, ?> configEntry) throws ConstraintException {
+	public void apply(T value, ValueConfigEntry<T> configEntry) throws ConstraintException {
         if(min != null && value.doubleValue() < min.doubleValue()) {
         	if (autoCorrect)
         	    configEntry.setValue(min);
