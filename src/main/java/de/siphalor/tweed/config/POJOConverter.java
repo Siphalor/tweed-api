@@ -210,7 +210,7 @@ public class POJOConverter {
 				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
 			}
 
-			String name = casing.to(CaseFormat.LOWER_CAMEL, field.getName());
+			String name = CaseFormat.LOWER_CAMEL.to(casing, field.getName());
 			if (field.isAnnotationPresent(AConfigEntry.class)) {
 				AConfigEntry configData = field.getAnnotation(AConfigEntry.class);
 				if (!"".equals(configData.name())) {
