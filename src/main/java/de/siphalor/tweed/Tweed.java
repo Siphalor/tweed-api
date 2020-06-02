@@ -48,7 +48,7 @@ public class Tweed implements ModInitializer {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
-				return new Identifier(Tweed.MOD_ID, "resource_reload");
+				return new Identifier(Tweed.MOD_ID, "data_listener");
 			}
 
 			@Override

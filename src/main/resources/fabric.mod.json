@@ -43,8 +43,7 @@
 	},
 	"mixins": [
 		{
-			"config": "tweed.client.mixin.json",
-			"environment": "client"
+			"config": "tweed.mixin.json"
 		}
 	],
 	"requires": {

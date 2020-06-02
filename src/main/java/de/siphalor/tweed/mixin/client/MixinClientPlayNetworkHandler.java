@@ -1,4 +1,4 @@
-package de.siphalor.tweed.client.mixin;
+package de.siphalor.tweed.mixin.client;
 
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.*;

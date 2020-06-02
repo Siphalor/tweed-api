@@ -1,9 +1,10 @@
 {
 	"required": true,
-	"package": "de.siphalor.tweed.client.mixin",
+	"package": "de.siphalor.tweed.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
-		"MixinClientPlayNetworkHandler"
+		"MinecraftServerAccessor",
+		"client.MixinClientPlayNetworkHandler"
 	],
 	"injectors": {
 		"defaultRequire": 1

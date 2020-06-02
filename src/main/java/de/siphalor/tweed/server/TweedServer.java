@@ -3,6 +3,7 @@ package de.siphalor.tweed.server;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigLoader;
 import de.siphalor.tweed.config.ConfigScope;
+import de.siphalor.tweed.mixin.MinecraftServerAccessor;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.server.ServerStartCallback;
 
@@ -11,7 +12,7 @@ public class TweedServer implements DedicatedServerModInitializer {
 	public void onInitializeServer() {
         ConfigLoader.initialReload(ConfigEnvironment.SERVER);
 		ServerStartCallback.EVENT.register(minecraftServer -> {
-			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.SERVER, ConfigScope.GAME);
+			ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getDataManagerHolder().method_29474(), ConfigEnvironment.SERVER, ConfigScope.GAME);
 		});
 	}
 }
