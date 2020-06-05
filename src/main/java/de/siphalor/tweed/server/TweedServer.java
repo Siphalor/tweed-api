@@ -12,7 +12,7 @@ public class TweedServer implements DedicatedServerModInitializer {
 	public void onInitializeServer() {
         ConfigLoader.initialReload(ConfigEnvironment.SERVER);
 		ServerStartCallback.EVENT.register(minecraftServer -> {
-			ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getDataManagerHolder().method_29474(), ConfigEnvironment.SERVER, ConfigScope.GAME);
+			ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ConfigEnvironment.SERVER, ConfigScope.GAME);
 		});
 	}
 }

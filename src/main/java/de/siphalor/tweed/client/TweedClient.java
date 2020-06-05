@@ -60,7 +60,7 @@ public class TweedClient implements ClientModInitializer, TweedClientInitializer
 			}
 		});
 		ServerStartCallback.EVENT.register(minecraftServer -> {
-			ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getDataManagerHolder().method_29474(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
+			ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
 		});
 
 		ClientSidePacketRegistry.INSTANCE.register(Tweed.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
