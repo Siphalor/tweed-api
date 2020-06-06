@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,12 +37,9 @@ public class Tweed implements ModInitializer {
 	public static final char PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
 
-	public static final Test TEST = new Test();
+	public static final List<MinecraftServer> MINECRAFT_SERVERS = new LinkedList<>();
 
-	@SuppressWarnings("MethodCallSideOnly")
-	public static MinecraftServer getMinecraftServer() {
-        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT ? TweedClient.getMinecraftServer() : (MinecraftServer) FabricLoader.getInstance().getGameInstance();
-	}
+	public static final Test TEST = new Test();
 
 	@Override
 	public void onInitialize() {

@@ -19,10 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 
@@ -69,7 +66,7 @@ public class ConfigFile {
 	}
 
 	public void finishReload(ConfigEnvironment environment, ConfigScope scope) {
-		Tweed.LOGGER.info("Reloaded configs for " + name);
+		Tweed.LOGGER.info("Reloaded configs for " + name + " (" + environment.name().toLowerCase(Locale.ENGLISH) + "/" + scope.name().toLowerCase(Locale.ENGLISH) + ")");
 		if(reloadListener != null)
 			reloadListener.accept(environment, scope);
 	}
@@ -201,7 +198,7 @@ public class ConfigFile {
 		try {
 			rootCategory.read(dataObject, environment, scope, origin);
 		} catch (ConfigReadException e) {
-            Tweed.LOGGER.error("The config file " + name + ".hjson must contain an object!");
+            Tweed.LOGGER.error("The config file " + name + "." + dataSerializer.getFileExtension() + " must contain an object!");
 		}
 	}
 
@@ -211,7 +208,7 @@ public class ConfigFile {
 		packetByteBuf.writeString(name);
 		write(packetByteBuf, environment, scope, origin);
 
-		PlayerStream.all(Tweed.getMinecraftServer()).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf));
+		Tweed.MINECRAFT_SERVERS.stream().flatMap(PlayerStream::all).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf));
 	}
 
 	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
