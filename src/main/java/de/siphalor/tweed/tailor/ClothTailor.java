@@ -24,6 +24,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -113,7 +114,7 @@ public class ClothTailor extends Tailor {
 
 			if (entry.getValue() instanceof ConfigCategory) {
 				SubCategoryBuilder categoryBuilder = entryBuilder.startSubCategory(new TranslatableText(subPath));
-				categoryBuilder.setTooltipSupplier(entry.getValue()::getClothyDescription);
+				categoryBuilder.add(entryBuilder.startTextDescription(new LiteralText(entry.getValue().getDescription()).formatted(Formatting.GRAY)).build());
 
 				convertCategory(entryBuilder, categoryBuilder::add, (ConfigCategory) entry.getValue(), subPath);
 
@@ -152,6 +153,7 @@ public class ClothTailor extends Tailor {
 		if (configCategory.getBackgroundTexture() != null) {
 			clothCategory.setCategoryBackground(configCategory.getBackgroundTexture());
 		}
+		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(new LiteralText(configCategory.getComment()).formatted(Formatting.GRAY)).build());
 		convertCategory(configBuilder.entryBuilder(), clothCategory::addEntry, configCategory, name);
 	}
 
