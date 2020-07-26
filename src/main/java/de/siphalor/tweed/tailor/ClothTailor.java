@@ -20,12 +20,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.PacketByteBuf;
 
+import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,7 +98,7 @@ public class ClothTailor extends Tailor {
 			configBuilder.setDefaultBackgroundTexture(configFile.getRootCategory().getBackgroundTexture());
 		}
 		configBuilder.setSavingRunnable(() -> save(configFile));
-		configBuilder.setTitle(new TranslatableText(path));
+		configBuilder.setTitle(I18n.translate(path));
 
 		if (configFile.getRootCategory().entryStream().allMatch(entry -> entry.getValue() instanceof ConfigCategory)) {
 			configFile.getRootCategory().entryStream().forEach(entry -> createCategory(configBuilder, (ConfigCategory) entry.getValue(), path + "." + entry.getKey()));
@@ -113,8 +114,8 @@ public class ClothTailor extends Tailor {
 			final String subPath = path + "." + entry.getKey();
 
 			if (entry.getValue() instanceof ConfigCategory) {
-				SubCategoryBuilder categoryBuilder = entryBuilder.startSubCategory(new TranslatableText(subPath));
-				categoryBuilder.add(entryBuilder.startTextDescription(new LiteralText(entry.getValue().getDescription()).formatted(Formatting.GRAY)).build());
+				SubCategoryBuilder categoryBuilder = entryBuilder.startSubCategory(I18n.translate(subPath));
+				categoryBuilder.add(entryBuilder.startTextDescription(entry.getValue().getDescription()).setColor(Color.GRAY.getRGB()).build());
 
 				convertCategory(entryBuilder, categoryBuilder::add, (ConfigCategory) entry.getValue(), subPath);
 
@@ -149,11 +150,11 @@ public class ClothTailor extends Tailor {
 	}
 
 	private void createCategory(ConfigBuilder configBuilder, ConfigCategory configCategory, String name) {
-		me.shedaniel.clothconfig2.api.ConfigCategory clothCategory = configBuilder.getOrCreateCategory(new TranslatableText(name));
+		me.shedaniel.clothconfig2.api.ConfigCategory clothCategory = configBuilder.getOrCreateCategory(I18n.translate(name));
 		if (configCategory.getBackgroundTexture() != null) {
 			clothCategory.setCategoryBackground(configCategory.getBackgroundTexture());
 		}
-		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(new LiteralText(configCategory.getComment()).formatted(Formatting.GRAY)).build());
+		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(configCategory.getComment()).setColor(Color.GRAY.getRGB()).build());
 		convertCategory(configBuilder.entryBuilder(), clothCategory::addEntry, configCategory, name);
 	}
 
@@ -172,11 +173,11 @@ public class ClothTailor extends Tailor {
 		ENTRY_CONVERTERS.put(valueType, converter);
 	}
 
-	public static <V> Optional<Text> errorSupplier(V value, ValueConfigEntry<V> configEntry) {
+	public static <V> Optional<String> errorSupplier(V value, ValueConfigEntry<V> configEntry) {
 		try {
 			configEntry.applyConstraints(value);
 		} catch (ConstraintException e) {
-			return Optional.of(new LiteralText(e.getMessage()));
+			return Optional.of(e.getMessage());
 		}
 		return Optional.empty();
 	}
@@ -188,7 +189,7 @@ public class ClothTailor extends Tailor {
 
 	static {
 		registerEntryConverter(Boolean.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startBooleanToggle(new TranslatableText(langKey), configEntry.getMainConfigValue())
+				entryBuilder.startBooleanToggle(I18n.translate(langKey), configEntry.getMainConfigValue())
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)
 						.setTooltipSupplier(configEntry::getClothyDescription)
@@ -198,7 +199,7 @@ public class ClothTailor extends Tailor {
 		//noinspection unchecked
 		registerEntryConverter(DropdownMaterial.class, (configEntry, entryBuilder, langKey) ->
 				entryBuilder.startDropdownMenu(
-						new TranslatableText(langKey),
+						I18n.translate(langKey),
 						new DropdownBoxEntry.DefaultSelectionTopCellElement<DropdownMaterial<?>>(
 								configEntry.getDefaultValue(),
 								input -> {
@@ -210,9 +211,9 @@ public class ClothTailor extends Tailor {
 									}
 									return null;
 								},
-								dropdownMaterial -> new TranslatableText(langKey + "." + dropdownMaterial.name())),
+								dropdownMaterial -> I18n.translate(langKey + "." + dropdownMaterial.name())),
 						new DropdownBoxEntry.DefaultSelectionCellCreator<>(
-								dropdownMaterial -> new TranslatableText(langKey + "." + dropdownMaterial.name()))
+								dropdownMaterial -> I18n.translate(langKey + "." + dropdownMaterial.name()))
 				)
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)
@@ -222,7 +223,7 @@ public class ClothTailor extends Tailor {
 						.build()
 		);
 		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startEnumSelector(new TranslatableText(langKey), configEntry.getType(), configEntry.getMainConfigValue())
+				entryBuilder.startEnumSelector(I18n.translate(langKey), configEntry.getType(), configEntry.getMainConfigValue())
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)
 						.setTooltipSupplier(configEntry::getClothyDescription)
@@ -230,7 +231,7 @@ public class ClothTailor extends Tailor {
 						.build()
 		);
 		registerEntryConverter(Float.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startFloatField(new TranslatableText(langKey), configEntry.getMainConfigValue())
+				entryBuilder.startFloatField(I18n.translate(langKey), configEntry.getMainConfigValue())
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)
 						.setTooltipSupplier(configEntry::getClothyDescription)
@@ -238,7 +239,7 @@ public class ClothTailor extends Tailor {
 						.build()
 		);
 		registerEntryConverter(Integer.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startIntField(new TranslatableText(langKey), configEntry.getMainConfigValue())
+				entryBuilder.startIntField(I18n.translate(langKey), configEntry.getMainConfigValue())
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)
 						.setTooltipSupplier(configEntry::getClothyDescription)
@@ -246,7 +247,7 @@ public class ClothTailor extends Tailor {
 						.build()
 		);
 		registerEntryConverter(String.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startStrField(new TranslatableText(langKey), configEntry.getMainConfigValue())
+				entryBuilder.startStrField(I18n.translate(langKey), configEntry.getMainConfigValue())
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)
 						.setTooltipSupplier(configEntry::getClothyDescription)

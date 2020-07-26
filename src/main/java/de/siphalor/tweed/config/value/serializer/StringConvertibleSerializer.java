@@ -4,7 +4,7 @@ import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
 import de.siphalor.tweed.util.StaticStringConvertible;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.PacketByteBuf;
 
 public class StringConvertibleSerializer<T extends StaticStringConvertible<T>> extends ConfigValueSerializer<StaticStringConvertible<T>> {
 	final T fallback;

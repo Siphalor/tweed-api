@@ -6,6 +6,9 @@ import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
+import de.siphalor.tweed.data.serializer.GsonSerializer.GsonList;
+import de.siphalor.tweed.data.serializer.GsonSerializer.GsonObject;
+import de.siphalor.tweed.data.serializer.GsonSerializer.GsonValue;
 import net.minecraft.util.JsonHelper;
 
 import java.io.*;

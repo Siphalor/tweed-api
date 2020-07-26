@@ -8,14 +8,13 @@ import de.siphalor.tweed.config.value.SimpleConfigValue;
 import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
-
 import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.util.PacketByteBuf;
 
 /**
  * An entry to register at a {@link ConfigFile} or {@link ConfigCategory}.

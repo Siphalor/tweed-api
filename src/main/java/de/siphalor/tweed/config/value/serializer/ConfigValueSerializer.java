@@ -3,7 +3,7 @@ package de.siphalor.tweed.config.value.serializer;
 import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.PacketByteBuf;
 
 public abstract class ConfigValueSerializer<V> {
 	public abstract V read(DataValue<?> data) throws ConfigReadException;

@@ -7,10 +7,9 @@ import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-
+import net.minecraft.util.PacketByteBuf;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -97,8 +96,8 @@ public interface ConfigEntry<T> {
 	 */
 	String getDescription();
 
-	default Optional<Text[]> getClothyDescription() {
-		return Optional.of(Arrays.stream(getDescription().split("[\n\r]\r?")).map(LiteralText::new).toArray(Text[]::new));
+	default Optional<String[]> getClothyDescription() {
+		return Optional.of(Arrays.stream(getDescription().split("[\n\r]\r?")).toArray(String[]::new));
 	}
 
 	/**

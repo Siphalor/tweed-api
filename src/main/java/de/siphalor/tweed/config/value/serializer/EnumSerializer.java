@@ -2,9 +2,8 @@ package de.siphalor.tweed.config.value.serializer;
 
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
-
 import java.util.Locale;
+import net.minecraft.util.PacketByteBuf;
 
 public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> {
 	E fallback;

@@ -1,6 +1,5 @@
 package de.siphalor.tweed.config;
 
-import com.mojang.serialization.Lifecycle;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed.data.serializer.GsonSerializer;
@@ -9,7 +8,6 @@ import de.siphalor.tweed.data.serializer.JanksonSerializer;
 import de.siphalor.tweed.tailor.Tailor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
 
 import java.util.ArrayList;
@@ -19,8 +17,8 @@ import java.util.ArrayList;
  */
 public class TweedRegistry {
 	private static final ArrayList<ConfigFile> CONFIG_FILES = new ArrayList<>();
-	public static final Registry<ConfigDataSerializer<?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
-	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "tailors")), Lifecycle.experimental());
+	public static final Registry<ConfigDataSerializer<?>> SERIALIZERS = new SimpleRegistry<>();
+	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>();
 
 	public static ConfigFile registerConfigFile(String fileName) {
 		return registerConfigFile(fileName, HjsonSerializer.INSTANCE);

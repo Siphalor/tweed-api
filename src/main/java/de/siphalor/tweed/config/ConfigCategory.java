@@ -6,9 +6,8 @@ import de.siphalor.tweed.config.entry.ConfigEntry;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-
+import net.minecraft.util.PacketByteBuf;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;

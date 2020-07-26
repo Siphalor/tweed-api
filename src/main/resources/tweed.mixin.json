@@ -3,7 +3,6 @@
 	"package": "de.siphalor.tweed.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
-		"MinecraftServerAccessor",
 		"MixinMinecraftServer",
 		"client.MixinClientPlayNetworkHandler"
 	],

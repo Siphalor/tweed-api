@@ -4,10 +4,9 @@ import de.siphalor.tweed.config.ConfigReadException;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
-
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.util.PacketByteBuf;
 
 public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<L> {
 	ConfigValueSerializer<E> valueSerializer;

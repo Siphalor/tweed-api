@@ -1,7 +1,6 @@
 package de.siphalor.tweed;
 
 import com.google.common.base.CaseFormat;
-import de.siphalor.tweed.client.TweedClient;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.annotated.*;
 import de.siphalor.tweed.config.constraints.RangeConstraint;

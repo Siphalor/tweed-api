@@ -3,7 +3,6 @@ package de.siphalor.tweed.client;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.TweedClientInitializer;
 import de.siphalor.tweed.config.*;
-import de.siphalor.tweed.mixin.MinecraftServerAccessor;
 import de.siphalor.tweed.tailor.ClothTailor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -54,7 +53,7 @@ public class TweedClient implements ClientModInitializer, TweedClientInitializer
 			}
 		});
 		ServerStartCallback.EVENT.register(minecraftServer -> {
-			ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
+			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
 		});
 
 		ClientSidePacketRegistry.INSTANCE.register(Tweed.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
