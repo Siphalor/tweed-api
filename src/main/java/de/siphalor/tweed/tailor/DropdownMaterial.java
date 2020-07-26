@@ -10,4 +10,5 @@ public interface DropdownMaterial<T extends DropdownMaterial<T>> extends StaticS
 	default String asString() {
 		return name();
 	}
+	String getTranslationKey();
 }
