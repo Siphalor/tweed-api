@@ -1,6 +1,7 @@
 package de.siphalor.tweed.config.value;
 
 import de.siphalor.tweed.config.value.serializer.*;
+import de.siphalor.tweed.util.StaticStringConvertible;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,9 @@ public abstract class ConfigValue<V> {
 	}
 	public static <E extends Enum<?>> EnumSerializer<E> enumSerializer(E fallback) {
 		return new EnumSerializer<>(fallback);
+	}
+	public static <T extends StaticStringConvertible<T>> StringConvertibleSerializer<T> stringConvertibleSerializer(T fallback) {
+		return new StringConvertibleSerializer<>(fallback);
 	}
 	public static FloatSerializer floatSerializer() {
 		return FLOAT_SERIALIZER;
@@ -52,6 +56,9 @@ public abstract class ConfigValue<V> {
 	public static ConfigValueSerializer<?> specialSerializer(Object defaultValue) {
 		if (defaultValue instanceof Enum) {
 			return enumSerializer((Enum<?>) defaultValue);
+		} else if (defaultValue instanceof StaticStringConvertible) {
+			//noinspection unchecked,rawtypes,rawtypes
+			return stringConvertibleSerializer((StaticStringConvertible) defaultValue);
 		}
 		return null;
 	}

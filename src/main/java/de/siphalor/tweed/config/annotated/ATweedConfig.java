@@ -16,8 +16,8 @@ public @interface ATweedConfig {
 
 	String file() default "";
 
-	ConfigScope scope() default ConfigScope.DEFAULT;
-	ConfigEnvironment environment() default ConfigEnvironment.DEFAULT;
+	ConfigScope scope();
+	ConfigEnvironment environment();
 
 	CaseFormat casing() default CaseFormat.LOWER_CAMEL;
 

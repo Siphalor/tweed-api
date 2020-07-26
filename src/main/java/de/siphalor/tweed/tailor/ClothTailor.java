@@ -10,6 +10,7 @@ import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.gui.entries.DropdownBoxEntry;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -17,11 +18,13 @@ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -118,7 +121,15 @@ public class ClothTailor extends Tailor {
 				EntryConverter<?> entryConverter;
 
 				entryConverter = ENTRY_CONVERTERS.get(clazz);
+				main:
 				while(clazz != Object.class && entryConverter == null) {
+					for (Class<?> anInterface : clazz.getInterfaces()) {
+						entryConverter = ENTRY_CONVERTERS.get(anInterface);
+						if (entryConverter != null) {
+							break main;
+						}
+					}
+
 					clazz = clazz.getSuperclass();
 					entryConverter = ENTRY_CONVERTERS.get(clazz);
 				}
@@ -176,6 +187,32 @@ public class ClothTailor extends Tailor {
 						.setSaveConsumer(configEntry::setMainConfigValue)
 						.setTooltipSupplier(configEntry::getClothyDescription)
 						.setErrorSupplier(value -> errorSupplier(value, configEntry))
+						.build()
+		);
+		//noinspection unchecked
+		registerEntryConverter(DropdownMaterial.class, (configEntry, entryBuilder, langKey) ->
+				entryBuilder.startDropdownMenu(
+						new TranslatableText(langKey),
+						new DropdownBoxEntry.DefaultSelectionTopCellElement<DropdownMaterial<?>>(
+								configEntry.getDefaultValue(),
+								input -> {
+									//noinspection unchecked
+									for (DropdownMaterial<?> value : ((Collection<DropdownMaterial<?>>) configEntry.getDefaultValue().values())) {
+										if (I18n.translate(langKey + "." + value.name()).equals(input)) {
+											return value;
+										}
+									}
+									return null;
+								},
+								dropdownMaterial -> new TranslatableText(langKey + "." + dropdownMaterial.name())),
+						new DropdownBoxEntry.DefaultSelectionCellCreator<>(
+								dropdownMaterial -> new TranslatableText(langKey + "." + dropdownMaterial.name()))
+				)
+						.setDefaultValue(configEntry::getDefaultValue)
+						.setSaveConsumer(configEntry::setMainConfigValue)
+						.setTooltipSupplier(configEntry::getClothyDescription)
+						.setErrorSupplier(value -> errorSupplier(value, configEntry))
+						.setSelections(configEntry.getDefaultValue().values())
 						.build()
 		);
 		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) ->
