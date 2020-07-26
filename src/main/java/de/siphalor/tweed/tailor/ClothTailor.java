@@ -1,6 +1,7 @@
 package de.siphalor.tweed.tailor;
 
 import de.siphalor.tweed.Tweed;
+import de.siphalor.tweed.client.CustomNoticeScreen;
 import de.siphalor.tweed.client.TweedClient;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.ConstraintException;
@@ -57,28 +58,30 @@ public class ClothTailor extends Tailor {
 	public Screen convert(ConfigFile configFile, Screen parentScreen) {
 		boolean inGame = MinecraftClient.getInstance().world != null;
 		if (inGame && configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
-			waitingForFile = true;
+			return new CustomNoticeScreen(
+					() -> {
+						waitingForFile = true;
 
-			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-			buf.writeString(configFile.getName());
-			buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
-			buf.writeEnumConstant(ConfigScope.SMALLEST);
-			buf.writeEnumConstant(ConfigOrigin.MAIN);
-			ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
+						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+						buf.writeString(configFile.getName());
+						buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
+						buf.writeEnumConstant(ConfigScope.SMALLEST);
+						buf.writeEnumConstant(ConfigOrigin.MAIN);
+						ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
 
-			TweedClient.setSyncRunnable(() -> {
-				if (waitingForFile) {
-					waitingForFile = false;
-					MinecraftClient.getInstance().openScreen(buildConfigScreen(configFile, parentScreen));
-				}
-			});
-
-			return new NoticeScreen(() -> {
-					waitingForFile = false;
-					MinecraftClient.getInstance().openScreen(parentScreen);
-				},
-				new TranslatableText("tweed.gui.screen.syncFromServer"),
-				new TranslatableText("tweed.gui.screen.syncFromServer.note")
+						TweedClient.setSyncRunnable(() -> {
+							if (waitingForFile) {
+								waitingForFile = false;
+								MinecraftClient.getInstance().openScreen(buildConfigScreen(configFile, parentScreen));
+							}
+						});
+					},
+					() -> {
+						waitingForFile = false;
+						MinecraftClient.getInstance().openScreen(parentScreen);
+					},
+					new TranslatableText("tweed.gui.screen.syncFromServer"),
+					new TranslatableText("tweed.gui.screen.syncFromServer.note")
 			);
 		} else {
 			return buildConfigScreen(configFile, parentScreen);
@@ -122,7 +125,7 @@ public class ClothTailor extends Tailor {
 
 				entryConverter = ENTRY_CONVERTERS.get(clazz);
 				main:
-				while(clazz != Object.class && entryConverter == null) {
+				while (clazz != Object.class && entryConverter == null) {
 					for (Class<?> anInterface : clazz.getInterfaces()) {
 						entryConverter = ENTRY_CONVERTERS.get(anInterface);
 						if (entryConverter != null) {
@@ -135,6 +138,7 @@ public class ClothTailor extends Tailor {
 				}
 
 				if (entryConverter != null) {
+					//noinspection unchecked,rawtypes,rawtypes
 					registry.accept(entryConverter.convert((ValueConfigEntry) entry.getValue(), entryBuilder, subPath));
 				} else {
 					Tweed.LOGGER.warn("Couldn't convert config entry of type " + ((ValueConfigEntry<?>) entry.getValue()).getType().getSimpleName() + " to cloth entry!");
