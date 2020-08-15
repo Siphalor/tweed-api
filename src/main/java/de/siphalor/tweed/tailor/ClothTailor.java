@@ -205,15 +205,15 @@ public class ClothTailor extends Tailor {
 								input -> {
 									//noinspection unchecked
 									for (DropdownMaterial<?> value : ((Collection<DropdownMaterial<?>>) configEntry.getDefaultValue().values())) {
-										if (I18n.translate(langKey + "." + value.name()).equals(input)) {
+										if (I18n.translate(value.getTranslationKey()).equals(input)) {
 											return value;
 										}
 									}
 									return null;
 								},
-								dropdownMaterial -> I18n.translate(langKey + "." + dropdownMaterial.name())),
+								dropdownMaterial -> I18n.translate(dropdownMaterial.getTranslationKey())),
 						new DropdownBoxEntry.DefaultSelectionCellCreator<>(
-								dropdownMaterial -> I18n.translate(langKey + "." + dropdownMaterial.name()))
+								dropdownMaterial -> I18n.translate(dropdownMaterial.getTranslationKey()))
 				)
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)
