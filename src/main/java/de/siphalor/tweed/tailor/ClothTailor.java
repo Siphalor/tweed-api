@@ -199,20 +199,18 @@ public class ClothTailor extends Tailor {
 		registerEntryConverter(DropdownMaterial.class, (configEntry, entryBuilder, langKey) ->
 				entryBuilder.startDropdownMenu(
 						new TranslatableText(langKey),
-						new DropdownBoxEntry.DefaultSelectionTopCellElement<DropdownMaterial<?>>(
-								configEntry.getDefaultValue(),
-								input -> {
-									//noinspection unchecked
-									for (DropdownMaterial<?> value : ((Collection<DropdownMaterial<?>>) configEntry.getDefaultValue().values())) {
-										if (I18n.translate(value.getTranslationKey()).equals(input)) {
-											return value;
-										}
-									}
-									return null;
-								},
-								dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey())),
-						new DropdownBoxEntry.DefaultSelectionCellCreator<>(
-								dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey()))
+						configEntry.getMainConfigValue(),
+						input -> {
+							//noinspection unchecked
+							for (DropdownMaterial<?> value : ((Collection<DropdownMaterial<?>>) configEntry.getDefaultValue().values())) {
+								if (I18n.translate(value.getTranslationKey()).equals(input)) {
+									return value;
+								}
+							}
+							return null;
+						},
+						dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey()),
+						new DropdownBoxEntry.DefaultSelectionCellCreator<>(dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey()))
 				)
 						.setDefaultValue(configEntry::getDefaultValue)
 						.setSaveConsumer(configEntry::setMainConfigValue)

@@ -1,11 +1,6 @@
 package de.siphalor.tweed;
 
-import com.google.common.base.CaseFormat;
-import de.siphalor.tweed.client.TweedClient;
 import de.siphalor.tweed.config.*;
-import de.siphalor.tweed.config.annotated.*;
-import de.siphalor.tweed.config.constraints.RangeConstraint;
-import de.siphalor.tweed.tailor.ClothData;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
@@ -38,8 +33,6 @@ public class Tweed implements ModInitializer {
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
 
 	public static final List<MinecraftServer> MINECRAFT_SERVERS = new LinkedList<>();
-
-	public static final Test TEST = new Test();
 
 	@Override
 	public void onInitialize() {
@@ -121,34 +114,4 @@ public class Tweed implements ModInitializer {
 		}
 	}
 
-	@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth", casing = CaseFormat.LOWER_HYPHEN)
-	@ClothData(modid = "tweed")
-	public static class Test {
-		@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
-		Boolean aBoolean = true;
-
-		boolean primBool = false;
-
-		@AConfigExclude
-		String test = "abc";
-
-		@AConfigEntry(constraints = @AConfigConstraint(value = RangeConstraint.class, param = "100..200"))
-		Integer number = 123;
-
-		@AConfigEntry(comment = "This is an object")
-		A a;
-
-		@AConfigTransitive
-		Trans trans;
-
-		ConfigScope scope = ConfigScope.DEFAULT;
-
-		public static class A {
-			String name = "Siphalor";
-		}
-
-		public static class Trans {
-			String type = "blob";
-		}
-	}
 }
