@@ -135,12 +135,14 @@ publishing {
 
 	// select the repositories you want to publish to
 	repositories {
-		maven {
-			url = "https://maven.siphalor.de/upload.php/"
-			name = "Siphalor"
-			credentials {
-				username = siphalorMavenUser
-				password = siphalorMavenPassword
+		if (project.hasProperty("siphalorMavenUser")) {
+			maven {
+				url = "https://maven.siphalor.de/upload.php/"
+				name = "Siphalor"
+				credentials {
+					username = siphalorMavenUser
+					password = siphalorMavenPassword
+				}
 			}
 		}
 		// uncomment to publish to the local maven
