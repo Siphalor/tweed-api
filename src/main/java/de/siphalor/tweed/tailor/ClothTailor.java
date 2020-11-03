@@ -12,22 +12,22 @@ import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import me.shedaniel.clothconfig2.gui.entries.DropdownBoxEntry;
-import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
+import me.shedaniel.clothconfig2.impl.builders.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
@@ -179,19 +179,31 @@ public class ClothTailor extends Tailor {
 		return Optional.empty();
 	}
 
+	public static boolean requiresRestart(ValueConfigEntry<?> configEntry) {
+		if (MinecraftClient.getInstance().world == null) {
+			return configEntry.getScope().triggers(ConfigScope.GAME);
+		} else {
+			return configEntry.getScope().triggers(ConfigScope.WORLD);
+		}
+	}
+
 	@FunctionalInterface
 	public interface EntryConverter<V> {
 		AbstractConfigListEntry<?> convert(ValueConfigEntry<V> configEntry, ConfigEntryBuilder entryBuilder, String langKey);
 	}
 
 	static {
-		registerEntryConverter(Boolean.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startBooleanToggle(new TranslatableText(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(Boolean.class, (configEntry, entryBuilder, langKey) -> {
+					BooleanToggleBuilder builder = entryBuilder.startBooleanToggle(new TranslatableText(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
 		//noinspection unchecked,rawtypes,rawtypes
 		registerEntryConverter(DropdownMaterial.class, (configEntry, entryBuilder, langKey) ->
@@ -200,44 +212,61 @@ public class ClothTailor extends Tailor {
 						configEntry.getMainConfigValue(),
 						new TranslatableText("text.cloth-config.reset_value"),
 						configEntry::getClothyDescription,
-						configEntry.getScope() == ConfigScope.GAME,
+						requiresRestart(configEntry),
 						configEntry::getDefaultValue,
 						configEntry::setMainConfigValue,
 						new ArrayList<DropdownMaterial>(configEntry.getDefaultValue().values()),
 						dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey())
 				)
 		);
-		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startEnumSelector(new TranslatableText(langKey), configEntry.getType(), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) -> {
+					//noinspection rawtypes
+					EnumSelectorBuilder<Enum> builder = entryBuilder.startEnumSelector(new TranslatableText(langKey), configEntry.getType(), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
-		registerEntryConverter(Float.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startFloatField(new TranslatableText(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(Float.class, (configEntry, entryBuilder, langKey) -> {
+					FloatFieldBuilder builder = entryBuilder.startFloatField(new TranslatableText(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
-		registerEntryConverter(Integer.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startIntField(new TranslatableText(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(Integer.class, (configEntry, entryBuilder, langKey) -> {
+					IntFieldBuilder builder = entryBuilder.startIntField(new TranslatableText(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
-		registerEntryConverter(String.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startStrField(new TranslatableText(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(String.class, (configEntry, entryBuilder, langKey) -> {
+					StringFieldBuilder builder = entryBuilder.startStrField(new TranslatableText(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
 	}
 }
