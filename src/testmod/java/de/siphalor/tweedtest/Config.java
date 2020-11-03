@@ -30,9 +30,8 @@ public class Config {
 
 	public static ConfigScope scope = ConfigScope.DEFAULT;
 
-	// TODO: Fix dropdown on cloth 1.7
-	// public static TestDropdown dropdown = TestDropdown.B;
-	// public static TestDropdown dropdown2 = TestDropdown.C;
+	public static TestDropdown dropdown = TestDropdown.B;
+	public static TestDropdown dropdown2 = TestDropdown.C;
 
 	public static class A {
 		public String name = "Siphalor";
