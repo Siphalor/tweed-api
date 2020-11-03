@@ -214,18 +214,18 @@ public class ClothTailor extends Tailor {
 						new DropdownBoxEntry.DefaultSelectionCellCreator<>(dropdownMaterial -> I18n.translate(dropdownMaterial.getTranslationKey()))
 				)
 						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
+						.setSaveConsumer(o -> configEntry.setMainConfigValue((DropdownMaterial<?>) o))
 						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
+						.setErrorSupplier(value -> errorSupplier((DropdownMaterial<?>) value, configEntry))
 						.setSelections(configEntry.getDefaultValue().values())
 						.build()
 		);
 		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) ->
 				entryBuilder.startEnumSelector(I18n.translate(langKey), configEntry.getType(), configEntry.getMainConfigValue())
 						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
+						.setSaveConsumer(o -> configEntry.setMainConfigValue((Enum<?>) o))
 						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
+						.setErrorSupplier(value -> errorSupplier((Enum<?>) value, configEntry))
 						.build()
 		);
 		registerEntryConverter(Float.class, (configEntry, entryBuilder, langKey) ->

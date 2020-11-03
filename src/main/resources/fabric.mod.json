@@ -29,11 +29,6 @@
 		"server": [
 			"de.siphalor.tweed.server.TweedServer"
 		],
-		"modmenu": [
-			{
-				"value": "de.siphalor.tweed.client.ModMenuEntry"
-			}
-		],
 		"tweed:client_init": [
 			"de.siphalor.tweed.client.TweedClient"
 		]
@@ -45,8 +40,8 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.4.0",
-		"cloth-config2": "^2",
-		"minecraft": "~1.15"
+		"cloth-config2": ">=1.7",
+		"minecraft": "~1.14"
 	},
 	"suggests": {
 		"modmenu": "*"
