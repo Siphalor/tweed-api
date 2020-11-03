@@ -31,7 +31,7 @@ public class Tweed implements ModInitializer {
 	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
 	public static final char PATH_DELIMITER = '.';
-	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDirectory().getAbsolutePath() + File.separator;
+	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDir().toFile().getAbsolutePath() + File.separator;
 
 	public static final List<MinecraftServer> MINECRAFT_SERVERS = new LinkedList<>();
 

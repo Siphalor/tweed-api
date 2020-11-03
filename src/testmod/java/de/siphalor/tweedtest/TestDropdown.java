@@ -1,26 +1,27 @@
 package de.siphalor.tweedtest;
 
-import com.google.common.collect.ImmutableMap;
 import de.siphalor.tweed.tailor.DropdownMaterial;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class TestDropdown implements DropdownMaterial<TestDropdown> {
+	private static final Map<String, TestDropdown> VALUES = new TreeMap<>();
+
 	public static final TestDropdown A = new TestDropdown("a");
 	public static final TestDropdown B = new TestDropdown("b");
 	public static final TestDropdown C = new TestDropdown("c");
-
-	private static final Map<String, TestDropdown> values = ImmutableMap.of(
-			"a", A,
-			"b", B,
-			"c", C
-	);
+	public static final TestDropdown D = new TestDropdown("d");
+	public static final TestDropdown E = new TestDropdown("e");
+	public static final TestDropdown F = new TestDropdown("f");
+	public static final TestDropdown G = new TestDropdown("g");
 
 	private final String name;
 
 	private TestDropdown(String name) {
 		this.name = name;
+		VALUES.put(name, this);
 	}
 
 	@Override
@@ -30,7 +31,7 @@ public class TestDropdown implements DropdownMaterial<TestDropdown> {
 
 	@Override
 	public Collection<TestDropdown> values() {
-		return values.values();
+		return VALUES.values();
 	}
 
 	@Override
@@ -40,6 +41,6 @@ public class TestDropdown implements DropdownMaterial<TestDropdown> {
 
 	@Override
 	public DropdownMaterial<TestDropdown> valueOf(String name) {
-		return values.get(name);
+		return VALUES.get(name);
 	}
 }
