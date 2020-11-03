@@ -3,6 +3,7 @@ package de.siphalor.tweed.tailor;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.client.CustomNoticeScreen;
 import de.siphalor.tweed.client.TweedClient;
+import de.siphalor.tweed.client.cloth.ClothDropdownSelectEntry;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
@@ -11,23 +12,18 @@ import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import me.shedaniel.clothconfig2.gui.entries.DropdownBoxEntry;
-import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
+import me.shedaniel.clothconfig2.impl.builders.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.PacketByteBuf;
 
 import java.awt.*;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -182,75 +178,94 @@ public class ClothTailor extends Tailor {
 		return Optional.empty();
 	}
 
+	public static boolean requiresRestart(ValueConfigEntry<?> configEntry) {
+		if (MinecraftClient.getInstance().world == null) {
+			return configEntry.getScope().triggers(ConfigScope.GAME);
+		} else {
+			return configEntry.getScope().triggers(ConfigScope.WORLD);
+		}
+	}
+
 	@FunctionalInterface
 	public interface EntryConverter<V> {
 		AbstractConfigListEntry<?> convert(ValueConfigEntry<V> configEntry, ConfigEntryBuilder entryBuilder, String langKey);
 	}
 
 	static {
-		registerEntryConverter(Boolean.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startBooleanToggle(I18n.translate(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(Boolean.class, (configEntry, entryBuilder, langKey) -> {
+					BooleanToggleBuilder builder = entryBuilder.startBooleanToggle(I18n.translate(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
-		//noinspection unchecked
+		//noinspection unchecked,rawtypes,rawtypes
 		registerEntryConverter(DropdownMaterial.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startDropdownMenu(
+				new ClothDropdownSelectEntry<>(
 						I18n.translate(langKey),
 						configEntry.getMainConfigValue(),
-						input -> {
-							//noinspection unchecked
-							for (DropdownMaterial<?> value : ((Collection<DropdownMaterial<?>>) configEntry.getDefaultValue().values())) {
-								if (I18n.translate(value.getTranslationKey()).equals(input)) {
-									return value;
-								}
-							}
-							return null;
-						},
-						dropdownMaterial -> I18n.translate(dropdownMaterial.getTranslationKey()),
-						new DropdownBoxEntry.DefaultSelectionCellCreator<>(dropdownMaterial -> I18n.translate(dropdownMaterial.getTranslationKey()))
+						I18n.translate("text.cloth-config.reset_value"),
+						configEntry::getClothyDescription,
+						requiresRestart(configEntry),
+						configEntry::getDefaultValue,
+						configEntry::setMainConfigValue,
+						new ArrayList<DropdownMaterial>(configEntry.getDefaultValue().values()),
+						dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey())
 				)
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(o -> configEntry.setMainConfigValue((DropdownMaterial<?>) o))
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier((DropdownMaterial<?>) value, configEntry))
-						.setSelections(configEntry.getDefaultValue().values())
-						.build()
 		);
-		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startEnumSelector(I18n.translate(langKey), configEntry.getType(), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(o -> configEntry.setMainConfigValue((Enum<?>) o))
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier((Enum<?>) value, configEntry))
-						.build()
+		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) -> {
+					//noinspection unchecked
+					EnumSelectorBuilder<Enum<?>> builder = (EnumSelectorBuilder<Enum<?>>) (Object) entryBuilder.startEnumSelector(I18n.translate(langKey), configEntry.getType(), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(o -> configEntry.setMainConfigValue((DropdownMaterial<?>) o));
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier((DropdownMaterial<?>) value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
-		registerEntryConverter(Float.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startFloatField(I18n.translate(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(Float.class, (configEntry, entryBuilder, langKey) -> {
+					FloatFieldBuilder builder = entryBuilder.startFloatField(I18n.translate(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(o -> configEntry.setMainConfigValue((Enum<?>) o));
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier((Enum<?>) value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
-		registerEntryConverter(Integer.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startIntField(I18n.translate(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(Integer.class, (configEntry, entryBuilder, langKey) -> {
+					IntFieldBuilder builder = entryBuilder.startIntField(I18n.translate(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
-		registerEntryConverter(String.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startStrField(I18n.translate(langKey), configEntry.getMainConfigValue())
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.build()
+		registerEntryConverter(String.class, (configEntry, entryBuilder, langKey) -> {
+					StringFieldBuilder builder = entryBuilder.startStrField(I18n.translate(langKey), configEntry.getMainConfigValue());
+					builder.setDefaultValue(configEntry::getDefaultValue);
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
+					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
+					if (requiresRestart(configEntry)) {
+						builder.requireRestart(true);
+					}
+					return builder.build();
+				}
 		);
 	}
 }
