@@ -220,8 +220,8 @@ public class ClothTailor extends Tailor {
 				)
 		);
 		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) -> {
-					//noinspection rawtypes
-					EnumSelectorBuilder<Enum> builder = entryBuilder.startEnumSelector(new TranslatableText(langKey), configEntry.getType(), configEntry.getMainConfigValue());
+					//noinspection unchecked
+					EnumSelectorBuilder<Enum<?>> builder = (EnumSelectorBuilder<Enum<?>>) (Object) entryBuilder.startEnumSelector(new TranslatableText(langKey), configEntry.getType(), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
 					builder.setSaveConsumer(configEntry::setMainConfigValue);
 					builder.setTooltipSupplier(configEntry::getClothyDescription);
