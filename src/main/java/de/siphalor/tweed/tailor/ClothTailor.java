@@ -222,9 +222,9 @@ public class ClothTailor extends Tailor {
 					//noinspection unchecked
 					EnumSelectorBuilder<Enum<?>> builder = (EnumSelectorBuilder<Enum<?>>) (Object) entryBuilder.startEnumSelector(I18n.translate(langKey), configEntry.getType(), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
-					builder.setSaveConsumer(o -> configEntry.setMainConfigValue((DropdownMaterial<?>) o));
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
 					builder.setTooltipSupplier(configEntry::getClothyDescription);
-					builder.setErrorSupplier(value -> errorSupplier((DropdownMaterial<?>) value, configEntry));
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
 					if (requiresRestart(configEntry)) {
 						builder.requireRestart(true);
 					}
@@ -234,9 +234,9 @@ public class ClothTailor extends Tailor {
 		registerEntryConverter(Float.class, (configEntry, entryBuilder, langKey) -> {
 					FloatFieldBuilder builder = entryBuilder.startFloatField(I18n.translate(langKey), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
-					builder.setSaveConsumer(o -> configEntry.setMainConfigValue((Enum<?>) o));
+					builder.setSaveConsumer(configEntry::setMainConfigValue);
 					builder.setTooltipSupplier(configEntry::getClothyDescription);
-					builder.setErrorSupplier(value -> errorSupplier((Enum<?>) value, configEntry));
+					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
 					if (requiresRestart(configEntry)) {
 						builder.requireRestart(true);
 					}
