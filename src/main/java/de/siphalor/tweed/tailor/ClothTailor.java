@@ -3,6 +3,7 @@ package de.siphalor.tweed.tailor;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.client.CustomNoticeScreen;
 import de.siphalor.tweed.client.TweedClient;
+import de.siphalor.tweed.client.cloth.ClothDropdownSelectEntry;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
@@ -26,10 +27,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
@@ -195,29 +193,19 @@ public class ClothTailor extends Tailor {
 						.setErrorSupplier(value -> errorSupplier(value, configEntry))
 						.build()
 		);
-		//noinspection unchecked
+		//noinspection unchecked,rawtypes,rawtypes
 		registerEntryConverter(DropdownMaterial.class, (configEntry, entryBuilder, langKey) ->
-				entryBuilder.startDropdownMenu(
+				new ClothDropdownSelectEntry<>(
 						new TranslatableText(langKey),
 						configEntry.getMainConfigValue(),
-						input -> {
-							//noinspection unchecked
-							for (DropdownMaterial<?> value : ((Collection<DropdownMaterial<?>>) configEntry.getDefaultValue().values())) {
-								if (I18n.translate(value.getTranslationKey()).equals(input)) {
-									return value;
-								}
-							}
-							return null;
-						},
-						dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey()),
-						new DropdownBoxEntry.DefaultSelectionCellCreator<>(dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey()))
+						new TranslatableText("text.cloth-config.reset_value"),
+						configEntry::getClothyDescription,
+						configEntry.getScope() == ConfigScope.GAME,
+						configEntry::getDefaultValue,
+						configEntry::setMainConfigValue,
+						new ArrayList<DropdownMaterial>(configEntry.getDefaultValue().values()),
+						dropdownMaterial -> new TranslatableText(dropdownMaterial.getTranslationKey())
 				)
-						.setDefaultValue(configEntry::getDefaultValue)
-						.setSaveConsumer(configEntry::setMainConfigValue)
-						.setTooltipSupplier(configEntry::getClothyDescription)
-						.setErrorSupplier(value -> errorSupplier(value, configEntry))
-						.setSelections(configEntry.getDefaultValue().values())
-						.build()
 		);
 		registerEntryConverter(Enum.class, (configEntry, entryBuilder, langKey) ->
 				entryBuilder.startEnumSelector(new TranslatableText(langKey), configEntry.getType(), configEntry.getMainConfigValue())
