@@ -66,7 +66,7 @@ public class POJOConverter {
 						@Override
 						public void fix(DataObject<?> dataObject, String propertyName, DataObject<?> mainCompound) {
 							try {
-								method.invoke(pojo, dataObject, mainCompound);
+								method.invoke(pojo, dataObject, propertyName, mainCompound);
 							} catch (IllegalAccessException | InvocationTargetException e) {
 								e.printStackTrace();
 							}
