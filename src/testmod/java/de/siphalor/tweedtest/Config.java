@@ -30,6 +30,7 @@ public class Config {
 
 	public static ConfigScope scope = ConfigScope.DEFAULT;
 
+	@AConfigEntry(scope = ConfigScope.SMALLEST, environment = ConfigEnvironment.CLIENT, comment = "This is a client side dropdown!")
 	public static TestDropdown dropdown = TestDropdown.B;
 	public static TestDropdown dropdown2 = TestDropdown.C;
 

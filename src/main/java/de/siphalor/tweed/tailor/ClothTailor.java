@@ -156,7 +156,7 @@ public class ClothTailor extends Tailor {
 	}
 
 	private void save(ConfigFile configFile) {
-		if (MinecraftClient.getInstance().world != null) {
+		if (TweedClient.isOnRemoteServer()) {
 			configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
 			ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
 			ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
