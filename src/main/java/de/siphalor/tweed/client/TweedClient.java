@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -70,5 +71,10 @@ public class TweedClient implements ClientModInitializer, TweedClientInitializer
 				}
 			}
 		});
+	}
+
+	public static boolean isOnRemoteServer() {
+		MinecraftClient client = MinecraftClient.getInstance();
+		return client.world != null && !client.isIntegratedServerRunning() || client.getServer() != null && client.getServer().isRemote();
 	}
 }

@@ -55,7 +55,7 @@ public class POJOConverter {
 
 		ConfigFile configFile = new ConfigFile(file, serializer, rootCategory);
 
-		for (Method method : configFile.getClass().getDeclaredMethods()) {
+		for (Method method : pojo.getClass().getDeclaredMethods()) {
 			AConfigFixer configFixer = method.getAnnotation(AConfigFixer.class);
 			if (configFixer != null && method.getParameterCount() == 3) {
 				Class<?>[] args = method.getParameterTypes();
