@@ -26,4 +26,10 @@ public enum ConfigEnvironment {
 		}
         return false;
 	}
+
+	public boolean triggers(ConfigEnvironment other) {
+		if (other == UNIVERSAL)
+			return true;
+		return contains(other);
+	}
 }
