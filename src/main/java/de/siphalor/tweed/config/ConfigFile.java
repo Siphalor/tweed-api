@@ -167,15 +167,23 @@ public class ConfigFile {
 
 	public void fixConfig(DataObject<?> dataObject) {
 		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
-			String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Tweed.PATH_DELIMITER);
-			DataObject<?> location = dataObject;
-			for(int i = 0; i < parts.length - 1; i++) {
-				DataValue<?> dataValue = location.get(parts[i]);
-				if(dataValue == null || !dataValue.isObject())
-					return;
-				location = dataValue.asObject();
+			String entryName;
+			DataObject<?> location;
+			if (stringConfigEntryFixerPair.getLeft().isEmpty()) {
+				entryName = "";
+				location = dataObject;
+			} else {
+				String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Tweed.PATH_DELIMITER);
+				location = dataObject;
+				for (int i = 0; i < parts.length - 1; i++) {
+					DataValue<?> dataValue = location.get(parts[i]);
+					if (dataValue == null || !dataValue.isObject())
+						return;
+					location = dataValue.asObject();
+				}
+				entryName = parts[parts.length - 1];
 			}
-			stringConfigEntryFixerPair.getRight().fix(location, parts[parts.length - 1], dataObject);
+			stringConfigEntryFixerPair.getRight().fix(location, entryName, dataObject);
 		});
 	}
 
