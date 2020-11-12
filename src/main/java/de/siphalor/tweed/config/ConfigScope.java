@@ -22,6 +22,7 @@ public enum ConfigScope {
 		this.value = value;
 	}
 
+	@Deprecated
 	public boolean triggeredBy(ConfigScope other) {
 		return this.value <= other.value;
 	}

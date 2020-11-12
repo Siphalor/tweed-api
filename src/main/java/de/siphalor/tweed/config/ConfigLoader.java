@@ -42,7 +42,7 @@ public final class ConfigLoader {
 				}
 			} catch (Exception ignored) {}
 			configFile.finishReload(environment, scope);
-			if(ConfigEnvironment.SERVER.contains(environment)) {
+			if(environment.triggers(ConfigEnvironment.SERVER)) {
 				configFile.syncToClients(ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
 			}
 		}

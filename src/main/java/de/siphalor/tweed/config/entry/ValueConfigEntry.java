@@ -163,7 +163,7 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 
 	@Override
 	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		if(environment.contains(getEnvironment())) {
+		if(environment.triggers(getEnvironment())) {
 			if(scope.triggers(getScope())) {
 				if(origin == ConfigOrigin.MAIN)
 					mainConfigValue = valueSerializer.read(buf);
