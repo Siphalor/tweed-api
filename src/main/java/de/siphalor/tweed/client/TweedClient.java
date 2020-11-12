@@ -72,4 +72,9 @@ public class TweedClient implements ClientModInitializer, TweedClientInitializer
 			}
 		});
 	}
+
+	public static boolean isOnRemoteServer() {
+		MinecraftClient client = MinecraftClient.getInstance();
+		return client.world != null && !client.isIntegratedServerRunning() || client.getServer() != null && client.getServer().isRemote();
+	}
 }
