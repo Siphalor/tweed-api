@@ -4,5 +4,7 @@
 	"tweedtest.dropdown.c": "C",
 	"tweedtest.dropdown.d": "D",
 	"tweedtest.dropdown.e": "E",
-	"tweedtest.dropdown.f": "F"
+	"tweedtest.dropdown.f": "F",
+
+	"tweed.cloth.tweedtest.main.prim-bool.description": "This is an English description loaded from a lang file"
 }
