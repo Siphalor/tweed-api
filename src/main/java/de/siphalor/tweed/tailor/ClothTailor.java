@@ -19,6 +19,7 @@ import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.PacketByteBuf;
 
@@ -186,6 +187,13 @@ public class ClothTailor extends Tailor {
 		}
 	}
 
+	public static Optional<String[]> description(String langKey, ValueConfigEntry<?> configEntry) {
+		if (I18n.hasTranslation(langKey + ".description")) {
+			return Optional.of(new String[]{I18n.translate(langKey + ".description")});
+		}
+		return configEntry.getClothyDescription();
+	}
+
 	@FunctionalInterface
 	public interface EntryConverter<V> {
 		AbstractConfigListEntry<?> convert(ValueConfigEntry<V> configEntry, ConfigEntryBuilder entryBuilder, String langKey);
@@ -196,7 +204,7 @@ public class ClothTailor extends Tailor {
 					BooleanToggleBuilder builder = entryBuilder.startBooleanToggle(I18n.translate(langKey), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
 					builder.setSaveConsumer(configEntry::setMainConfigValue);
-					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setTooltip(description(langKey, configEntry));
 					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
 					if (requiresRestart(configEntry)) {
 						builder.requireRestart(true);
@@ -210,7 +218,7 @@ public class ClothTailor extends Tailor {
 						I18n.translate(langKey),
 						configEntry.getMainConfigValue(),
 						I18n.translate("text.cloth-config.reset_value"),
-						configEntry::getClothyDescription,
+						() -> description(langKey, configEntry),
 						requiresRestart(configEntry),
 						configEntry::getDefaultValue,
 						configEntry::setMainConfigValue,
@@ -223,7 +231,7 @@ public class ClothTailor extends Tailor {
 					EnumSelectorBuilder<Enum<?>> builder = (EnumSelectorBuilder<Enum<?>>) (Object) entryBuilder.startEnumSelector(I18n.translate(langKey), configEntry.getType(), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
 					builder.setSaveConsumer(configEntry::setMainConfigValue);
-					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setTooltip(description(langKey, configEntry));
 					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
 					if (requiresRestart(configEntry)) {
 						builder.requireRestart(true);
@@ -235,7 +243,7 @@ public class ClothTailor extends Tailor {
 					FloatFieldBuilder builder = entryBuilder.startFloatField(I18n.translate(langKey), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
 					builder.setSaveConsumer(configEntry::setMainConfigValue);
-					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setTooltip(description(langKey, configEntry));
 					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
 					if (requiresRestart(configEntry)) {
 						builder.requireRestart(true);
@@ -247,7 +255,7 @@ public class ClothTailor extends Tailor {
 					IntFieldBuilder builder = entryBuilder.startIntField(I18n.translate(langKey), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
 					builder.setSaveConsumer(configEntry::setMainConfigValue);
-					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setTooltip(description(langKey, configEntry));
 					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
 					if (requiresRestart(configEntry)) {
 						builder.requireRestart(true);
@@ -259,7 +267,7 @@ public class ClothTailor extends Tailor {
 					StringFieldBuilder builder = entryBuilder.startStrField(I18n.translate(langKey), configEntry.getMainConfigValue());
 					builder.setDefaultValue(configEntry::getDefaultValue);
 					builder.setSaveConsumer(configEntry::setMainConfigValue);
-					builder.setTooltipSupplier(configEntry::getClothyDescription);
+					builder.setTooltip(description(langKey, configEntry));
 					builder.setErrorSupplier(value -> errorSupplier(value, configEntry));
 					if (requiresRestart(configEntry)) {
 						builder.requireRestart(true);
