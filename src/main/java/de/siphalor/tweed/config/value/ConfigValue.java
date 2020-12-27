@@ -57,7 +57,7 @@ public abstract class ConfigValue<V> {
 		if (defaultValue instanceof Enum) {
 			return enumSerializer((Enum<?>) defaultValue);
 		} else if (defaultValue instanceof StaticStringConvertible) {
-			//noinspection unchecked,rawtypes,rawtypes
+			//noinspection unchecked,rawtypes
 			return stringConvertibleSerializer((StaticStringConvertible) defaultValue);
 		}
 		return null;
