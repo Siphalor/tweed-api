@@ -38,7 +38,7 @@ public class ClothTailor extends Tailor {
 	protected boolean waitingForFile;
 
 	private static final Map<Class<?>, EntryConverter<?>> ENTRY_CONVERTERS = new HashMap<>();
-	private Map<String, ConfigScreenFactory<?>> screenFactories = new HashMap<>();
+	private final Map<String, ConfigScreenFactory<?>> screenFactories = new HashMap<>();
 
 	@Override
 	public void process(ConfigFile configFile) {
@@ -137,7 +137,7 @@ public class ClothTailor extends Tailor {
 				}
 
 				if (entryConverter != null) {
-					//noinspection unchecked,rawtypes,rawtypes
+					//noinspection unchecked,rawtypes
 					registry.accept(entryConverter.convert((ValueConfigEntry) entry.getValue(), entryBuilder, subPath));
 				} else {
 					Tweed.LOGGER.warn("Couldn't convert config entry of type " + ((ValueConfigEntry<?>) entry.getValue()).getType().getSimpleName() + " to cloth entry!");
@@ -212,7 +212,7 @@ public class ClothTailor extends Tailor {
 					return builder.build();
 				}
 		);
-		//noinspection unchecked,rawtypes,rawtypes
+		//noinspection unchecked,rawtypes
 		registerEntryConverter(DropdownMaterial.class, (configEntry, entryBuilder, langKey) ->
 				new ClothDropdownSelectEntry<>(
 						I18n.translate(langKey),

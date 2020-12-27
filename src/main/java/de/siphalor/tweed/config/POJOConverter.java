@@ -57,9 +57,9 @@ public class POJOConverter {
 
 		for (Method method : pojo.getClass().getDeclaredMethods()) {
 			AConfigFixer configFixer = method.getAnnotation(AConfigFixer.class);
-			if (configFixer != null && method.getParameterCount() == 3) {
+			if (configFixer != null && method.getParameterCount() == 2) {
 				Class<?>[] args = method.getParameterTypes();
-				if (args[0] == DataObject.class && args[1] == String.class && args[2] == DataObject.class) {
+				if (args[0] == DataObject.class && args[1] == DataObject.class) {
 					method.setAccessible(true);
 
 					ConfigEntryFixer configEntryFixer = new ConfigEntryFixer() {
