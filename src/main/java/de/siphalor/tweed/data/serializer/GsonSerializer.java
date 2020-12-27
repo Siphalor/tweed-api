@@ -12,7 +12,7 @@ import java.io.*;
 import java.util.Iterator;
 
 public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
-	protected static final Gson GSON = new GsonBuilder().create();
+	protected static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
 	public static final GsonSerializer INSTANCE = new GsonSerializer();
 
@@ -23,24 +23,20 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 
 	@Override
 	public DataObject<JsonElement> read(InputStream inputStream) {
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        JsonObject jsonObject = JsonHelper.deserialize(inputStreamReader);
-		try {
-			inputStreamReader.close();
+		try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
+			JsonObject jsonObject = JsonHelper.deserialize(inputStreamReader);
+			return new GsonObject(jsonObject);
 		} catch (IOException e) {
 			e.printStackTrace();
+			return null;
 		}
-		return new GsonObject(jsonObject);
 	}
 
 	@Override
 	public void write(OutputStream outputStream, DataObject<JsonElement> dataObject) {
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
-		try {
-			JsonWriter jsonWriter = GSON.newJsonWriter(outputStreamWriter);
+		try (JsonWriter jsonWriter = GSON.newJsonWriter(outputStreamWriter)) {
 			GSON.toJson(dataObject.getRaw(), jsonWriter);
-			jsonWriter.close();
-			outputStreamWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -52,7 +48,7 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 	}
 
 	static class GsonValue implements DataValue<JsonElement> {
-		JsonElement jsonElement;
+		final JsonElement jsonElement;
 
 		GsonValue(JsonElement jsonElement) {
             this.jsonElement = jsonElement;
@@ -279,8 +275,8 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 
 		@Override
 		public Iterator<DataValue<JsonElement>> iterator() {
-            return new Iterator<DataValue<JsonElement>>() {
-            	Iterator<JsonElement> jsonElementIterator = jsonElement.getAsJsonArray().iterator();
+			return new Iterator<DataValue<JsonElement>>() {
+				final Iterator<JsonElement> jsonElementIterator = jsonElement.getAsJsonArray().iterator();
 
 				@Override
 				public boolean hasNext() {
