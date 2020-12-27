@@ -69,7 +69,19 @@ public class RangeConstraint<T extends Number> implements AnnotationConstraint<T
 
 	@Override
 	public String getDescription() {
-		return "Must be between " + min + " and " + max + ".";
+		if (min == null) {
+			if (max == null) {
+				return "Any numerical value";
+			} else {
+				return "Must be less or equal to " + max;
+			}
+		} else {
+			if (max == null) {
+				return "Must be greater or equal to " + min;
+			} else {
+				return "Must be inclusively between " + min + " and " + max;
+			}
+		}
 	}
 
 	public T clampValue(T value) {
