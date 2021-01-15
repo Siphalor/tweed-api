@@ -120,21 +120,23 @@ public class ClothTailor extends Tailor {
 				registry.accept(categoryBuilder.build());
 
 			} else if (entry.getValue() instanceof ValueConfigEntry<?>) {
-				Class<?> clazz = ((ValueConfigEntry<?>) entry.getValue()).getType();
-				EntryConverter<?> entryConverter;
-
-				entryConverter = ENTRY_CONVERTERS.get(clazz);
-				main:
-				while (clazz != Object.class && entryConverter == null) {
-					for (Class<?> anInterface : clazz.getInterfaces()) {
-						entryConverter = ENTRY_CONVERTERS.get(anInterface);
-						if (entryConverter != null) {
-							break main;
-						}
-					}
-
-					clazz = clazz.getSuperclass();
+				ValueConfigEntry<?> valueEntry = ((ValueConfigEntry<?>) entry.getValue());
+				EntryConverter<?> entryConverter = valueEntry.getCustomEntryConverter();
+				if (entryConverter == null) {
+					Class<?> clazz = ((ValueConfigEntry<?>) entry.getValue()).getType();
 					entryConverter = ENTRY_CONVERTERS.get(clazz);
+					main:
+					while (clazz != Object.class && entryConverter == null) {
+						for (Class<?> anInterface : clazz.getInterfaces()) {
+							entryConverter = ENTRY_CONVERTERS.get(anInterface);
+							if (entryConverter != null) {
+								break main;
+							}
+						}
+
+						clazz = clazz.getSuperclass();
+						entryConverter = ENTRY_CONVERTERS.get(clazz);
+					}
 				}
 
 				if (entryConverter != null) {
