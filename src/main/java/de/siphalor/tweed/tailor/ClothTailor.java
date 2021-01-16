@@ -194,7 +194,7 @@ public class ClothTailor extends Tailor {
 			return new TranslatableText(langKey);
 		}
 		if (defaultText == null || defaultText.isEmpty()) {
-			return null;
+			return new LiteralText("");
 		}
 		return new LiteralText(defaultText);
 	}
