@@ -14,8 +14,11 @@ import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed.data.serializer.HjsonSerializer;
+import de.siphalor.tweed.tailor.ClothTailor;
 import de.siphalor.tweed.tailor.Tailor;
 import de.siphalor.tweed.util.ReflectionUtil;
+import me.shedaniel.clothconfig2.impl.builders.IntSliderBuilder;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
@@ -191,7 +194,7 @@ public class POJOConverter {
 			Object entryObject = field.get(pojo);
 			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getType());
 			if (valueSerializer == null) {
-				 valueSerializer = SERIALIZER_MAP.get(field.getType());
+				valueSerializer = SERIALIZER_MAP.get(field.getType());
 			}
 			AbstractBasicEntry basicEntry;
 			if (valueSerializer == null) {
@@ -207,7 +210,18 @@ public class POJOConverter {
 				}
 				basicEntry = toCategory(entryObject, casing);
 			} else {
-				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
+				ClothTailor.EntryConverter customConverter = null;
+				if (field.isAnnotationPresent(AConfigConverter.class)) {
+					try {
+						AConfigConverter conv = field.getAnnotation(AConfigConverter.class);
+						Constructor<?> constructor = conv.type().getConstructor(String[].class);
+						customConverter = (ClothTailor.EntryConverter)constructor.newInstance((Object)conv.args());
+					} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+						// TODO: some logging here
+						e.printStackTrace();
+					}
+				}
+				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer, customConverter);
 			}
 
 			String name = CaseFormat.LOWER_CAMEL.to(casing, field.getName());

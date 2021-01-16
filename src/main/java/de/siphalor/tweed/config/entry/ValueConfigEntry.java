@@ -1,6 +1,7 @@
 package de.siphalor.tweed.config.entry;
 
 import de.siphalor.tweed.config.*;
+import de.siphalor.tweed.config.annotated.AConfigConstraint;
 import de.siphalor.tweed.config.constraints.Constraint;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.value.ConfigValue;
@@ -8,6 +9,7 @@ import de.siphalor.tweed.config.value.SimpleConfigValue;
 import de.siphalor.tweed.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed.data.DataContainer;
 import de.siphalor.tweed.data.DataValue;
+import de.siphalor.tweed.tailor.ClothTailor;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.Arrays;
@@ -23,7 +25,9 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>> {
-	private ConfigValueSerializer<V> valueSerializer;
+	private final ConfigValueSerializer<V> valueSerializer;
+	@SuppressWarnings("rawtypes")
+	private final ClothTailor.EntryConverter customConverter;
 
 	/**
 	 * The value of this entry. Will be renamed when backwards compatibility is dropped.
@@ -42,15 +46,21 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 	 * @param defaultValue The default value to use
 	 */
 	public ValueConfigEntry(V defaultValue) {
-		this(new SimpleConfigValue<>(defaultValue), (ConfigValueSerializer<V>) ConfigValue.serializer(defaultValue, defaultValue.getClass()));
+		this(new SimpleConfigValue<>(defaultValue), (ConfigValueSerializer<V>) ConfigValue.serializer(defaultValue, defaultValue.getClass()), null);
 	}
 
 	public ValueConfigEntry(V defaultValue, ConfigValueSerializer<V> configValueSerializer) {
-		this(new SimpleConfigValue<>(defaultValue), configValueSerializer);
+		this(new SimpleConfigValue<>(defaultValue), configValueSerializer, null);
 	}
 
 	public ValueConfigEntry(ConfigValue<V> configValue, ConfigValueSerializer<V> valueSerializer) {
+		this(configValue, valueSerializer, null);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public ValueConfigEntry(ConfigValue<V> configValue, ConfigValueSerializer<V> valueSerializer, ClothTailor.EntryConverter customConverter) {
 		this.valueSerializer = valueSerializer;
+		this.customConverter = customConverter;
 		this.currentValue = configValue;
 		this.defaultValue = currentValue.get();
 		this.mainConfigValue = defaultValue;
@@ -97,6 +107,15 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 		return valueSerializer.getType();
 	}
 
+	/**
+	 * Returns a custom {@link ClothTailor.EntryConverter} that was set using an {@link AConfigConstraint} annotation
+	 * @return the {@link ClothTailor.EntryConverter}
+	 */
+	@SuppressWarnings("rawtypes")
+	public ClothTailor.EntryConverter getCustomEntryConverter() {
+		return customConverter;
+	}
+
 	@Override
 	public void reset(ConfigEnvironment environment, ConfigScope scope) {
 		currentValue.set(defaultValue);
@@ -109,9 +128,9 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 	 * @return this entry for chain calls
 	 */
 	public final ValueConfigEntry<V> addConstraint(Constraint<V> constraint) {
-        constraints.add(constraint);
-    	return this;
-    }
+		constraints.add(constraint);
+		return this;
+	}
 
 	public Queue<Constraint<V>> getConstraints() {
 		return constraints;
@@ -131,7 +150,7 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 					throw e;
 			}
 		}
-    }
+	}
 
 	@Override
 	public String getDescription() {
@@ -180,10 +199,10 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 	}
 
 	@Override
-    public <Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
+	public <Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
 		valueSerializer.write(dataContainer, key, mainConfigValue);
-        if(dataContainer.has(key)) dataContainer.get(key).setComment(getDescription());
-    }
+		if(dataContainer.has(key)) dataContainer.get(key).setComment(getDescription());
+	}
 
 	@Override
 	public void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
@@ -198,7 +217,7 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 		return this;
 	}
 
-    public void onReload() {
+	public void onReload() {
 		if(reloadListener != null)
 			reloadListener.accept(currentValue.get());
 	}

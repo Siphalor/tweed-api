@@ -2,6 +2,7 @@ package de.siphalor.tweedtest;
 
 import com.google.common.base.CaseFormat;
 import de.siphalor.tweed.Tweed;
+import de.siphalor.tweed.client.cloth.IntSliderConverter;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.config.annotated.*;
@@ -21,6 +22,11 @@ public class Config {
 
 	@AConfigEntry(constraints = @AConfigConstraint(value = RangeConstraint.class, param = "100..200"))
 	public static Integer number = 123;
+
+	// TODO: a RangeConstraint can be added, but it won't do anything except throw an Exception when the range is out of bounds
+	@AConfigEntry
+	@AConfigConverter(type = IntSliderConverter.class, args = {"-100", "100"})
+	public static int slider = 0;
 
 	@AConfigEntry(comment = "This is an object")
 	public static A a;
