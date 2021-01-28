@@ -16,10 +16,25 @@ public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<Ra
 	DataValue<RawValue> set(String key, String value);
 
 	@Override
+	DataValue<RawValue> set(String key, char value);
+
+	@Override
+	DataValue<RawValue> set(String key, double value);
+
+	@Override
 	DataValue<RawValue> set(String key, float value);
 
 	@Override
+	DataValue<RawValue> set(String key, long value);
+
+	@Override
 	DataValue<RawValue> set(String key, int value);
+
+	@Override
+	DataValue<RawValue> set(String key, short value);
+
+	@Override
+	DataValue<RawValue> set(String key, byte value);
 
 	@Override
 	DataObject<RawValue> addObject(String key);

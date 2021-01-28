@@ -10,10 +10,25 @@ public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataC
 	DataValue<RawValue> get(Integer index);
 
 	@Override
+	DataValue<RawValue> set(Integer index, byte value);
+
+	@Override
+	DataValue<RawValue> set(Integer index, short value);
+
+	@Override
 	DataValue<RawValue> set(Integer index, int value);
 
 	@Override
+	DataValue<RawValue> set(Integer index, long value);
+
+	@Override
 	DataValue<RawValue> set(Integer index, float value);
+
+	@Override
+	DataValue<RawValue> set(Integer index, double value);
+
+	@Override
+	DataValue<RawValue> set(Integer index, char value);
 
 	@Override
 	DataValue<RawValue> set(Integer index, String value);
