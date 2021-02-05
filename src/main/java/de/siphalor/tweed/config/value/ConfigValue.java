@@ -3,8 +3,13 @@ package de.siphalor.tweed.config.value;
 import de.siphalor.tweed.config.value.serializer.*;
 import de.siphalor.tweed.util.StaticStringConvertible;
 
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class ConfigValue<V> {
@@ -61,6 +66,14 @@ public abstract class ConfigValue<V> {
 		return new ListSerializer<>(elementSerializer, listSupplier);
 	}
 
+	public static <V> StringMapSerializer<V, HashMap<String, V>> stringMapSerializer(ConfigValueSerializer<V> valueSerializer) {
+		return new StringMapSerializer<>(valueSerializer, HashMap::new);
+	}
+
+	public static <V, M extends Map<String, V>> StringMapSerializer<V, M> stringMapSerializer(ConfigValueSerializer<V> valueSerializer, Supplier<M> mapSupplier) {
+		return new StringMapSerializer<>(valueSerializer, mapSupplier);
+	}
+
 	public static ConfigValueSerializer<?> serializer(Object value) {
 		return serializer(value, value.getClass());
 	}
@@ -71,6 +84,11 @@ public abstract class ConfigValue<V> {
 			return specialSerializer(value);
 		}
 		return serializer;
+	}
+
+	public static ConfigValueSerializer<?> containerSerializer(ParameterizedType type) {
+		//type.getRawType().
+		return null;
 	}
 
 	public static ConfigValueSerializer<?> specialSerializer(Object defaultValue) {

@@ -68,6 +68,7 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 
 	@Override
 	public Class<L> getType() {
+		//noinspection unchecked
 		return (Class<L>) listSupplier.get().getClass();
 	}
 }
