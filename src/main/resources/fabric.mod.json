@@ -50,10 +50,14 @@
 		"modmenu": "*"
 	},
 	"breaks": {
-		"cloth-config2": "<4"
+		"cloth-config2": "<4",
+		"modmenu": "<1.16"
 	},
 
 	"custom": {
+		"modmenu": {
+			"badges": [ "library" ]
+		},
 		"modmenu:api": true
 	}
 }

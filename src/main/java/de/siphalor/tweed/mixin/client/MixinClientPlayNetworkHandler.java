@@ -5,7 +5,7 @@ import de.siphalor.tweed.config.*;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
@@ -26,7 +26,7 @@ public class MixinClientPlayNetworkHandler {
 			packetByteBuf.writeEnumConstant(ConfigEnvironment.SYNCED);
 			packetByteBuf.writeEnumConstant(ConfigScope.WORLD);
 			packetByteBuf.writeEnumConstant(ConfigOrigin.DATAPACK);
-			ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, packetByteBuf);
+			ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, packetByteBuf);
 		}
 	}
 }

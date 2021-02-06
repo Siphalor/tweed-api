@@ -1,5 +1,6 @@
 package de.siphalor.tweed.tailor;
 
+import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.client.CustomNoticeScreen;
 import de.siphalor.tweed.client.TweedClient;
@@ -7,7 +8,6 @@ import de.siphalor.tweed.client.cloth.ClothDropdownSelectEntry;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
-import io.github.prospector.modmenu.api.ConfigScreenFactory;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -15,7 +15,7 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
@@ -68,7 +68,7 @@ public class ClothTailor extends Tailor {
 						buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
 						buf.writeEnumConstant(ConfigScope.SMALLEST);
 						buf.writeEnumConstant(ConfigOrigin.MAIN);
-						ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
+						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
 
 						TweedClient.setSyncRunnable(() -> {
 							if (waitingForFile) {
