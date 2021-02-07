@@ -10,6 +10,7 @@ import de.siphalor.tweed.data.serializer.GsonSerializer.GsonList;
 import de.siphalor.tweed.data.serializer.GsonSerializer.GsonObject;
 import de.siphalor.tweed.data.serializer.GsonSerializer.GsonValue;
 import net.minecraft.util.JsonHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.Iterator;
@@ -54,7 +55,7 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		final JsonElement jsonElement;
 
 		GsonValue(JsonElement jsonElement) {
-            this.jsonElement = jsonElement;
+			this.jsonElement = jsonElement;
 		}
 
 		@Override
@@ -73,13 +74,18 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public boolean isCharacter() {
+			return isString() && asString().length() == 1;
+		}
+
+		@Override
 		public boolean isString() {
 			return jsonElement.isJsonPrimitive() && jsonElement.getAsJsonPrimitive().isString();
 		}
 
 		@Override
 		public boolean isBoolean() {
-            return jsonElement instanceof JsonPrimitive && ((JsonPrimitive) jsonElement).isBoolean();
+			return jsonElement instanceof JsonPrimitive && ((JsonPrimitive) jsonElement).isBoolean();
 		}
 
 		@Override
@@ -93,13 +99,38 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public byte asByte() {
+			return jsonElement.getAsByte();
+		}
+
+		@Override
+		public short asShort() {
+			return jsonElement.getAsShort();
+		}
+
+		@Override
 		public int asInt() {
 			return jsonElement.getAsInt();
 		}
 
 		@Override
+		public long asLong() {
+			return jsonElement.getAsLong();
+		}
+
+		@Override
 		public float asFloat() {
 			return jsonElement.getAsFloat();
+		}
+
+		@Override
+		public double asDouble() {
+			return jsonElement.getAsDouble();
+		}
+
+		@Override
+		public char asCharacter() {
+			return jsonElement.getAsCharacter();
 		}
 
 		@Override
@@ -165,7 +196,27 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public DataValue<JsonElement> set(String key, char value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonObject().add(key, jsonPrimitive);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(String key, double value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
 		public DataValue<JsonElement> set(String key, float value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonObject().add(key, jsonPrimitive);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(String key, long value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			jsonElement.getAsJsonObject().add(key, jsonPrimitive);
 			return new GsonValue(jsonPrimitive);
@@ -176,6 +227,20 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			jsonElement.getAsJsonObject().add(key, jsonPrimitive);
 			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(String key, short value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonObject().add(key, jsonPrimitive);
+			return new GsonValue(jsonElement);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(String key, byte value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonObject().add(key, jsonPrimitive);
+			return new GsonValue(jsonElement);
 		}
 
 		@Override
@@ -203,6 +268,7 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		@NotNull
 		public Iterator<Pair<String, DataValue<JsonElement>>> iterator() {
 			return jsonElement.getAsJsonObject().entrySet().stream().map(entry -> new Pair<>(entry.getKey(), (DataValue<JsonElement>) new GsonValue(entry.getValue()))).iterator();
 		}
@@ -224,6 +290,20 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public DataValue<JsonElement> set(Integer index, byte value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonArray().set(index, jsonPrimitive);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(Integer index, short value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonArray().set(index, jsonPrimitive);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
 		public DataValue<JsonElement> set(Integer index, int value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			jsonElement.getAsJsonArray().set(index, jsonPrimitive);
@@ -231,7 +311,28 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public DataValue<JsonElement> set(Integer index, long value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonArray().set(index, jsonPrimitive);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
 		public DataValue<JsonElement> set(Integer index, float value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonArray().set(index, jsonPrimitive);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(Integer index, double value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			jsonElement.getAsJsonArray().set(index, jsonPrimitive);
+			return new GsonValue(jsonPrimitive);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(Integer index, char value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			jsonElement.getAsJsonArray().set(index, jsonPrimitive);
 			return new GsonValue(jsonPrimitive);
@@ -277,6 +378,7 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		@NotNull
 		public Iterator<DataValue<JsonElement>> iterator() {
 			return new Iterator<DataValue<JsonElement>>() {
 				final Iterator<JsonElement> jsonElementIterator = jsonElement.getAsJsonArray().iterator();

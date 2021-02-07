@@ -34,6 +34,8 @@ public class Config {
 	public static TestDropdown dropdown = TestDropdown.B;
 	public static TestDropdown dropdown2 = TestDropdown.C;
 
+	TestRecursiveType recursiveType;
+
 	public static class A {
 		public String name = "Siphalor";
 	}

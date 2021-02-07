@@ -7,10 +7,11 @@ import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
 import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.fabricmc.fabric.api.server.PlayerStream;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.resource.Resource;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.PacketByteBuf;
@@ -216,7 +217,11 @@ public class ConfigFile {
 		packetByteBuf.writeString(name);
 		write(packetByteBuf, environment, scope, origin);
 
-		Tweed.MINECRAFT_SERVERS.stream().flatMap(PlayerStream::all).forEach(serverPlayerEntity -> ServerSidePacketRegistry.INSTANCE.sendToPlayer(serverPlayerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf));
+		for (MinecraftServer server : Tweed.MINECRAFT_SERVERS) {
+			for (ServerPlayerEntity player : PlayerLookup.all(server)) {
+				ServerPlayNetworking.send(player, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
+			}
+		}
 	}
 
 	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
@@ -225,7 +230,7 @@ public class ConfigFile {
 		packetByteBuf.writeString(name);
 		write(packetByteBuf, environment, scope, origin);
 
-		ServerSidePacketRegistry.INSTANCE.sendToPlayer(playerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
+		ServerPlayNetworking.send(playerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
 	}
 
 	public void syncToServer(ConfigEnvironment environment, ConfigScope scope) {
@@ -235,7 +240,7 @@ public class ConfigFile {
 		packetByteBuf.writeEnumConstant(scope);
 		write(packetByteBuf, environment, scope, ConfigOrigin.MAIN);
 
-		ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.TWEED_CLOTH_SYNC_C2S_PACKET, packetByteBuf);
+		ClientPlayNetworking.send(Tweed.TWEED_CLOTH_SYNC_C2S_PACKET, packetByteBuf);
 	}
 
 	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {

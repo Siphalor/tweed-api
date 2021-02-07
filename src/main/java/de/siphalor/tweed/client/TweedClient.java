@@ -7,8 +7,8 @@ import de.siphalor.tweed.tailor.ClothTailor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.event.server.ServerStartCallback;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
@@ -53,11 +53,11 @@ public class TweedClient implements ClientModInitializer, TweedClientInitializer
 				}
 			}
 		});
-		ServerStartCallback.EVENT.register(minecraftServer -> {
-			ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
-		});
+		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer ->
+				ConfigLoader.loadConfigs(minecraftServer.getDataManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD)
+		);
 
-		ClientSidePacketRegistry.INSTANCE.register(Tweed.CONFIG_SYNC_S2C_PACKET, (packetContext, packetByteBuf) -> {
+		ClientPlayNetworking.registerGlobalReceiver(Tweed.CONFIG_SYNC_S2C_PACKET, (client, handler, packetByteBuf, packetSender) -> {
 			ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);
 			String fileName = packetByteBuf.readString();
             for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {

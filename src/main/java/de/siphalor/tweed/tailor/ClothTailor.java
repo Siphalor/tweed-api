@@ -1,5 +1,6 @@
 package de.siphalor.tweed.tailor;
 
+import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.client.CustomNoticeScreen;
 import de.siphalor.tweed.client.TweedClient;
@@ -7,7 +8,6 @@ import de.siphalor.tweed.client.cloth.ClothDropdownSelectEntry;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
-import io.github.prospector.modmenu.api.ConfigScreenFactory;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -15,10 +15,9 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.PacketByteBuf;
@@ -66,7 +65,7 @@ public class ClothTailor extends Tailor {
 						buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
 						buf.writeEnumConstant(ConfigScope.SMALLEST);
 						buf.writeEnumConstant(ConfigOrigin.MAIN);
-						ClientSidePacketRegistry.INSTANCE.sendToServer(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
+						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
 
 						TweedClient.setSyncRunnable(() -> {
 							if (waitingForFile) {
@@ -112,7 +111,7 @@ public class ClothTailor extends Tailor {
 
 			if (entry.getValue() instanceof ConfigCategory) {
 				SubCategoryBuilder categoryBuilder = entryBuilder.startSubCategory(I18n.translate(subPath));
-				categoryBuilder.add(entryBuilder.startTextDescription(entry.getValue().getDescription()).setColor(Color.GRAY.getRGB()).build());
+				categoryBuilder.add(entryBuilder.startTextDescription(translation(subPath + ".description", entry.getValue().getDescription())).setColor(Color.GRAY.getRGB()).build());
 
 				convertCategory(entryBuilder, categoryBuilder::add, (ConfigCategory) entry.getValue(), subPath);
 
@@ -151,7 +150,7 @@ public class ClothTailor extends Tailor {
 		if (configCategory.getBackgroundTexture() != null) {
 			clothCategory.setCategoryBackground(configCategory.getBackgroundTexture());
 		}
-		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(configCategory.getComment()).setColor(Color.GRAY.getRGB()).build());
+		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(translation(name + ".description", configCategory.getDescription())).setColor(Color.GRAY.getRGB()).build());
 		convertCategory(configBuilder.entryBuilder(), clothCategory::addEntry, configCategory, name);
 	}
 
@@ -185,6 +184,16 @@ public class ClothTailor extends Tailor {
 		} else {
 			return configEntry.getScope().triggers(ConfigScope.WORLD);
 		}
+	}
+
+	public static String translation(String langKey, String defaultText) {
+		if (I18n.hasTranslation(langKey)) {
+			return I18n.translate(langKey);
+		}
+		if (defaultText == null || defaultText.isEmpty()) {
+			return "";
+		}
+		return defaultText;
 	}
 
 	public static Optional<String[]> description(String langKey, ValueConfigEntry<?> configEntry) {

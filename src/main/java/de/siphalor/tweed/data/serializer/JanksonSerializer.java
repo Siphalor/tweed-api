@@ -7,9 +7,8 @@ import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
-import de.siphalor.tweed.data.serializer.JanksonSerializer.JanksonList;
-import de.siphalor.tweed.data.serializer.JanksonSerializer.JanksonObject;
-import de.siphalor.tweed.data.serializer.JanksonSerializer.JanksonValue;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -58,9 +57,9 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
         JsonElement element;
         Consumer<String> setComment;
         Supplier<String> getComment;
-        Function<Class, Object> as;
+        Function<Class<?>, Object> as;
 
-		JanksonValue(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class, Object> as) {
+		JanksonValue(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class<?>, Object> as) {
 			this.element = jsonElement;
 			this.setComment = setComment;
 			this.getComment = getComment;
@@ -80,6 +79,14 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		@Override
 		public boolean isNumber() {
             return element instanceof JsonPrimitive && ((JsonPrimitive) element).getValue() instanceof Number;
+		}
+
+		@Override
+		public boolean isCharacter() {
+			return element instanceof JsonPrimitive && (
+					(((JsonPrimitive) element).getValue() instanceof String && ((String) ((JsonPrimitive) element).getValue()).length() == 1)
+					|| ((JsonPrimitive) element).getValue() instanceof Character
+			);
 		}
 
 		@Override
@@ -103,13 +110,38 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public byte asByte() {
+			return (byte) as.apply(Byte.TYPE);
+		}
+
+		@Override
+		public short asShort() {
+			return (short) as.apply(Short.TYPE);
+		}
+
+		@Override
 		public int asInt() {
-			return (int) as.apply(Integer.class);
+			return (int) as.apply(Integer.TYPE);
+		}
+
+		@Override
+		public long asLong() {
+			return (long) as.apply(Long.TYPE);
 		}
 
 		@Override
 		public float asFloat() {
-			return (float) as.apply(Float.class);
+			return (float) as.apply(Float.TYPE);
+		}
+
+		@Override
+		public double asDouble() {
+			return (double) as.apply(Double.TYPE);
+		}
+
+		@Override
+		public char asCharacter() {
+			return (char) as.apply(Character.TYPE);
 		}
 
 		@Override
@@ -119,7 +151,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 
 		@Override
 		public boolean asBoolean() {
-			return (Boolean) as.apply(Boolean.class);
+			return (Boolean) as.apply(Boolean.TYPE);
 		}
 
 		@Override
@@ -141,7 +173,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 	static class JanksonObject extends JanksonValue implements DataObject<JsonElement> {
 		JsonObject self;
 
-		JanksonObject(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class, Object> as) {
+		JanksonObject(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class<?>, Object> as) {
 			super(jsonElement, setComment, getComment, as);
 			self = (JsonObject) element;
 		}
@@ -169,6 +201,20 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public DataValue<JsonElement> set(String key, short value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.put(key, jsonPrimitive);
+			return createDataValue(jsonPrimitive, key);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(String key, byte value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.put(key, jsonPrimitive);
+			return createDataValue(jsonPrimitive, key);
+		}
+
+		@Override
 		public DataValue<JsonElement> set(String key, float value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
@@ -176,7 +222,28 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public DataValue<JsonElement> set(String key, long value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.put(key, jsonPrimitive);
+			return createDataValue(jsonPrimitive, key);
+		}
+
+		@Override
 		public DataValue<JsonElement> set(String key, String value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.put(key, jsonPrimitive);
+			return createDataValue(jsonPrimitive, key);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(String key, char value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.put(key, jsonPrimitive);
+			return createDataValue(jsonPrimitive, key);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(String key, double value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
@@ -215,6 +282,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		@NotNull
 		public Iterator<Pair<String, DataValue<JsonElement>>> iterator() {
             return self.entrySet().stream().map(entry -> new Pair<>(entry.getKey(), createDataValue(entry.getValue(), entry.getKey()))).iterator();
 		}
@@ -227,7 +295,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 	static class JanksonList extends JanksonValue implements DataList<JsonElement> {
 		JsonArray self;
 
-		JanksonList(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class, Object> as) {
+		JanksonList(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class<?>, Object> as) {
 			super(jsonElement, setComment, getComment, as);
 			self = (JsonArray) jsonElement;
 		}
@@ -243,6 +311,20 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public DataValue<JsonElement> set(Integer index, byte value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.add(jsonPrimitive);
+			return createDataValue(jsonPrimitive, self.size() - 1);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(Integer index, short value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.add(jsonPrimitive);
+			return createDataValue(jsonPrimitive, self.size() - 1);
+		}
+
+		@Override
 		public DataValue<JsonElement> set(Integer index, int value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
             self.add(jsonPrimitive);
@@ -250,7 +332,28 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public DataValue<JsonElement> set(Integer index, long value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.add(jsonPrimitive);
+			return createDataValue(jsonPrimitive, self.size() - 1);
+		}
+
+		@Override
 		public DataValue<JsonElement> set(Integer index, float value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.add(jsonPrimitive);
+			return createDataValue(jsonPrimitive, self.size() - 1);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(Integer index, double value) {
+			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+			self.add(jsonPrimitive);
+			return createDataValue(jsonPrimitive, self.size() - 1);
+		}
+
+		@Override
+		public DataValue<JsonElement> set(Integer index, char value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
@@ -296,6 +399,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		@NotNull
 		public Iterator<DataValue<JsonElement>> iterator() {
             JsonElement[] elements = self.toArray();
 			//noinspection unchecked
