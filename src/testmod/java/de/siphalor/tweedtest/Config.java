@@ -1,13 +1,18 @@
 package de.siphalor.tweedtest;
 
 import com.google.common.base.CaseFormat;
-import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.config.annotated.*;
 import de.siphalor.tweed.config.constraints.RangeConstraint;
 import de.siphalor.tweed.tailor.ClothData;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@SuppressWarnings("unused")
 @ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth", casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweedtest")
 public class Config {
@@ -35,6 +40,9 @@ public class Config {
 	public static TestDropdown dropdown2 = TestDropdown.C;
 
 	TestRecursiveType recursiveType;
+
+	public static List<String> strings = new ArrayList<>();
+	public static Map<String, Boolean> booleanMap = new HashMap<>();
 
 	public static class A {
 		public String name = "Siphalor";

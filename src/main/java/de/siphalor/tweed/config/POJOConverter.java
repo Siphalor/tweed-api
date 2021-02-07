@@ -198,7 +198,7 @@ public class POJOConverter {
 	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field, CaseFormat casing) {
 		try {
 			Object entryObject = field.get(pojo);
-			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getType());
+			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getGenericType());
 			if (valueSerializer == null) {
 				 valueSerializer = SERIALIZER_MAP.get(field.getType());
 			}

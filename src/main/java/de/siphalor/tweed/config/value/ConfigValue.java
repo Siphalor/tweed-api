@@ -1,11 +1,10 @@
 package de.siphalor.tweed.config.value;
 
+import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.value.serializer.*;
 import de.siphalor.tweed.util.StaticStringConvertible;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,8 +85,74 @@ public abstract class ConfigValue<V> {
 		return serializer;
 	}
 
+	public static ConfigValueSerializer<?> serializer(Object value, Type type) {
+		ConfigValueSerializer<?> serializer;
+		Class<?> clazz = null;
+		if (type instanceof ParameterizedType) {
+			serializer = containerSerializer((ParameterizedType) type);
+			if (serializer != null) {
+				return serializer;
+			}
+			if (((ParameterizedType) type).getRawType() instanceof Class<?>) {
+				clazz = (Class<?>) ((ParameterizedType) type).getRawType();
+			}
+		} else if (type instanceof Class<?>) {
+			clazz = (Class<?>) type;
+		}
+
+		if (clazz != null) {
+			return serializer(value, clazz);
+		}
+		return null;
+	}
+
 	public static ConfigValueSerializer<?> containerSerializer(ParameterizedType type) {
-		//type.getRawType().
+		Type rawType = type.getRawType();
+		if (rawType instanceof Class<?>) {
+			if (List.class.isAssignableFrom((Class<?>) rawType)) {
+				try {
+					Constructor<?> constructor = ((Class<?>) rawType).getConstructor();
+					constructor.setAccessible(true);
+					//noinspection unchecked
+					return listSerializer((ConfigValueSerializer<Object>) serializer(null, type.getActualTypeArguments()[0]), () -> {
+						try {
+							//noinspection unchecked
+							return (List<Object>) constructor.newInstance();
+						} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+							Tweed.LOGGER.error("Failed to create new list for config entry!");
+							e.printStackTrace();
+						}
+						return new ArrayList<>();
+					});
+				} catch (NoSuchMethodException e) {
+					if (((Class<?>) rawType).isAssignableFrom(ArrayList.class)) {
+						return listSerializer(serializer(null, type.getActualTypeArguments()[0]), ArrayList::new);
+					}
+				}
+			} else if (Map.class.isAssignableFrom((Class<?>) rawType)) {
+				if (type.getActualTypeArguments()[0] == String.class) {
+					try {
+						Constructor<?> constructor = ((Class<?>) rawType).getConstructor();
+						constructor.setAccessible(true);
+						//noinspection unchecked
+						return stringMapSerializer((ConfigValueSerializer<Object>) serializer(null, type.getActualTypeArguments()[1]), () -> {
+							try {
+								//noinspection unchecked
+								return (Map<String, Object>) constructor.newInstance();
+							} catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+								Tweed.LOGGER.error("Failed to create new map for config entry!");
+								e.printStackTrace();
+							}
+							return new HashMap<>();
+						});
+					} catch (NoSuchMethodException e) {
+						if (((Class<?>) rawType).isAssignableFrom(HashMap.class)) {
+							return stringMapSerializer(serializerByClass((Class<?>) type.getActualTypeArguments()[1]), HashMap::new);
+						}
+					}
+				}
+			}
+		}
 		return null;
 	}
 
