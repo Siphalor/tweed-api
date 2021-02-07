@@ -1,0 +1,24 @@
+{
+	"merge-paths": [
+		"v3-1.16",
+		"v3-1.16->v3-1.15->v3-1.14",
+		"v3-1.16->v3-1.17"
+	],
+	"commands": [
+		{
+			"title": "Cleanup",
+			"run": "rm -rf .gradle build",
+			"nt": "rmdir /S /Q .gradle & rmdir /S /Q build",
+			"ignore-errors": true
+		},
+		{
+			"title": "Build & Publish",
+			"run": "./gradlew publish",
+			"nt": "gradlew publish"
+		},
+		{
+			"title": "Push changes",
+			"run": "git push"
+		}
+	]
+}

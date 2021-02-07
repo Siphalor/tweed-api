@@ -9,6 +9,7 @@ import de.siphalor.tweed.data.serializer.HjsonSerializer.HjsonList;
 import de.siphalor.tweed.data.serializer.HjsonSerializer.HjsonObject;
 import de.siphalor.tweed.data.serializer.HjsonSerializer.HjsonValue;
 import org.hjson.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.Iterator;
@@ -16,7 +17,7 @@ import java.util.Iterator;
 public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 	public static final HjsonSerializer INSTANCE = new HjsonSerializer();
 
-	private HjsonOptions hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
+	private final HjsonOptions hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
 
 	@Override
 	public DataObject<JsonValue> newObject() {
@@ -81,6 +82,11 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		public boolean isCharacter() {
+			return jsonValue.isString() && jsonValue.asString().length() == 1;
+		}
+
+		@Override
 		public boolean isString() {
 			return jsonValue.isString();
 		}
@@ -101,13 +107,38 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		public byte asByte() {
+			return (byte) jsonValue.asInt();
+		}
+
+		@Override
+		public short asShort() {
+			return (short) jsonValue.asInt();
+		}
+
+		@Override
 		public int asInt() {
 			return jsonValue.asInt();
 		}
 
 		@Override
+		public long asLong() {
+			return jsonValue.asLong();
+		}
+
+		@Override
 		public float asFloat() {
 			return jsonValue.asFloat();
+		}
+
+		@Override
+		public double asDouble() {
+			return jsonValue.asDouble();
+		}
+
+		@Override
+		public char asCharacter() {
+			return jsonValue.asString().charAt(0);
 		}
 
 		@Override
@@ -164,13 +195,43 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		public DataValue<JsonValue> set(String key, short value) {
+			jsonValue.asObject().set(key, value);
+			return new HjsonValue(jsonValue.asObject().get(key));
+		}
+
+		@Override
+		public DataValue<JsonValue> set(String key, byte value) {
+			jsonValue.asObject().set(key, value);
+			return new HjsonValue(jsonValue.asObject().get(key));
+		}
+
+		@Override
 		public DataValue<JsonValue> set(String key, float value) {
 			jsonValue.asObject().set(key, value);
 			return new HjsonValue(jsonValue.asObject().get(key));
 		}
 
 		@Override
+		public DataValue<JsonValue> set(String key, long value) {
+			jsonValue.asObject().set(key, value);
+			return new HjsonValue(jsonValue.asObject().get(key));
+		}
+
+		@Override
 		public DataValue<JsonValue> set(String key, String value) {
+			jsonValue.asObject().set(key, value);
+			return new HjsonValue(jsonValue.asObject().get(key));
+		}
+
+		@Override
+		public DataValue<JsonValue> set(String key, char value) {
+			jsonValue.asObject().set(key, String.valueOf(value));
+			return new HjsonValue(jsonValue.asObject().get(key));
+		}
+
+		@Override
+		public DataValue<JsonValue> set(String key, double value) {
 			jsonValue.asObject().set(key, value);
 			return new HjsonValue(jsonValue.asObject().get(key));
 		}
@@ -207,6 +268,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		@NotNull
 		public Iterator<Pair<String, DataValue<JsonValue>>> iterator() {
 			return jsonValue.asObject().names().stream().map(name -> new Pair<>(name, (DataValue<JsonValue>) new HjsonValue(jsonValue.asObject().get(name)))).iterator();
 		}
@@ -229,7 +291,28 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		public DataValue<JsonValue> set(Integer index, byte value) {
+			adjustLength(index);
+			jsonValue.asArray().set(index, value);
+			return new HjsonValue(jsonValue.asArray().get(index));
+		}
+
+		@Override
+		public DataValue<JsonValue> set(Integer index, short value) {
+			adjustLength(index);
+			jsonValue.asArray().set(index, value);
+			return new HjsonValue(jsonValue.asArray().get(index));
+		}
+
+		@Override
 		public DataValue<JsonValue> set(Integer index, int value) {
+			adjustLength(index);
+			jsonValue.asArray().set(index, value);
+			return new HjsonValue(jsonValue.asArray().get(index));
+		}
+
+		@Override
+		public DataValue<JsonValue> set(Integer index, long value) {
 			adjustLength(index);
 			jsonValue.asArray().set(index, value);
 			return new HjsonValue(jsonValue.asArray().get(index));
@@ -239,6 +322,20 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		public DataValue<JsonValue> set(Integer index, float value) {
 			adjustLength(index);
 			jsonValue.asArray().set(index, value);
+			return new HjsonValue(jsonValue.asArray().get(index));
+		}
+
+		@Override
+		public DataValue<JsonValue> set(Integer index, double value) {
+			adjustLength(index);
+			jsonValue.asArray().set(index, value);
+			return new HjsonValue(jsonValue.asArray().get(index));
+		}
+
+		@Override
+		public DataValue<JsonValue> set(Integer index, char value) {
+			adjustLength(index);
+			jsonValue.asArray().set(index, String.valueOf(value));
 			return new HjsonValue(jsonValue.asArray().get(index));
 		}
 
@@ -291,6 +388,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		@NotNull
 		public Iterator<DataValue<JsonValue>> iterator() {
 			return jsonValue.asArray().values().stream().map(json -> (DataValue<JsonValue>) new HjsonValue(json)).iterator();
 		}

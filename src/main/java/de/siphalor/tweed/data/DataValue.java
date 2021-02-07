@@ -5,6 +5,7 @@ public interface DataValue<RawValue> {
 	String getComment();
 
 	boolean isNumber();
+	boolean isCharacter();
 	boolean isString();
 	boolean isBoolean();
 	boolean isObject();
@@ -18,8 +19,13 @@ public interface DataValue<RawValue> {
 		return false;
 	}
 
+	byte asByte();
+	short asShort();
 	int asInt();
+	long asLong();
 	float asFloat();
+	double asDouble();
+	char asCharacter();
 	String asString();
 	boolean asBoolean();
 	DataObject<RawValue> asObject();

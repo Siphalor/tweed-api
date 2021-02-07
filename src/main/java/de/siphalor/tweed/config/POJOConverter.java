@@ -101,7 +101,11 @@ public class POJOConverter {
 		}
 
 		for (Field field : ReflectionUtil.getAllDeclaredFields(pojo.getClass())) {
-			addToCategory(configCategory, pojo, field, casing);
+			try {
+				addToCategory(configCategory, pojo, field, casing);
+			} catch (StackOverflowError e) {
+				Tweed.LOGGER.error("Failed to unwrap unknown object of type \"" + field.getType() + "\" in field \"" + field.getName() + "\". This usually indicates recursively nested types without serializers.");
+			}
 		}
 
 		for (Method method : ReflectionUtil.getAllDeclaredMethods(pojo.getClass())) {
@@ -154,6 +158,11 @@ public class POJOConverter {
 	}
 
 	public static void addToCategory(ConfigCategory configCategory, Object pojo, Field field, CaseFormat casing) {
+		if (pojo.getClass() == field.getGenericType()) {
+			Tweed.LOGGER.error("Found recursively nested type in config entry, skipping this field: " + field.getName() + " in " + pojo.getClass());
+			return;
+		}
+
 		field.setAccessible(true);
 
 		if (field.isAnnotationPresent(AConfigExclude.class)) return;

@@ -38,14 +38,16 @@ dependencies {
 	mappings "net.fabricmc:yarn:${minecraft_version}+build.${project.yarn_mappings}"
 	modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	modCompile "net.fabricmc.fabric-api:fabric-networking-v0:0.1.7+003643510c"
-	include "net.fabricmc.fabric-api:fabric-networking-v0:0.1.7+003643510c"
-	modCompile "net.fabricmc.fabric-api:fabric-api-base:0.1.2+b7f9825d0c"
-	include "net.fabricmc.fabric-api:fabric-api-base:0.1.2+b7f9825d0c"
-	modCompile "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.1.10+06c939b30c"
-	include "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.1.10+06c939b30c"
-	modCompile "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:0.1.2+003643510c"
-	include "net.fabricmc.fabric-api:fabric-events-lifecycle-v0:0.1.2+003643510c"
+	def fabric_deps = [
+			"fabric-api-base": "0.1.2+9826cad80c",
+			"fabric-networking-api-v1": "1.0.1+c1455e800c",
+			"fabric-resource-loader-v0": "0.1.11+c1455e800c",
+			"fabric-lifecycle-events-v1": "1.2.1+c1455e800c"
+	]
+	for (dep in fabric_deps.entrySet()) {
+		modCompile "net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"
+		include "net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"
+	}
 
 	// hjson
 	//compile 'org.hjson:hjson:3.0.0'

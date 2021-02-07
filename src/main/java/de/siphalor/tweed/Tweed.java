@@ -4,7 +4,7 @@ import com.google.common.base.CaseFormat;
 import de.siphalor.tweed.config.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
@@ -12,7 +12,6 @@ import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,15 +19,15 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 public class Tweed implements ModInitializer {
 	public static final String MOD_ID = "tweed";
+	public static final String MOD_NAME = "Tweed";
 	public static final Identifier CONFIG_SYNC_S2C_PACKET = new Identifier(MOD_ID, "sync_config");
 	public static final Identifier REQUEST_SYNC_C2S_PACKET = new Identifier(MOD_ID, "request_sync");
 	public static final Identifier TWEED_CLOTH_SYNC_C2S_PACKET = new Identifier(MOD_ID, "sync_from_cloth_client");
 
-	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
 	public static final char PATH_DELIMITER = '.';
 	public static final String mainConfigDirectory = FabricLoader.getInstance().getConfigDir().toFile().getAbsolutePath() + File.separator;
@@ -54,27 +53,27 @@ public class Tweed implements ModInitializer {
 			}
 		});
 
-		ServerSidePacketRegistry.INSTANCE.register(REQUEST_SYNC_C2S_PACKET, (packetContext, packetByteBuf) -> {
+		ServerPlayNetworking.registerGlobalReceiver(REQUEST_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {
 			String fileName = packetByteBuf.readString(32767);
             for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
             	if(configFile.getName().equals(fileName)) {
-            		if(Objects.requireNonNull(packetContext.getPlayer().getServer()).getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
-						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class), packetByteBuf.readEnumConstant(ConfigOrigin.class));
+            		if(server.getPermissionLevel(player.getGameProfile()) == 4) {
+						configFile.syncToClient(player, packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class), packetByteBuf.readEnumConstant(ConfigOrigin.class));
 					} else {
             			packetByteBuf.readEnumConstant(ConfigEnvironment.class);
             			ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
             			packetByteBuf.readEnumConstant(ConfigOrigin.class);
-						configFile.syncToClient((ServerPlayerEntity) packetContext.getPlayer(), ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
+						configFile.syncToClient(player, ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
 					}
             		break;
 				}
 			}
 		});
-		ServerSidePacketRegistry.INSTANCE.register(TWEED_CLOTH_SYNC_C2S_PACKET, ((packetContext, packetByteBuf) -> {
+		ServerPlayNetworking.registerGlobalReceiver(TWEED_CLOTH_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {
 			String fileName = packetByteBuf.readString(32767);
 			for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
 				if(configFile.getName().equals(fileName)) {
-					if(Objects.requireNonNull(packetContext.getPlayer().getServer()).getPermissionLevel(packetContext.getPlayer().getGameProfile()) == 4) {
+					if(server.getPermissionLevel(player.getGameProfile()) == 4) {
 						ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
 						ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
 						configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
@@ -85,7 +84,7 @@ public class Tweed implements ModInitializer {
 					break;
 				}
 			}
-		}));
+		});
 
 		Tweed.runEntryPoints();
 	}
