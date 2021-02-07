@@ -1,10 +1,11 @@
 package de.siphalor.tweed.config.constraints;
 
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
+import de.siphalor.tweed.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
 
 public class RangeConstraint<T extends Number> implements AnnotationConstraint<T> {
-	private final boolean autoCorrect;
+	private boolean autoCorrect;
 	protected T min;
 	protected T max;
 
@@ -91,8 +92,13 @@ public class RangeConstraint<T extends Number> implements AnnotationConstraint<T
 			return min;
 	}
 
+	@SuppressWarnings({"RedundantCast", "unchecked"})
 	@Override
 	public void fromAnnotationParam(String param, Class<?> valueType) {
+		if (param.endsWith("!")) {
+			autoCorrect = true;
+			param = param.substring(0, param.length() - 1);
+		}
 		String[] parts = StringUtils.splitByWholeSeparator(param, "..", 2);
 		if (parts.length == 0) {
 			throw new RuntimeException("Invalid value \"" + param + "\" for number range constraint");
@@ -101,13 +107,16 @@ public class RangeConstraint<T extends Number> implements AnnotationConstraint<T
 			if (parts.length < 2 || parts[1].isEmpty()) {
 				everything();
 			} else {
-				smallerThan((T)(Object) Double.parseDouble(parts[1]));
+				smallerThan((T)(Object) NumberUtil.parse(parts[1], (Class<? extends Number>) valueType));
 			}
 		} else {
 			if (parts.length < 2 || parts[1].isEmpty()) {
-				greaterThan((T)(Object) Double.parseDouble(parts[0]));
+				greaterThan((T)(Object) NumberUtil.parse(parts[0], (Class<? extends Number>) valueType));
 			} else {
-				between((T)(Object) Double.parseDouble(parts[0]), (T)(Object) Double.parseDouble(parts[1]));
+				between(
+						(T)(Object) NumberUtil.parse(parts[0], (Class<? extends Number>) valueType),
+						(T)(Object) NumberUtil.parse(parts[1], (Class<? extends Number>) valueType)
+				);
 			}
 		}
 	}

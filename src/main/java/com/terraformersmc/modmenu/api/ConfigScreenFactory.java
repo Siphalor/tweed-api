@@ -1,4 +1,4 @@
-package io.github.prospector.modmenu.api;
+package com.terraformersmc.modmenu.api;
 
 import net.minecraft.client.gui.screen.Screen;
 

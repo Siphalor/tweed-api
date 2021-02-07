@@ -3,8 +3,8 @@
 	"id": "tweed",
 	"version": "${version}",
 
-	"name": "Tweed API",
-	"description": "Yet another config handler mod",
+	"name": "Tweed",
+	"description": "Yet another config library.",
 
 	"authors": [
 		"Siphalor"
@@ -50,10 +50,14 @@
 		"modmenu": "*"
 	},
 	"breaks": {
-		"cloth-config2": "<4"
+		"cloth-config2": "<4",
+		"modmenu": "<1.16"
 	},
 
 	"custom": {
+		"modmenu": {
+			"badges": [ "library" ]
+		},
 		"modmenu:api": true
 	}
 }
