@@ -19,7 +19,15 @@ import java.util.ArrayList;
  */
 public class TweedRegistry {
 	private static final ArrayList<ConfigFile> CONFIG_FILES = new ArrayList<>();
+	/**
+	 * This registry contains all of the known {@link ConfigDataSerializer}s.<br />
+	 * By default available serializers are <code>gson</code>, <code>hjson</code> and <code>jankson</code>.
+	 */
 	public static final Registry<ConfigDataSerializer<?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
+	/**
+	 * This registry contains all of the known {@link Tailor}s.<br />
+	 * By default only a serializer for the Cloth config UI is available as <code>tweed:cloth</code>.
+	 */
 	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "tailors")), Lifecycle.experimental());
 
 	public static ConfigFile registerConfigFile(String fileName) {
