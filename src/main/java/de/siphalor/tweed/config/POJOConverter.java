@@ -73,7 +73,7 @@ public class POJOConverter {
 						}
 					};
 
-					configFile.register(configFixer.value().isEmpty() ? "" : configFixer.value() + ".", configEntryFixer);
+					configFile.register(configFixer.value().isEmpty() ? "" : configFixer.value() + Tweed.PATH_DELIMITER + "_", configEntryFixer);
 				}
 			}
 		}
