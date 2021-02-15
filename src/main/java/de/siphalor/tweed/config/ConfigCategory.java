@@ -165,7 +165,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
-		return entryStream().filter(entry -> entry.getValue().getEnvironment().triggers(environment) && scope.triggers(entry.getValue().getScope()));
+		return entryStream().filter(entry -> environment.triggers(entry.getValue().getEnvironment()) && scope.triggers(entry.getValue().getScope()));
 	}
 
 	public boolean isEmpty() {

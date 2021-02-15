@@ -22,7 +22,10 @@ public class Config {
 	@AConfigEntry(constraints = @AConfigConstraint(value = RangeConstraint.class, param = "100..200"))
 	public static Integer number = 123;
 
-	@AConfigEntry(comment = "This is an object")
+	@AConfigEntry(comment = "This is an object.\n" +
+			"A description with line\n" +
+			"\tbreaks\n" +
+			"\tand tabs")
 	public static A a;
 
 	@AConfigTransitive

@@ -97,7 +97,7 @@ public interface ConfigEntry<T> {
 	String getDescription();
 
 	default Optional<String[]> getClothyDescription() {
-		return Optional.of(Arrays.stream(getDescription().split("[\n\r]\r?")).toArray(String[]::new));
+		return Optional.of(Arrays.stream(getDescription().replace("\t", "    ").split("[\n\r]\r?")).toArray(String[]::new));
 	}
 
 	/**
