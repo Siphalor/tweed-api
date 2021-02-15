@@ -7,6 +7,7 @@ import de.siphalor.tweed.client.TweedClient;
 import de.siphalor.tweed.client.cloth.ClothDropdownSelectEntry;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.ConstraintException;
+import de.siphalor.tweed.config.entry.ConfigEntry;
 import de.siphalor.tweed.config.entry.ValueConfigEntry;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
@@ -111,7 +112,7 @@ public class ClothTailor extends Tailor {
 
 			if (entry.getValue() instanceof ConfigCategory) {
 				SubCategoryBuilder categoryBuilder = entryBuilder.startSubCategory(I18n.translate(subPath));
-				categoryBuilder.add(entryBuilder.startTextDescription(translation(subPath + ".description", entry.getValue().getDescription())).setColor(Color.GRAY.getRGB()).build());
+				categoryBuilder.add(entryBuilder.startTextDescription(categoryDescription(subPath, entry.getValue())).setColor(Color.GRAY.getRGB()).build());
 
 				convertCategory(entryBuilder, categoryBuilder::add, (ConfigCategory) entry.getValue(), subPath);
 
@@ -150,7 +151,7 @@ public class ClothTailor extends Tailor {
 		if (configCategory.getBackgroundTexture() != null) {
 			clothCategory.setCategoryBackground(configCategory.getBackgroundTexture());
 		}
-		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(translation(name + ".description", configCategory.getDescription())).setColor(Color.GRAY.getRGB()).build());
+		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(categoryDescription(name, configCategory)).setColor(Color.GRAY.getRGB()).build());
 		convertCategory(configBuilder.entryBuilder(), clothCategory::addEntry, configCategory, name);
 	}
 
@@ -186,21 +187,18 @@ public class ClothTailor extends Tailor {
 		}
 	}
 
-	public static String translation(String langKey, String defaultText) {
-		if (I18n.hasTranslation(langKey)) {
-			return I18n.translate(langKey);
-		}
-		if (defaultText == null || defaultText.isEmpty()) {
-			return "";
-		}
-		return defaultText;
-	}
-
 	public static Optional<String[]> description(String langKey, ValueConfigEntry<?> configEntry) {
 		if (I18n.hasTranslation(langKey + ".description")) {
 			return Optional.of(new String[]{I18n.translate(langKey + ".description")});
 		}
 		return configEntry.getClothyDescription();
+	}
+
+	public static String categoryDescription(String langKey, ConfigEntry<?> entry) {
+		if (I18n.hasTranslation(langKey + ".description")) {
+			return I18n.translate(langKey + ".description");
+		}
+		return entry.getDescription().replace("\t", "    ");
 	}
 
 	@FunctionalInterface
