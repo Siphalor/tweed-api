@@ -81,6 +81,36 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public boolean isByte() {
+			return isNumber();
+		}
+
+		@Override
+		public boolean isShort() {
+			return isNumber();
+		}
+
+		@Override
+		public boolean isInt() {
+			return isNumber();
+		}
+
+		@Override
+		public boolean isLong() {
+			return isNumber();
+		}
+
+		@Override
+		public boolean isFloat() {
+			return isNumber();
+		}
+
+		@Override
+		public boolean isDouble() {
+			return isNumber();
+		}
+
+		@Override
 		public boolean isCharacter() {
 			return element instanceof JsonPrimitive && (
 					(((JsonPrimitive) element).getValue() instanceof String && ((String) ((JsonPrimitive) element).getValue()).length() == 1)

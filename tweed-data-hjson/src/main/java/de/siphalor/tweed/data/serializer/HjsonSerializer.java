@@ -83,6 +83,36 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		public boolean isByte() {
+			return jsonValue.isNumber();
+		}
+
+		@Override
+		public boolean isShort() {
+			return jsonValue.isNumber();
+		}
+
+		@Override
+		public boolean isInt() {
+			return jsonValue.isNumber();
+		}
+
+		@Override
+		public boolean isLong() {
+			return jsonValue.isNumber();
+		}
+
+		@Override
+		public boolean isFloat() {
+			return jsonValue.isNumber();
+		}
+
+		@Override
+		public boolean isDouble() {
+			return jsonValue.isNumber();
+		}
+
+		@Override
 		public boolean isCharacter() {
 			return jsonValue.isString() && jsonValue.asString().length() == 1;
 		}
