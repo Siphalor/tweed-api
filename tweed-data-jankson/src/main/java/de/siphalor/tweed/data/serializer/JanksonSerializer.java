@@ -111,7 +111,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public boolean isCharacter() {
+		public boolean isChar() {
 			return element instanceof JsonPrimitive && (
 					(((JsonPrimitive) element).getValue() instanceof String && ((String) ((JsonPrimitive) element).getValue()).length() == 1)
 					|| ((JsonPrimitive) element).getValue() instanceof Character
@@ -169,7 +169,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public char asCharacter() {
+		public char asChar() {
 			return (char) as.apply(Character.TYPE);
 		}
 

@@ -101,7 +101,7 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public boolean isCharacter() {
+		public boolean isChar() {
 			return isString() && asString().length() == 1;
 		}
 
@@ -156,7 +156,7 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
-		public char asCharacter() {
+		public char asChar() {
 			return jsonElement.getAsCharacter();
 		}
 

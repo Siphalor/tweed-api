@@ -113,7 +113,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
-		public boolean isCharacter() {
+		public boolean isChar() {
 			return jsonValue.isString() && jsonValue.asString().length() == 1;
 		}
 
@@ -168,7 +168,7 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
-		public char asCharacter() {
+		public char asChar() {
 			return jsonValue.asString().charAt(0);
 		}
 

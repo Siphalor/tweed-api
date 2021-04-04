@@ -11,7 +11,7 @@ public interface DataValue<RawValue> {
 	boolean isLong();
 	boolean isFloat();
 	boolean isDouble();
-	boolean isCharacter();
+	boolean isChar();
 	boolean isString();
 	boolean isBoolean();
 	boolean isObject();
@@ -31,7 +31,7 @@ public interface DataValue<RawValue> {
 	long asLong();
 	float asFloat();
 	double asDouble();
-	char asCharacter();
+	char asChar();
 	String asString();
 	boolean asBoolean();
 	DataObject<RawValue> asObject();

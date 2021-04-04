@@ -8,7 +8,7 @@ import net.minecraft.network.PacketByteBuf;
 public class CharacterSerializer extends ConfigValueSerializer<Character> {
 	@Override
 	public Character read(DataValue<?> data) throws ConfigReadException {
-		return data.asCharacter();
+		return data.asChar();
 	}
 
 	@Override

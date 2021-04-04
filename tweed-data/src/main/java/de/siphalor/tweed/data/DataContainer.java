@@ -25,7 +25,7 @@ public interface DataContainer<RawValue, Key> extends DataValue<RawValue> {
 		return has(key) && get(key).isDouble();
 	}
 	default boolean hasCharacter(Key key) {
-		return has(key) && get(key).isCharacter();
+		return has(key) && get(key).isChar();
 	}
 	default boolean hasString(Key key) {
 		return has(key) && get(key).isString();
@@ -84,8 +84,8 @@ public interface DataContainer<RawValue, Key> extends DataValue<RawValue> {
 	}
 	default char getCharacter(Key key, char def) {
 		DataValue<RawValue> value = get(key);
-		if (value != null && value.isCharacter()) {
-			return value.asCharacter();
+		if (value != null && value.isChar()) {
+			return value.asChar();
 		}
 		return def;
 	}
