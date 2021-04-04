@@ -5,6 +5,12 @@ public interface DataValue<RawValue> {
 	String getComment();
 
 	boolean isNumber();
+	boolean isByte();
+	boolean isShort();
+	boolean isInt();
+	boolean isLong();
+	boolean isFloat();
+	boolean isDouble();
 	boolean isCharacter();
 	boolean isString();
 	boolean isBoolean();
