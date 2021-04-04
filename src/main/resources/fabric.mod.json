@@ -33,9 +33,6 @@
 			{
 				"value": "de.siphalor.tweed.client.ModMenuEntry"
 			}
-		],
-		"tweed:client_init": [
-			"de.siphalor.tweed.client.TweedClient"
 		]
 	},
 	"mixins": [

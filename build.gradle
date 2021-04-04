@@ -159,16 +159,17 @@ subprojects {
 	}
 }
 
-/*dependencies {
+dependencies {
 	subprojects.each {
-		/*modImplementation(project(path: ":$it.name", configuration: "dev")) {
+		modImplementation it
+		modImplementation(project(path: ":$it.name", configuration: "dev")) {
 			exclude module: "fabric-loader"
-		} /
+		} /*
 		//implementation(project(path: ":$it.name"))
 		modCompile(it) {
 			exclude module: "fabric-loader"
 		}
-		include it
+		include it*/
 
 		testmodCompile it.sourceSets.testmod.output
 	}
@@ -177,7 +178,7 @@ subprojects {
 	//	exclude module: "modmenu"
 	//	exclude module: "config-2"
 	//}
-}*/
+}
 
 /*shadowJar {
 	configurations = [project.configurations.shadow]
