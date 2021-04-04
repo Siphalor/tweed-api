@@ -1,0 +1,7 @@
+apply plugin: "com.github.johnrengelman.shadow"
+
+dependencies {
+	implementation project(path: ":tweed-data")
+
+	shadow(implementation('blue.endless:jankson:1.1.0'))
+}

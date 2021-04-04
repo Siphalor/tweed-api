@@ -1,0 +1,29 @@
+{
+    "license": "CC0-1.0",
+    "schemaVersion": 1,
+    "contact": {
+        "email": "info@siphalor.de",
+        "issues": "https://github.com/Siphalor/tweed-api/issues",
+        "sources": "https://github.com/Siphalor/tweed-api"
+    },
+    "custom": {
+        "modmenu": {
+            "badges": [
+                "library"
+            ],
+            "links": {
+                "modmenu.discord": "https://discord.gg/6gaXmbj"
+            },
+            "parent": {
+                "id": "tweed"
+            }
+        },
+        "modmenu:api": true
+    },
+    "icon": "assets/tweed_base/icon.png",
+    "id": "tweed_base",
+    "authors": [
+        "Siphalor"
+    ],
+    "version": "${version}"
+}

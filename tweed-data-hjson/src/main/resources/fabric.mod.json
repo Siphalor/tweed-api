@@ -1,0 +1,34 @@
+{
+    "id": "tweed_data_hjson",
+    "schemaVersion": 1,
+    "authors": [
+        "Siphalor"
+    ],
+    "contact": {
+        "email": "info@siphalor.de",
+        "issues": "https://github.com/Siphalor/tweed-api/issues",
+        "sources": "https://github.com/Siphalor/tweed-api"
+    },
+    "license": "CC0-1.0",
+    "icon": "assets/tweed_data_hjson/icon.png",
+    "custom": {
+        "modmenu": {
+            "badges": [
+                "library"
+            ],
+            "links": {
+                "modmenu.discord": "https://discord.gg/6gaXmbj"
+            },
+            "parent": {
+                "id": "tweed"
+            }
+        },
+        "modmenu:api": true
+    },
+    "entrypoints": {
+        "tweed:serializer": [
+            "de.siphalor.tweed.data.serializer.HjsonSerializer::INSTANCE"
+        ]
+    },
+    "version": "${version}"
+}

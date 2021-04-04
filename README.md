@@ -1,7 +1,7 @@
 # Tweed
 
-[![curseforge downloads](http://cf.way2muchnoise.eu/full_tweed-api.svg)](https://minecraft.curseforge.com/projects/tweed-api)
-[![curseforge mc versions](http://cf.way2muchnoise.eu/versions/tweed-api.svg)](https://minecraft.curseforge.com/projects/tweed-api)
+[![curseforge downloads](http://cf.way2muchnoise.eu/full_tweed-com.terraformersmc.modmenu.api.svg)](https://minecraft.curseforge.com/projects/tweed-com.terraformersmc.modmenu.api)
+[![curseforge mc versions](http://cf.way2muchnoise.eu/versions/tweed-com.terraformersmc.modmenu.api.svg)](https://minecraft.curseforge.com/projects/tweed-com.terraformersmc.modmenu.api)
 
 Yet another config API.
 
@@ -18,7 +18,7 @@ repositories {
 and
 ```groovy
 dependencies {
-	implementation 'com.github.Siphalor:tweed-api:Tag'
+	implementation 'com.github.Siphalor:tweed-com.terraformersmc.modmenu.api:Tag'
 }
 ```
 

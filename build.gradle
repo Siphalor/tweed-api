@@ -1,59 +1,193 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 plugins {
-	id 'fabric-loom' version '0.5-SNAPSHOT'
 	id 'maven-publish'
-	id 'java-library'
-	id 'com.github.johnrengelman.shadow' version '4.0.0'
+	id 'java'
+	id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
+	id 'fabric-loom' version '0.7-SNAPSHOT' apply false
 }
-
-repositories {
-	mavenCentral()
-	maven { url "https://maven.terraformersmc.com/releases" }
-	maven {
-		name "Jitpack"
-		url "https://jitpack.io/"
-	}
-}
-
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-minecraft {
-	refmapName = "${project.mod_id}-refmap.json"
-}
+allprojects {
+	//apply plugin: 'com.github.johnrengelman.shadow'
+	apply plugin: 'fabric-loom'
 
-sourceSets {
-	testmod {
-		compileClasspath += main.compileClasspath
-		runtimeClasspath += main.runtimeClasspath
+	group = rootProject.maven_group
+
+	repositories {
+		mavenCentral()
+		jcenter()
+		maven { url "https://maven.shedaniel.me" }
+		maven { url "https://maven.terraformersmc.com/releases" }
+		maven { url "https://jitpack.io" }
+	}
+
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
+
+	sourceSets {
+		testmod {
+			compileClasspath += main.compileClasspath
+			runtimeClasspath += main.runtimeClasspath
+		}
+	}
+
+	dependencies {
+		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+		mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
+		modCompile "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+
+		def fabric_deps = [
+				"fabric-api-base": "0.2.1+9354966b7d",
+				"fabric-networking-api-v1": "1.0.1+ca58154a7d",
+				"fabric-resource-loader-v0": "0.4.2+ca58154a7d",
+				"fabric-lifecycle-events-v1": "1.2.1+ca58154a7d"
+		]
+		for (dep in fabric_deps.entrySet()) {
+			modCompile(include("net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"))
+		}
+
+		testmodCompile sourceSets.main.output
+	}
+
+	// ensure that the encoding is set to UTF-8, no matter what the system default is
+	// this fixes some edge cases with special characters not displaying correctly
+	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+	tasks.withType(JavaCompile) {
+		options.encoding = "UTF-8"
+	}
+
+	jar {
+		from "LICENSE"
+		//archiveClassifier.set("")
 	}
 }
 
-dependencies {
-	//to change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${minecraft_version}+build.${project.yarn_mappings}"
-	modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
+subprojects {
 
-	def fabric_deps = [
-			"fabric-api-base": "0.2.0+daa38b3d7d",
-			"fabric-networking-api-v1": "1.0.1+ca58154a7d",
-			"fabric-resource-loader-v0": "0.4.2+ca58154a7d",
-			"fabric-lifecycle-events-v1": "1.2.1+ca58154a7d"
-	]
-	for (dep in fabric_deps.entrySet()) {
-		modCompile "net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"
-		include "net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"
+	/*remapJar {
+		dependsOn(shadowJar)
+	}*/
+
+	configurations {
+		dev
 	}
 
-	// hjson
-	//compile 'org.hjson:hjson:3.0.0'
-	shadow 'com.github.Siphalor:hjson-java:master-SNAPSHOT'
-	implementation 'com.github.Siphalor:hjson-java:master-SNAPSHOT'
-	
+	afterEvaluate {
+		remapJar {
+			input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
+			archiveName = "${archivesBaseName}-${version}.jar"
+		}
+
+		artifacts {
+			dev file: file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar"), type: "jar", builtBy: jar
+		}
+
+		processResources {
+			inputs.property "version", project.version
+
+			from(sourceSets.main.resources.srcDirs) {
+				include "fabric.mod.json"
+				expand "version": project.version
+			}
+
+			from(sourceSets.main.resources.srcDirs) {
+				exclude "fabric.mod.json"
+			}
+		}
+	}
+
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this task, sources will not be generated.
+	task sourcesJar(type: Jar, dependsOn: classes) {
+		archiveClassifier.set("sources")
+		from sourceSets.main.allSource
+	}
+
+	// configure the maven publication
+	publishing {
+		publications {
+			mavenJava(MavenPublication) {
+				artifactId = "${project.archives_base_name}-${project.minecraft_major_version}"
+				// add all the jars that should be included when publishing to maven
+				artifact(remapJar) {
+					builtBy remapJar
+				}
+				artifact(sourcesJar) {
+					builtBy remapSourcesJar
+				}
+			}
+		}
+
+		// select the repositories you want to publish to
+		repositories {
+			if (project.hasProperty("siphalorMavenUser")) {
+				maven {
+					url = "https://maven.siphalor.de/upload.php/"
+					name = "Siphalor"
+					credentials {
+						username = siphalorMavenUser
+						password = siphalorMavenPassword
+					}
+				}
+			}
+			// uncomment to publish to the local maven
+			// mavenLocal()
+		}
+	}
+
+	task updateModMetaFiles(type: Copy) {
+		def projectId = project.archivesBaseName.replace('-', '_')
+		from rootProject.file(".template/icon.png")
+		into "src/main/resources/assets/${projectId}"
+		include "*.png"
+		outputs.upToDateWhen { false }
+		doLast {
+			def slurper = new JsonSlurper()
+			def template = slurper.parse(rootProject.file(".template/fabric.mod.json"))
+			def path = file("src/main/resources/fabric.mod.json")
+			def json = path.exists() ? slurper.parse(path) : new HashMap<>()
+			json += template
+			file("src/main/resources/fabric.mod.json")
+					.write(JsonOutput.prettyPrint(JsonOutput.toJson(json)).replace("\${project}", projectId))
+		}
+	}
+}
+
+/*dependencies {
+	subprojects.each {
+		/*modImplementation(project(path: ":$it.name", configuration: "dev")) {
+			exclude module: "fabric-loader"
+		} /
+		//implementation(project(path: ":$it.name"))
+		modCompile(it) {
+			exclude module: "fabric-loader"
+		}
+		include it
+
+		testmodCompile it.sourceSets.testmod.output
+	}
+	// Smooth startup
+	//modRuntime("io.github.ultimateboomer:smoothboot-fabric:1.16.4-1.4+") {
+	//	exclude module: "modmenu"
+	//	exclude module: "config-2"
+	//}
+}*/
+
+/*shadowJar {
+	configurations = [project.configurations.shadow]
+	archiveClassifier.set("dev")
+	relocate 'org.hjson', 'de.siphalor.tweed.shadow.org.hjson'
+	relocate 'blue.endless.jankson', 'de.siphalor.tweed.shadow.blue.endless.jankson'
+	//relocate 'com.moandjiezana.toml', 'de.siphalor.tweed.shadow.com.moandjiezana.toml'
+}*/
+
+/*dependencies {
 	// Jankson
 	shadow 'blue.endless:jankson:1.1.0'
 	implementation 'blue.endless:jankson:1.1.0'
@@ -65,87 +199,6 @@ dependencies {
 	//shadow 'com.moandjiezana.toml:toml4j:0.7.2'
 	//modImplementation 'com.moandjiezana.toml:toml4j:0.7.2'
 
-	// Cloth Config
-    modApi("me.shedaniel.cloth:config-2:${project.clothconfig_version}") {
-		exclude group: "net.fabricmc.fabric-api"
-	}
-
 	testmodCompile sourceSets.main.output
 }
-
-processResources {
-	inputs.property "version", project.version
-
-	from(sourceSets.main.resources.srcDirs) {
-		include "fabric.mod.json"
-		expand "version": project.version
-	}
-
-	from(sourceSets.main.resources.srcDirs) {
-		exclude "fabric.mod.json"
-	}
-}
-
-// ensure that the encoding is set to UTF-8, no matter what the system default is
-// this fixes some edge cases with special characters not displaying correctly
-// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-tasks.withType(JavaCompile) {
-	options.encoding = "UTF-8"
-}
-
-// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-// if it is present.
-// If you remove this task, sources will not be generated.
-task sourcesJar(type: Jar, dependsOn: classes) {
-	archiveClassifier.set("sources")
-	from sourceSets.main.allSource
-}
-
-jar {
-	from "LICENSE"
-	archiveClassifier.set("")
-}
-
-shadowJar {
-	configurations = [project.configurations.shadow]
-	archiveClassifier.set("dev")
-	relocate 'org.hjson', 'de.siphalor.tweed.shadow.org.hjson'
-	relocate 'blue.endless.jankson', 'de.siphalor.tweed.shadow.blue.endless.jankson'
-	//relocate 'com.moandjiezana.toml', 'de.siphalor.tweed.shadow.com.moandjiezana.toml'
-}
-
-remapJar {
-	dependsOn(shadowJar)
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			artifactId = "${project.archives_base_name}-${project.minecraft_major_version}"
-			// add all the jars that should be included when publishing to maven
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
-		}
-	}
-
-	// select the repositories you want to publish to
-	repositories {
-		if (project.hasProperty("siphalorMavenUser")) {
-			maven {
-				url = "https://maven.siphalor.de/upload.php/"
-				name = "Siphalor"
-				credentials {
-					username = siphalorMavenUser
-					password = siphalorMavenPassword
-				}
-			}
-		}
-		// uncomment to publish to the local maven
-		// mavenLocal()
-	}
-}
+*/

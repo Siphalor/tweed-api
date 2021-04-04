@@ -1,10 +1,17 @@
 pluginManagement {
     repositories {
-        jcenter()
         maven {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
         gradlePluginPortal()
+    }
+}
+
+rootProject.name = "tweed"
+
+rootDir.eachDir {
+    if (it.name.startsWith("tweed-")) {
+		include(rootDir.relativePath(it).replace('/', ':'))
     }
 }
