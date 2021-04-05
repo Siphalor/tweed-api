@@ -16,11 +16,11 @@ import java.util.List;
  */
 public final class ConfigLoader {
 	public static void initialReload(ConfigEnvironment configEnvironment) {
-		TweedRegistry.getConfigFiles().forEach(configFile -> {
+		for (ConfigFile configFile : TweedRegistry.getConfigFiles()) {
 			configFile.load(readMainConfigFile(configFile), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
 			updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
 			configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
-		});
+		}
 	}
 
 	/**
