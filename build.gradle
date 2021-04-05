@@ -161,12 +161,12 @@ subprojects {
 
 dependencies {
 	subprojects.each {
-		modImplementation it
+		//modImplementation it
 		modImplementation(project(path: ":$it.name", configuration: "dev")) {
 			exclude module: "fabric-loader"
-		} /*
-		//implementation(project(path: ":$it.name"))
-		modCompile(it) {
+		}
+		implementation(project(path: ":$it.name"))
+		/*modCompile(it) {
 			exclude module: "fabric-loader"
 		}
 		include it*/
