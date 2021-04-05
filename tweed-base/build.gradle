@@ -1,4 +1,13 @@
 dependencies {
-	implementation project(path: ":tweed-data")
+	def fabric_deps = [
+			"fabric-api-base": "0.2.1+9354966b7d",
+			"fabric-networking-api-v1": "1.0.1+ca58154a7d",
+			"fabric-resource-loader-v0": "0.4.2+ca58154a7d",
+			"fabric-lifecycle-events-v1": "1.2.1+ca58154a7d"
+	]
+	for (dep in fabric_deps.entrySet()) {
+		modCompile(include("net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"))
+	}
 
+	implementation project(path: ":tweed-data")
 }

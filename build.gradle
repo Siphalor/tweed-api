@@ -41,16 +41,6 @@ allprojects {
 		mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
 		modCompile "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 
-		def fabric_deps = [
-				"fabric-api-base": "0.2.1+9354966b7d",
-				"fabric-networking-api-v1": "1.0.1+ca58154a7d",
-				"fabric-resource-loader-v0": "0.4.2+ca58154a7d",
-				"fabric-lifecycle-events-v1": "1.2.1+ca58154a7d"
-		]
-		for (dep in fabric_deps.entrySet()) {
-			modCompile(include("net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"))
-		}
-
 		testmodCompile sourceSets.main.output
 	}
 
@@ -70,6 +60,10 @@ allprojects {
 subprojects {
 	configurations {
 		dev
+	}
+
+	jar {
+		archiveClassifier.set("dev")
 	}
 
 	afterEvaluate {
@@ -172,10 +166,9 @@ subprojects {
 dependencies {
 	subprojects.each {
 		//modImplementation it
-		modImplementation(project(path: ":$it.name", configuration: "dev")) {
+		implementation(project(path: ":$it.name", configuration: "dev")) {
 			exclude module: "fabric-loader"
 		}
-		implementation(project(path: ":$it.name"))
 		include(project("${it.name}:"))
 
 		testmodCompile it.sourceSets.testmod.output
