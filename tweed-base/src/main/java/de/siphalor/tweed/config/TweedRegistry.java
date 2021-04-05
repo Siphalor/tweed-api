@@ -46,10 +46,14 @@ public class TweedRegistry {
         return configFile;
 	}
 
-	public static ConfigFile registerConfigPOJO(Object pojo, String modId) throws RuntimeException {
-		ConfigFile configFile = POJOConverter.toConfigFile(pojo, modId);
-		CONFIG_FILES.add(configFile);
-		return configFile;
+	/**
+	 * Register a {@link ConfigFile}.
+	 * @param file The file to register
+	 * @return The registered file
+	 */
+	public static ConfigFile registerConfigFile(ConfigFile file) {
+		CONFIG_FILES.add(file);
+		return file;
 	}
 
 	/**

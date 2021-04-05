@@ -1,8 +1,10 @@
-package de.siphalor.tweed.config;
+package de.siphalor.tweed.annotated;
 
 import com.google.common.base.CaseFormat;
 import de.siphalor.tweed.Tweed;
-import de.siphalor.tweed.config.annotated.*;
+import de.siphalor.tweed.config.ConfigCategory;
+import de.siphalor.tweed.config.ConfigFile;
+import de.siphalor.tweed.config.TweedRegistry;
 import de.siphalor.tweed.config.constraints.AnnotationConstraint;
 import de.siphalor.tweed.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed.config.entry.ConfigEntry;

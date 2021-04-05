@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
@@ -112,8 +111,8 @@ public class Tweed implements ModInitializer {
 
 		{
 			List<TweedInitializer> initializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":init", TweedInitializer.class);
-			initializers.forEach(TweedInitializer::register);
-			initializers.forEach(TweedInitializer::init);
+			initializers.forEach(TweedInitializer::tweedRegister);
+			initializers.forEach(TweedInitializer::tweedInit);
 		}
 
 		if (TweedRegistry.getDefaultSerializer() == null) {
@@ -123,17 +122,7 @@ public class Tweed implements ModInitializer {
 
 		if (loaderAPI.getEnvironmentType() == EnvType.CLIENT) {
 			List<TweedClientInitializer> initializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":client_init", TweedClientInitializer.class);
-			initializers.forEach(TweedClientInitializer::registerClient);
-		}
-
-		List<EntrypointContainer<Object>> entrypoints = loaderAPI.getEntrypointContainers(Tweed.MOD_ID + ":config", Object.class);
-
-		for (EntrypointContainer<Object> entrypoint : entrypoints) {
-			try {
-				TweedRegistry.registerConfigPOJO(entrypoint.getEntrypoint(), entrypoint.getProvider().getMetadata().getId());
-			} catch (RuntimeException e) {
-				e.printStackTrace();
-			}
+			initializers.forEach(TweedClientInitializer::tweedRegisterClient);
 		}
 	}
 

@@ -17,6 +17,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -43,7 +44,8 @@ public class ConfigFile {
 		this(name, dataSerializer, new ConfigCategory());
 	}
 
-	protected ConfigFile(String name, ConfigDataSerializer<?> dataSerializer, ConfigCategory rootCategory) {
+	@ApiStatus.Internal
+	public ConfigFile(String name, ConfigDataSerializer<?> dataSerializer, ConfigCategory rootCategory) {
 		this.name = name;
 		this.rootCategory = rootCategory;
 		this.dataSerializer = dataSerializer;

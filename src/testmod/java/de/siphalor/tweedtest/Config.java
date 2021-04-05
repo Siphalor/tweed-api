@@ -1,10 +1,9 @@
 package de.siphalor.tweedtest;
 
 import com.google.common.base.CaseFormat;
-import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
-import de.siphalor.tweed.config.annotated.*;
+import de.siphalor.tweed.annotated.*;
 import de.siphalor.tweed.config.constraints.RangeConstraint;
 import de.siphalor.tweed.tailor.ClothData;
 

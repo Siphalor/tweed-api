@@ -1,4 +1,4 @@
-package de.siphalor.tweed.config.annotated;
+package de.siphalor.tweed.annotated;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

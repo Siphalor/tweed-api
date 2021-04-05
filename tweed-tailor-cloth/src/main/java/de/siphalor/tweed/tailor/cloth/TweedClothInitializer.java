@@ -10,7 +10,7 @@ import net.minecraft.util.registry.Registry;
 
 public class TweedClothInitializer implements TweedClientInitializer {
 	@Override
-	public void registerClient() {
+	public void tweedRegisterClient() {
 		if (FabricLoader.getInstance().isModLoaded("cloth-config2")) {
 			Registry.register(TweedRegistry.TAILORS, new Identifier(Tweed.MOD_ID, "cloth"), ClothTailor.INSTANCE);
 		}

@@ -1,4 +1,4 @@
-package de.siphalor.tweed.config.annotated;
+package de.siphalor.tweed.annotated;
 
 import com.google.common.base.CaseFormat;
 import de.siphalor.tweed.config.ConfigEnvironment;
