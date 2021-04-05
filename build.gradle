@@ -176,10 +176,7 @@ dependencies {
 			exclude module: "fabric-loader"
 		}
 		implementation(project(path: ":$it.name"))
-		/*modCompile(it) {
-			exclude module: "fabric-loader"
-		}
-		include it*/
+		include(project("${it.name}:"))
 
 		testmodCompile it.sourceSets.testmod.output
 	}
@@ -189,14 +186,6 @@ dependencies {
 	//	exclude module: "config-2"
 	//}
 }
-
-/*shadowJar {
-	configurations = [project.configurations.shadow]
-	archiveClassifier.set("dev")
-	relocate 'org.hjson', 'de.siphalor.tweed.shadow.org.hjson'
-	relocate 'blue.endless.jankson', 'de.siphalor.tweed.shadow.blue.endless.jankson'
-	//relocate 'com.moandjiezana.toml', 'de.siphalor.tweed.shadow.com.moandjiezana.toml'
-}*/
 
 /*dependencies {
 	// Jankson
