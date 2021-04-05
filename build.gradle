@@ -68,16 +68,26 @@ allprojects {
 }
 
 subprojects {
-
-	/*remapJar {
-		dependsOn(shadowJar)
-	}*/
-
 	configurations {
 		dev
 	}
 
 	afterEvaluate {
+		if (pluginManager.hasPlugin("com.github.johnrengelman.shadow")) {
+			remapJar {
+				dependsOn(shadowJar)
+			}
+
+			sourcesJar {
+				dependsOn(shadowJar)
+			}
+
+			shadowJar {
+				configurations = [project.configurations.shadow]
+				archiveClassifier.set("dev")
+			}
+		}
+
 		remapJar {
 			input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
 			archiveName = "${archivesBaseName}-${version}.jar"

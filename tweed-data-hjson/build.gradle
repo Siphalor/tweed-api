@@ -5,3 +5,7 @@ dependencies {
 
 	shadow(modImplementation('com.github.Siphalor:hjson-java:master-SNAPSHOT'))
 }
+
+shadowJar {
+	relocate 'org.hjson', 'de.siphalor.tweed.shadow.org.hjson'
+}
