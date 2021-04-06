@@ -8,6 +8,7 @@ plugins {
 repositories {
 	mavenCentral()
 	maven { url "https://minecraft.curseforge.com/api/maven"}
+	maven { url "https://maven.terraformersmc.com/releases" }
 	maven {
 		name "Jitpack"
 		url "https://jitpack.io/"
@@ -58,7 +59,7 @@ dependencies {
 	shadow 'blue.endless:jankson:1.1.0'
 	implementation 'blue.endless:jankson:1.1.0'
 
-	modApi "io.github.prospector:modmenu:${project.modmenu_version}"
+	modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
 	modApi "me.shedaniel.cloth:basic-math:0.5.0"
 	
 	// Toml
