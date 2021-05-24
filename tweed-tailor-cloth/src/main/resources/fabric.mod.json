@@ -36,7 +36,7 @@
             "de.siphalor.tweed.tailor.cloth.TweedClothInitializer"
         ],
         "modmenu": [
-            "de.siphalor.tweed.client.ModMenuEntry"
+            "de.siphalor.tweed.tailor.cloth.ModMenuEntry"
         ]
     },
     "version": "${version}"

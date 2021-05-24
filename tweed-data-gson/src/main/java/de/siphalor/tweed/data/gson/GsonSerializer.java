@@ -1,4 +1,4 @@
-package de.siphalor.tweed.data.serializer;
+package de.siphalor.tweed.data.gson;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
+import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.NotNull;
 

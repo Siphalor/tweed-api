@@ -1,9 +1,10 @@
-package de.siphalor.tweed.data.serializer;
+package de.siphalor.tweed.data.hjson;
 
 import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
+import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import org.hjson.*;
 import org.jetbrains.annotations.NotNull;
 

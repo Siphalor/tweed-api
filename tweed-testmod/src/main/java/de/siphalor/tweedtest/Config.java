@@ -5,7 +5,7 @@ import de.siphalor.tweed.config.ConfigEnvironment;
 import de.siphalor.tweed.config.ConfigScope;
 import de.siphalor.tweed.annotated.*;
 import de.siphalor.tweed.config.constraints.RangeConstraint;
-import de.siphalor.tweed.tailor.ClothData;
+import de.siphalor.tweed.tailor.cloth.ClothData;
 
 @ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth", casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed_testmod")

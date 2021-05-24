@@ -1,4 +1,4 @@
-package de.siphalor.tweed.tailor;
+package de.siphalor.tweed.tailor.cloth;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

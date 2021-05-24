@@ -3,7 +3,6 @@ package de.siphalor.tweed.tailor.cloth;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.TweedClientInitializer;
 import de.siphalor.tweed.config.TweedRegistry;
-import de.siphalor.tweed.tailor.ClothTailor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;

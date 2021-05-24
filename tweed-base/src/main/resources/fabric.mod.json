@@ -26,6 +26,9 @@
         },
         "modmenu:api": true
     },
+    "mixins": [
+        "tweed_base.mixin.json"
+    ],
     "entrypoints": {
         "client": [
             "de.siphalor.tweed.client.TweedClient"

@@ -1,10 +1,11 @@
-package de.siphalor.tweed.tailor;
+package de.siphalor.tweed.tailor.cloth;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import de.siphalor.tweed.Tweed;
 import de.siphalor.tweed.client.CustomNoticeScreen;
 import de.siphalor.tweed.client.TweedClient;
-import de.siphalor.tweed.tailor.cloth.ClothDropdownSelectEntry;
+import de.siphalor.tweed.tailor.DropdownMaterial;
+import de.siphalor.tweed.tailor.Tailor;
 import de.siphalor.tweed.config.*;
 import de.siphalor.tweed.config.constraints.ConstraintException;
 import de.siphalor.tweed.config.entry.ConfigEntry;
@@ -37,7 +38,7 @@ import java.util.function.Consumer;
 public class ClothTailor extends Tailor {
 	public static final ClothTailor INSTANCE = new ClothTailor();
 
-	protected static final String SCREEN_NAME_PREFIX = "tweed.cloth.";
+	protected static final String SCREEN_NAME_PREFIX = "tweed_tailor_cloth.";
 	protected boolean waitingForFile;
 
 	private static final Map<Class<?>, EntryConverter<?>> ENTRY_CONVERTERS = new HashMap<>();
@@ -82,8 +83,8 @@ public class ClothTailor extends Tailor {
 						waitingForFile = false;
 						MinecraftClient.getInstance().openScreen(parentScreen);
 					},
-					new TranslatableText("tweed.gui.screen.syncFromServer"),
-					new TranslatableText("tweed.gui.screen.syncFromServer.note")
+					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer"),
+					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer.note")
 			);
 		} else {
 			return buildConfigScreen(configFile, parentScreen);

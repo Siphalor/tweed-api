@@ -33,7 +33,7 @@
     },
     "entrypoints": {
         "tweed:serializer": [
-            "de.siphalor.tweed.data.serializer.HjsonSerializer::INSTANCE"
+            "de.siphalor.tweed.data.hjson.HjsonSerializer::INSTANCE"
         ]
     },
     "version": "${version}"

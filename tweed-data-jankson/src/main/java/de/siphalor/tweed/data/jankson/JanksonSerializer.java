@@ -1,4 +1,4 @@
-package de.siphalor.tweed.data.serializer;
+package de.siphalor.tweed.data.jankson;
 
 import blue.endless.jankson.*;
 import blue.endless.jankson.impl.SyntaxError;
@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed.data.DataList;
 import de.siphalor.tweed.data.DataObject;
 import de.siphalor.tweed.data.DataValue;
+import de.siphalor.tweed.data.serializer.ConfigDataSerializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

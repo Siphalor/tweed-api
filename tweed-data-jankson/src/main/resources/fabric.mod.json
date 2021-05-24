@@ -26,6 +26,11 @@
         },
         "modmenu:api": true
     },
+    "entrypoints": {
+        "tweed:serializer": [
+            "de.siphalor.tweed.data.jankson.JanksonSerializer::INSTANCE"
+        ]
+    },
     "icon": "assets/tweed_data_jankson/icon.png",
     "id": "tweed_data_jankson",
     "authors": [
