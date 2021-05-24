@@ -4,4 +4,8 @@ public interface TweedClientInitializer {
 	default void tweedRegisterClient() {
 
 	}
+
+	default void tweedInitClient() {
+
+	}
 }

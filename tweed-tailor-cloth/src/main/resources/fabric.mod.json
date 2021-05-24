@@ -1,6 +1,6 @@
 {
-    "id": "tweed_tailor_cloth",
     "schemaVersion": 1,
+    "id": "tweed_tailor_cloth",
     "authors": [
         "Siphalor"
     ],
@@ -28,6 +28,9 @@
     "entrypoints": {
         "tweed:client_init": [
             "de.siphalor.tweed.tailor.cloth.TweedClothInitializer"
+        ],
+        "modmenu": [
+            "de.siphalor.tweed.client.ModMenuEntry"
         ]
     },
     "version": "${version}"

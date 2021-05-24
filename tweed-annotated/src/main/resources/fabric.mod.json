@@ -1,12 +1,12 @@
 {
-    "license": "CC0-1.0",
     "schemaVersion": 1,
+    "license": "CC0-1.0",
     "contact": {
         "email": "info@siphalor.de",
         "issues": "https://github.com/Siphalor/tweed-api/issues",
         "sources": "https://github.com/Siphalor/tweed-api"
     },
-	"entrypoints": {
+    "entrypoints": {
         "tweed:init": [
             "de.siphalor.tweed.annotated.TweedAnnotatedInitializer"
         ]

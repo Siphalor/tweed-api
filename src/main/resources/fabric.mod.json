@@ -19,22 +19,6 @@
 	"icon": "assets/tweed/icon.png",
 
 	"environment": "*",
-	"entrypoints": {
-		"client": [
-			"de.siphalor.tweed.client.TweedClient"
-		],
-		"main": [
-			"de.siphalor.tweed.Tweed"
-		],
-		"server": [
-			"de.siphalor.tweed.server.TweedServer"
-		],
-		"modmenu": [
-			{
-				"value": "de.siphalor.tweed.client.ModMenuEntry"
-			}
-		]
-	},
 	"mixins": [
 		{
 			"config": "tweed.mixin.json"

@@ -109,6 +109,11 @@ public class Tweed implements ModInitializer {
 			}
 		}
 
+		if (loaderAPI.getEnvironmentType() == EnvType.CLIENT) {
+			List<TweedClientInitializer> initializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":client_init", TweedClientInitializer.class);
+			initializers.forEach(TweedClientInitializer::tweedRegisterClient);
+		}
+
 		{
 			List<TweedInitializer> initializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":init", TweedInitializer.class);
 			initializers.forEach(TweedInitializer::tweedRegister);
@@ -122,7 +127,7 @@ public class Tweed implements ModInitializer {
 
 		if (loaderAPI.getEnvironmentType() == EnvType.CLIENT) {
 			List<TweedClientInitializer> initializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":client_init", TweedClientInitializer.class);
-			initializers.forEach(TweedClientInitializer::tweedRegisterClient);
+			initializers.forEach(TweedClientInitializer::tweedInitClient);
 		}
 	}
 

@@ -1,6 +1,6 @@
 {
-    "license": "CC0-1.0",
     "schemaVersion": 1,
+    "license": "CC0-1.0",
     "contact": {
         "email": "info@siphalor.de",
         "issues": "https://github.com/Siphalor/tweed-api/issues",
@@ -19,6 +19,17 @@
             }
         },
         "modmenu:api": true
+    },
+    "entrypoints": {
+        "client": [
+            "de.siphalor.tweed.client.TweedClient"
+        ],
+        "main": [
+            "de.siphalor.tweed.Tweed"
+        ],
+        "server": [
+            "de.siphalor.tweed.server.TweedServer"
+        ]
     },
     "icon": "assets/tweed_base/icon.png",
     "id": "tweed_base",

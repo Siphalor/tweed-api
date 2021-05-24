@@ -30,19 +30,10 @@ allprojects {
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
 
-	sourceSets {
-		testmod {
-			compileClasspath += main.compileClasspath
-			runtimeClasspath += main.runtimeClasspath
-		}
-	}
-
 	dependencies {
 		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
 		mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
 		modCompile "net.fabricmc:fabric-loader:${rootProject.loader_version}"
-
-		testmodCompile sourceSets.main.output
 	}
 
 	// ensure that the encoding is set to UTF-8, no matter what the system default is
@@ -166,7 +157,6 @@ subprojects {
 
 dependencies {
 	subprojects.each {
-		//modImplementation it
 		if (it.configurations.getAsMap().containsKey("shadowDev")) {
 			implementation(project(path: ":$it.name", configuration: "shadow")) {
 				exclude module: "fabric-loader"
@@ -179,11 +169,15 @@ dependencies {
 
 		include(project("${it.name}:"))
 
-		testmodCompile it.sourceSets.testmod.output
 		modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
 			exclude module: "fabric-loader"
 		}
+
 	}
+
+	modCompile("com.terraformersmc:modmenu:${project.modmenu_version}")
+	modCompile("me.shedaniel.cloth:basic-math:0.5.0")
+	modCompile("me.shedaniel.cloth:cloth-config-fabric:4.11.14")
 	// Smooth startup
 	//modRuntime("io.github.ultimateboomer:smoothboot-fabric:1.16.4-1.4+") {
 	//	exclude module: "modmenu"
@@ -196,13 +190,9 @@ dependencies {
 	shadow 'blue.endless:jankson:1.1.0'
 	implementation 'blue.endless:jankson:1.1.0'
 
-	modApi "com.terraformersmc:modmenu:${project.modmenu_version}"
-	modApi "me.shedaniel.cloth:basic-math:0.5.0"
-	
 	// Toml
 	//shadow 'com.moandjiezana.toml:toml4j:0.7.2'
 	//modImplementation 'com.moandjiezana.toml:toml4j:0.7.2'
 
-	testmodCompile sourceSets.main.output
 }
 */

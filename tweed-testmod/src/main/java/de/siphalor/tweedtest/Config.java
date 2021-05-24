@@ -8,7 +8,7 @@ import de.siphalor.tweed.config.constraints.RangeConstraint;
 import de.siphalor.tweed.tailor.ClothData;
 
 @ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed:cloth", casing = CaseFormat.LOWER_HYPHEN)
-@ClothData(modid = "tweedtest")
+@ClothData(modid = "tweed_testmod")
 public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
 	public static Boolean aBoolean = true;
@@ -32,7 +32,7 @@ public class Config {
 
 	public static ConfigScope scope = ConfigScope.DEFAULT;
 
-	@AConfigEntry(scope = ConfigScope.SMALLEST, environment = ConfigEnvironment.CLIENT, comment = "This is a de.siphalor.tweed.client side dropdown!")
+	@AConfigEntry(scope = ConfigScope.SMALLEST, environment = ConfigEnvironment.CLIENT, comment = "This is a client side dropdown!")
 	public static TestDropdown dropdown = TestDropdown.B;
 	public static TestDropdown dropdown2 = TestDropdown.C;
 
