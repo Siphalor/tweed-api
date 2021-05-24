@@ -63,10 +63,6 @@ allprojects {
 }
 
 subprojects {
-	configurations {
-		dev
-	}
-
 	jar {
 		archiveBaseName.set(archivesBaseName)
 		archiveClassifier.set("dev")
@@ -99,13 +95,6 @@ subprojects {
 
 		remapJar {
 			archiveName = "${project.archivesBaseName}-${version}.jar"
-			beforeEvaluate {
-				input = file("${project.buildDir}/libs/$project.archivesBaseName-${version}-dev.jar")
-			}
-		}
-
-		artifacts {
-			dev file: file("${project.buildDir}/libs/$project.archivesBaseName-${version}-dev.jar"), type: "jar", builtBy: jar
 		}
 
 		processResources {
@@ -151,16 +140,6 @@ subprojects {
 
 dependencies {
 	subprojects.each {
-		if (it.configurations.getAsMap().containsKey("shadowDev")) {
-			implementation(project(path: ":$it.name", configuration: "shadow")) {
-				exclude module: "fabric-loader"
-			}
-		} else {
-			implementation(project(path: ":$it.name", configuration: "dev")) {
-				exclude module: "fabric-loader"
-			}
-		}
-
 		if (!it.name.contains("testmod")) {
 			include(modApi(project("${it.name}:")))
 		}
@@ -168,7 +147,6 @@ dependencies {
 		modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
 			exclude module: "fabric-loader"
 		}
-
 	}
 }
 
