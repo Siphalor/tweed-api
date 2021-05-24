@@ -8,16 +8,10 @@ plugins {
 	id 'fabric-loom' version '0.7-SNAPSHOT' apply false
 }
 
-archivesBaseName = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
-
 allprojects {
 	//apply plugin: 'com.github.johnrengelman.shadow'
 	apply plugin: 'fabric-loom'
 	apply plugin: 'java-library'
-
-	group = rootProject.maven_group
 
 	repositories {
 		mavenCentral()
@@ -45,16 +39,18 @@ allprojects {
 
 	jar {
 		from "LICENSE"
-		//archiveClassifier.set("")
 	}
 }
 
 subprojects {
+	group = project.maven_group
+
 	configurations {
 		dev
 	}
 
 	jar {
+		archiveBaseName.set(archivesBaseName)
 		archiveClassifier.set("dev")
 	}
 
@@ -75,14 +71,14 @@ subprojects {
 		}
 
 		remapJar {
-			archiveName = "${archivesBaseName}-${version}.jar"
+			archiveName = "${project.archivesBaseName}-${version}.jar"
 			beforeEvaluate {
-				input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
+				input = file("${project.buildDir}/libs/$project.archivesBaseName-${version}-dev.jar")
 			}
 		}
 
 		artifacts {
-			dev file: file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar"), type: "jar", builtBy: jar
+			dev file: file("${project.buildDir}/libs/$project.archivesBaseName-${version}-dev.jar"), type: "jar", builtBy: jar
 		}
 
 		processResources {
@@ -103,6 +99,7 @@ subprojects {
 	// if it is present.
 	// If you remove this task, sources will not be generated.
 	task sourcesJar(type: Jar, dependsOn: classes) {
+		archiveBaseName.set(archivesBaseName)
 		archiveClassifier.set("sources")
 		from sourceSets.main.allSource
 	}
@@ -111,7 +108,7 @@ subprojects {
 	publishing {
 		publications {
 			mavenJava(MavenPublication) {
-				artifactId = "${project.archives_base_name}-${project.minecraft_major_version}"
+				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
 				// add all the jars that should be included when publishing to maven
 				artifact(remapJar) {
 					builtBy remapJar
@@ -157,6 +154,8 @@ subprojects {
 	}
 }
 
+group = project.maven_group
+
 dependencies {
 	subprojects.each {
 		if (it.configurations.getAsMap().containsKey("shadowDev")) {
@@ -176,25 +175,4 @@ dependencies {
 		}
 
 	}
-
-	modCompile("com.terraformersmc:modmenu:${project.modmenu_version}")
-	modCompile("me.shedaniel.cloth:basic-math:0.5.0")
-	modCompile("me.shedaniel.cloth:cloth-config-fabric:4.11.14")
-	// Smooth startup
-	//modRuntime("io.github.ultimateboomer:smoothboot-fabric:1.16.4-1.4+") {
-	//	exclude module: "modmenu"
-	//	exclude module: "config-2"
-	//}
 }
-
-/*dependencies {
-	// Jankson
-	shadow 'blue.endless:jankson:1.1.0'
-	implementation 'blue.endless:jankson:1.1.0'
-
-	// Toml
-	//shadow 'com.moandjiezana.toml:toml4j:0.7.2'
-	//modImplementation 'com.moandjiezana.toml:toml4j:0.7.2'
-
-}
-*/
