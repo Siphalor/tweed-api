@@ -1,6 +1,6 @@
 package de.siphalor.tweedtest;
 
-import de.siphalor.tweed.tailor.DropdownMaterial;
+import de.siphalor.tweed4.tailor.DropdownMaterial;
 
 import java.util.Collection;
 import java.util.Map;

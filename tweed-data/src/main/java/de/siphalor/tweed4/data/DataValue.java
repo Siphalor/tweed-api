@@ -1,0 +1,45 @@
+package de.siphalor.tweed4.data;
+
+public interface DataValue<RawValue> {
+	void setComment(String comment);
+	String getComment();
+
+	boolean isNumber();
+	boolean isByte();
+	boolean isShort();
+	boolean isInt();
+	boolean isLong();
+	boolean isFloat();
+	boolean isDouble();
+	boolean isChar();
+	boolean isString();
+	boolean isBoolean();
+	boolean isObject();
+	boolean isList();
+
+	default boolean isEmpty() {
+		if(isString()) return asString().isEmpty();
+		if(isBoolean()) return asBoolean();
+		if(isObject()) return asObject().isEmpty();
+		if(isList()) return asList().isEmpty();
+		return false;
+	}
+
+	byte asByte();
+	short asShort();
+	int asInt();
+	long asLong();
+	float asFloat();
+	double asDouble();
+	char asChar();
+	String asString();
+	boolean asBoolean();
+	DataObject<RawValue> asObject();
+	DataList<RawValue> asList();
+
+	/**
+	 * Should only be used in {@link de.siphalor.tweed4.data.serializer.ConfigDataSerializer}
+	 * @return the raw value
+	 */
+	RawValue getRaw();
+}

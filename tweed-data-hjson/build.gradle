@@ -7,5 +7,5 @@ dependencies {
 }
 
 shadowJar {
-	relocate 'org.hjson', 'de.siphalor.tweed.shadow.org.hjson'
+	relocate 'org.hjson', 'de.siphalor.tweed4.shadow.org.hjson'
 }

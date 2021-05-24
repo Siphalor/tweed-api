@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "id": "tweed_data_hjson",
+    "id": "tweed4_data_hjson",
     "authors": [
         "Siphalor"
     ],
@@ -10,7 +10,7 @@
         "sources": "https://github.com/Siphalor/tweed-api"
     },
     "license": "CC0-1.0",
-    "icon": "assets/tweed_data_hjson/icon.png",
+    "icon": "assets/tweed4_data_hjson/icon.png",
     "custom": {
         "modmenu": {
             "badges": [
@@ -20,10 +20,10 @@
                 "modmenu.discord": "https://discord.gg/6gaXmbj"
             },
             "parent": {
-                "id": "tweed",
-                "name": "Tweed API",
+                "id": "tweed4",
+                "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed_data_hjson/icon.png",
+                "icon": "assets/tweed4_data_hjson/icon.png",
                 "badges": [
                     "library"
                 ]
@@ -32,8 +32,8 @@
         "modmenu:api": true
     },
     "entrypoints": {
-        "tweed:serializer": [
-            "de.siphalor.tweed.data.hjson.HjsonSerializer::INSTANCE"
+        "tweed4:serializer": [
+            "de.siphalor.tweed4.data.hjson.HjsonSerializer::INSTANCE"
         ]
     },
     "version": "${version}"

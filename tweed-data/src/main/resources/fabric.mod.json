@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "id": "tweed_data",
+    "id": "tweed4_data",
     "authors": [
         "Siphalor"
     ],
@@ -10,7 +10,7 @@
         "sources": "https://github.com/Siphalor/tweed-api"
     },
     "license": "CC0-1.0",
-    "icon": "assets/tweed_data/icon.png",
+    "icon": "assets/tweed4_data/icon.png",
     "custom": {
         "modmenu": {
             "badges": [
@@ -20,10 +20,10 @@
                 "modmenu.discord": "https://discord.gg/6gaXmbj"
             },
             "parent": {
-                "id": "tweed",
-                "name": "Tweed API",
+                "id": "tweed4",
+                "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed_data/icon.png",
+                "icon": "assets/tweed4_data/icon.png",
                 "badges": [
                     "library"
                 ]

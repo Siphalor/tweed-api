@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "id": "tweed_testmod",
+    "id": "tweed4_testmod",
     "version": "${version}",
     "name": "Tweed Test",
     "description": "A Test mod for Tweed API",
@@ -10,7 +10,7 @@
     "license": "CC0-1.0",
     "environment": "*",
     "entrypoints": {
-        "tweed:config": [
+        "tweed4:config": [
             "de.siphalor.tweedtest.Config"
         ]
     },
@@ -22,7 +22,7 @@
         "issues": "https://github.com/Siphalor/tweed-api/issues",
         "sources": "https://github.com/Siphalor/tweed-api"
     },
-    "icon": "assets/tweed_testmod/icon.png",
+    "icon": "assets/tweed4_testmod/icon.png",
     "custom": {
         "modmenu": {
             "badges": [
@@ -32,10 +32,10 @@
                 "modmenu.discord": "https://discord.gg/6gaXmbj"
             },
             "parent": {
-                "id": "tweed",
-                "name": "Tweed API",
+                "id": "tweed4",
+                "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed_testmod/icon.png",
+                "icon": "assets/tweed4_testmod/icon.png",
                 "badges": [
                     "library"
                 ]

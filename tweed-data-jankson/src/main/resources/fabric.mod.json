@@ -15,10 +15,10 @@
                 "modmenu.discord": "https://discord.gg/6gaXmbj"
             },
             "parent": {
-                "id": "tweed",
-                "name": "Tweed API",
+                "id": "tweed4",
+                "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed_data_jankson/icon.png",
+                "icon": "assets/tweed4_data_jankson/icon.png",
                 "badges": [
                     "library"
                 ]
@@ -27,12 +27,12 @@
         "modmenu:api": true
     },
     "entrypoints": {
-        "tweed:serializer": [
-            "de.siphalor.tweed.data.jankson.JanksonSerializer::INSTANCE"
+        "tweed4:serializer": [
+            "de.siphalor.tweed4.data.jankson.JanksonSerializer::INSTANCE"
         ]
     },
-    "icon": "assets/tweed_data_jankson/icon.png",
-    "id": "tweed_data_jankson",
+    "icon": "assets/tweed4_data_jankson/icon.png",
+    "id": "tweed4_data_jankson",
     "authors": [
         "Siphalor"
     ],

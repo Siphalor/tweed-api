@@ -21,8 +21,8 @@
 				"modmenu.discord": "https://discord.gg/6gaXmbj"
 			},
 			"parent": {
-				"id": "tweed",
-				"name": "Tweed API",
+				"id": "tweed4",
+				"name": "Tweed 4",
 				"description": "Configuration focused libraries",
 				"icon": "assets/${project}/icon.png",
 				"badges": [ "library" ]

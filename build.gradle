@@ -75,8 +75,10 @@ subprojects {
 		}
 
 		remapJar {
-			input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
 			archiveName = "${archivesBaseName}-${version}.jar"
+			beforeEvaluate {
+				input = file("${project.buildDir}/libs/$archivesBaseName-${version}-dev.jar")
+			}
 		}
 
 		artifacts {

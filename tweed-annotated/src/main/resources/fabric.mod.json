@@ -7,8 +7,8 @@
         "sources": "https://github.com/Siphalor/tweed-api"
     },
     "entrypoints": {
-        "tweed:init": [
-            "de.siphalor.tweed.annotated.TweedAnnotatedInitializer"
+        "tweed4:init": [
+            "de.siphalor.tweed4.annotated.TweedAnnotatedInitializer"
         ]
     },
     "custom": {
@@ -20,10 +20,10 @@
                 "modmenu.discord": "https://discord.gg/6gaXmbj"
             },
             "parent": {
-                "id": "tweed",
-                "name": "Tweed API",
+                "id": "tweed4",
+                "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed_annotated/icon.png",
+                "icon": "assets/tweed4_annotated/icon.png",
                 "badges": [
                     "library"
                 ]
@@ -31,8 +31,8 @@
         },
         "modmenu:api": true
     },
-    "icon": "assets/tweed_annotated/icon.png",
-    "id": "tweed_annotated",
+    "icon": "assets/tweed4_annotated/icon.png",
+    "id": "tweed4_annotated",
     "version": "${version}",
     "authors": [
         "Siphalor"

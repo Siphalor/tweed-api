@@ -15,10 +15,10 @@
                 "modmenu.discord": "https://discord.gg/6gaXmbj"
             },
             "parent": {
-                "id": "tweed",
-                "name": "Tweed API",
+                "id": "tweed4",
+                "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed_base/icon.png",
+                "icon": "assets/tweed4_base/icon.png",
                 "badges": [
                     "library"
                 ]
@@ -27,21 +27,21 @@
         "modmenu:api": true
     },
     "mixins": [
-        "tweed_base.mixin.json"
+        "tweed4_base.mixin.json"
     ],
     "entrypoints": {
         "client": [
-            "de.siphalor.tweed.client.TweedClient"
+            "de.siphalor.tweed4.client.TweedClient"
         ],
         "main": [
-            "de.siphalor.tweed.Tweed"
+            "de.siphalor.tweed4.Tweed"
         ],
         "server": [
-            "de.siphalor.tweed.server.TweedServer"
+            "de.siphalor.tweed4.server.TweedServer"
         ]
     },
-    "icon": "assets/tweed_base/icon.png",
-    "id": "tweed_base",
+    "icon": "assets/tweed4_base/icon.png",
+    "id": "tweed4_base",
     "authors": [
         "Siphalor"
     ],
