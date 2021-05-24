@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 public class ClothTailor extends Tailor {
 	public static final ClothTailor INSTANCE = new ClothTailor();
 
-	protected static final String SCREEN_NAME_PREFIX = "tweed_tailor_cloth.";
+	protected static final String SCREEN_NAME_PREFIX = "tweed_tailor_cloth.screen.";
 	protected boolean waitingForFile;
 
 	private static final Map<Class<?>, EntryConverter<?>> ENTRY_CONVERTERS = new HashMap<>();
