@@ -8,14 +8,14 @@ plugins {
 	id 'fabric-loom' version '0.7-SNAPSHOT' apply false
 }
 
+group = project.maven_group
+
 allprojects {
-	//apply plugin: 'com.github.johnrengelman.shadow'
 	apply plugin: 'fabric-loom'
 	apply plugin: 'java-library'
 
 	repositories {
 		mavenCentral()
-		jcenter()
 		maven { url "https://maven.shedaniel.me" }
 		maven { url "https://maven.terraformersmc.com/releases" }
 		maven { url "https://jitpack.io" }
@@ -40,11 +40,29 @@ allprojects {
 	jar {
 		from "LICENSE"
 	}
+
+	afterEvaluate {
+		// configure the maven publication
+		publishing {
+			publications.create(archivesBaseName.replaceAll(/-(\w)/, { it[1].toUpperCase() }), MavenPublication.class, {
+				version = project.version
+				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
+				// add all the jars that should be included when publishing to maven
+				artifact(remapJar) {
+					builtBy remapJar
+				}
+
+				if (project.hasProperty("sourcesJar")) {
+					artifact(sourcesJar) {
+						builtBy remapSourcesJar
+					}
+				}
+			})
+		}
+	}
 }
 
 subprojects {
-	group = project.maven_group
-
 	configurations {
 		dev
 	}
@@ -56,16 +74,25 @@ subprojects {
 
 	afterEvaluate {
 		if (pluginManager.hasPlugin("com.github.johnrengelman.shadow")) {
+			task shadowSourcesJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+				relocators = shadowJar.relocators
+				from sourceSets.main.output
+				configurations = [project.configurations.shadow]
+				archiveBaseName.set(archivesBaseName)
+				archiveClassifier.set("sources")
+			}
+
 			remapJar {
 				dependsOn(shadowJar)
 			}
 
 			sourcesJar {
-				dependsOn(shadowJar)
+				finalizedBy(shadowSourcesJar)
 			}
 
 			shadowJar {
 				configurations = [project.configurations.shadow]
+				archiveBaseName.set(archivesBaseName)
 				archiveClassifier.set("dev")
 			}
 		}
@@ -104,38 +131,6 @@ subprojects {
 		from sourceSets.main.allSource
 	}
 
-	// configure the maven publication
-	publishing {
-		publications {
-			mavenJava(MavenPublication) {
-				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
-				// add all the jars that should be included when publishing to maven
-				artifact(remapJar) {
-					builtBy remapJar
-				}
-				artifact(sourcesJar) {
-					builtBy remapSourcesJar
-				}
-			}
-		}
-
-		// select the repositories you want to publish to
-		repositories {
-			if (project.hasProperty("siphalorMavenUser")) {
-				maven {
-					url = "https://maven.siphalor.de/upload.php/"
-					name = "Siphalor"
-					credentials {
-						username = siphalorMavenUser
-						password = siphalorMavenPassword
-					}
-				}
-			}
-			// uncomment to publish to the local maven
-			// mavenLocal()
-		}
-	}
-
 	task updateModMetaFiles(type: Copy) {
 		def projectId = project.archivesBaseName.replace('-', '_')
 		from rootProject.file(".template/icon.png")
@@ -154,8 +149,6 @@ subprojects {
 	}
 }
 
-group = project.maven_group
-
 dependencies {
 	subprojects.each {
 		if (it.configurations.getAsMap().containsKey("shadowDev")) {
@@ -168,11 +161,30 @@ dependencies {
 			}
 		}
 
-		include(project("${it.name}:"))
+		if (!it.name.contains("testmod")) {
+			include(modApi(project("${it.name}:")))
+		}
 
 		modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
 			exclude module: "fabric-loader"
 		}
 
+	}
+}
+
+publishing {
+	repositories {
+		if (project.hasProperty("siphalorMavenUser")) {
+			maven {
+				url = "https://maven.siphalor.de/upload.php/"
+				name = "Siphalor"
+				credentials {
+					username = siphalorMavenUser
+					password = siphalorMavenPassword
+				}
+			}
+		}
+		// uncomment to publish to the local maven
+		// mavenLocal()
 	}
 }
