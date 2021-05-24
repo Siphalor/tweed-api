@@ -16,6 +16,7 @@ allprojects {
 
 	repositories {
 		mavenCentral()
+		maven { url "https://maven.siphalor.de" }
 		maven { url "https://maven.shedaniel.me" }
 		maven { url "https://maven.terraformersmc.com/releases" }
 		maven { url "https://jitpack.io" }
@@ -139,13 +140,15 @@ subprojects {
 }
 
 dependencies {
-	subprojects.each {
-		if (!it.name.contains("testmod")) {
-			include(modApi(project("${it.name}:")))
-		}
+	beforeEvaluate {
+		subprojects.each {
+			if (!it.name.contains("testmod")) {
+				include(modApi(project("${it.name}:")))
+			}
 
-		modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
-			exclude module: "fabric-loader"
+			modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
+				exclude module: "fabric-loader"
+			}
 		}
 	}
 }
