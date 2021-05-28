@@ -4,12 +4,13 @@ import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigOrigin;
 import de.siphalor.tweed4.config.ConfigReadException;
 import de.siphalor.tweed4.config.ConfigScope;
-import de.siphalor.tweed4.config.constraints.ConstraintException;
+import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -105,5 +106,6 @@ public interface ConfigEntry<T> {
 	 * Method for handling possible constraints after reading in the value.
 	 * @throws ConstraintException an exception
 	 */
-	default void applyConstraints() throws ConstraintException {}
+	@Nullable
+	default Constraint.Result<?> applyConstraints() { return null; }
 }

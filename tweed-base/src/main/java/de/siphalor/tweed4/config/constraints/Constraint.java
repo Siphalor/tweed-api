@@ -1,16 +1,25 @@
 package de.siphalor.tweed4.config.constraints;
 
-import de.siphalor.tweed4.config.entry.ValueConfigEntry;
+import com.mojang.datafixers.util.Pair;
+
+import java.util.List;
 
 public interface Constraint<T> {
-	/**
-	 * A constraint which may modify the {@link ValueConfigEntry} or if an error occurred should throw a {@link ConstraintException}.
-	 *
-	 * @param value
-	 * @param configEntry the entry to check and/or modify
-	 * @throws ConstraintException a possible exception in case of problems
-	 */
-	void apply(T value, ValueConfigEntry<T> configEntry) throws ConstraintException;
+	Result<T> apply(T value);
 
 	String getDescription();
+
+	class Result<T> {
+		public final boolean ok;
+		public final List<Pair<Severity, String>> messages;
+		public final T value;
+
+		public Result(boolean ok, T value, List<Pair<Severity, String>> messages) {
+			this.ok = ok;
+			this.messages = messages;
+			this.value = value;
+		}
+	}
+
+	enum Severity { INFO, WARN, ERROR }
 }

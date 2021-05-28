@@ -1,8 +1,8 @@
 package de.siphalor.tweed4.config.entry;
 
+import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.config.constraints.Constraint;
-import de.siphalor.tweed4.config.constraints.ConstraintException;
 import de.siphalor.tweed4.config.value.ConfigValue;
 import de.siphalor.tweed4.config.value.SimpleConfigValue;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
@@ -11,6 +11,8 @@ import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -57,6 +59,10 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 		this.comment = "";
 		this.environment = ConfigEnvironment.UNIVERSAL;
 		this.constraints = new ConcurrentLinkedQueue<>();
+	}
+
+	public ConfigValueSerializer<V> getValueSerializer() {
+		return valueSerializer;
 	}
 
 	public V getValue() {
@@ -118,19 +124,25 @@ public class ValueConfigEntry<V> extends AbstractBasicEntry<ValueConfigEntry<V>>
 	}
 
 	@Override
-	public final void applyConstraints() throws ConstraintException {
-		applyConstraints(getValue());
+	public final Constraint.Result<V> applyConstraints() {
+		Constraint.Result<V> result = applyConstraints(getValue());
+		if (result.ok) {
+			setValue(result.value);
+		}
+		return result;
 	}
 
-	public final void applyConstraints(V value) throws ConstraintException {
+	public final Constraint.Result<V> applyConstraints(V value) {
+		List<Pair<Constraint.Severity, String>> messages = new LinkedList<>();
 		for(Constraint<V> constraint : constraints) {
-			try {
-				constraint.apply(value, this);
-			} catch (ConstraintException e) {
-				if(e.fatal)
-					throw e;
+			Constraint.Result<V> result = constraint.apply(value);
+			messages.addAll(result.messages);
+			if (!result.ok) {
+				return new Constraint.Result<>(false, null, messages);
 			}
+			value = result.value;
 		}
+		return new Constraint.Result<>(true, value, messages);
     }
 
 	@Override

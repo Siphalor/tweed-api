@@ -1,8 +1,10 @@
 package de.siphalor.tweed4.config.constraints;
 
-import de.siphalor.tweed4.config.entry.ValueConfigEntry;
+import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.util.NumberUtil;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collections;
 
 public class RangeConstraint<T extends Number> implements AnnotationConstraint<T> {
 	private boolean autoCorrect;
@@ -55,17 +57,28 @@ public class RangeConstraint<T extends Number> implements AnnotationConstraint<T
 	}
 
 	@Override
-	public void apply(T value, ValueConfigEntry<T> configEntry) throws ConstraintException {
+	public Result<T> apply(T value) {
         if(min != null && value.doubleValue() < min.doubleValue()) {
-        	if (autoCorrect)
-        	    configEntry.setValue(min);
-        	throw new ConstraintException(configEntry.getValue() + " is smaller than " + min, !autoCorrect);
+        	if (autoCorrect) {
+				return new Result<>(true, min, Collections.singletonList(
+						Pair.of(Severity.WARN, "Value " + value + " capped at lower bound " + min)
+				));
+			}
+        	return new Result<>(false, null, Collections.singletonList(
+        			Pair.of(Severity.ERROR, value + " is less than lower bound " + min)
+			));
 		}
         if(max != null && value.doubleValue() > max.doubleValue()) {
-	        if (autoCorrect)
-        	    configEntry.setValue(max);
-        	throw new ConstraintException(configEntry.getValue() + " is greater than" + max, !autoCorrect);
+	        if (autoCorrect) {
+	        	return new Result<>(true, max, Collections.singletonList(
+	        			Pair.of(Severity.WARN, "Value " + value + " capped at upper bound " + max)
+				));
+			}
+	        return new Result<>(false, null, Collections.singletonList(
+	        		Pair.of(Severity.ERROR, value + " exceeds upper bound of " + max)
+			));
 		}
+        return new Result<>(true, value, Collections.emptyList());
 	}
 
 	@Override

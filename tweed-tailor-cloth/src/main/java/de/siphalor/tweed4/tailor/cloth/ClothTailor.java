@@ -1,15 +1,16 @@
 package de.siphalor.tweed4.tailor.cloth;
 
+import com.mojang.datafixers.util.Pair;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.client.CustomNoticeScreen;
 import de.siphalor.tweed4.client.TweedClient;
-import de.siphalor.tweed4.tailor.DropdownMaterial;
-import de.siphalor.tweed4.tailor.Tailor;
 import de.siphalor.tweed4.config.*;
-import de.siphalor.tweed4.config.constraints.ConstraintException;
+import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
+import de.siphalor.tweed4.tailor.DropdownMaterial;
+import de.siphalor.tweed4.tailor.Tailor;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -175,12 +176,10 @@ public class ClothTailor extends Tailor {
 	}
 
 	public static <V> Optional<Text> errorSupplier(V value, ValueConfigEntry<V> configEntry) {
-		try {
-			configEntry.applyConstraints(value);
-		} catch (ConstraintException e) {
-			return Optional.of(new LiteralText(e.getMessage()));
-		}
-		return Optional.empty();
+		Constraint.Result<V> result = configEntry.applyConstraints(value);
+		return result.messages.stream()
+				.filter(message -> message.getFirst() == Constraint.Severity.ERROR)
+				.map(Pair::getSecond).reduce((a, b) -> a + "\n" + b).map(LiteralText::new);
 	}
 
 	public static boolean requiresRestart(ValueConfigEntry<?> configEntry) {
