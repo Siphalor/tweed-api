@@ -2,6 +2,7 @@ package de.siphalor.tweed4.config.constraints;
 
 import com.mojang.datafixers.util.Pair;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface Constraint<T> {
@@ -10,6 +11,8 @@ public interface Constraint<T> {
 	String getDescription();
 
 	class Result<T> {
+		public static final Result<?> OK = new Result<>(true, null, Collections.emptyList());
+
 		public final boolean ok;
 		public final List<Pair<Severity, String>> messages;
 		public final T value;

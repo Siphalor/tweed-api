@@ -29,6 +29,9 @@
     "entrypoints": {
         "tweed4:client_init": [
             "de.siphalor.tweed4.tailor.coat.TweedCoatInitializer"
+        ],
+        "modmenu": [
+            "de.siphalor.tweed4.tailor.coat.ModMenuEntry"
         ]
     },
     "icon": "assets/tweed4_tailor_coat/icon.png",

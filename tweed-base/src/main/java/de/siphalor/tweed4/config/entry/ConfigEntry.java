@@ -107,5 +107,7 @@ public interface ConfigEntry<T> {
 	 * @throws ConstraintException an exception
 	 */
 	@Nullable
-	default Constraint.Result<?> applyConstraints() { return null; }
+	default Constraint.Result<?> applyConstraints() {
+		return Constraint.Result.OK;
+	}
 }

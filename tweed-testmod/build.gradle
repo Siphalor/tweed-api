@@ -2,5 +2,6 @@ dependencies {
 	compile project(":tweed-base")
 	compile project(":tweed-annotated")
 	compile project(":tweed-tailor-cloth")
+	compile project(":tweed-tailor-coat")
 	compile project(":tweed-data-hjson")
 }

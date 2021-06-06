@@ -1,6 +1,6 @@
 dependencies {
 	implementation project(":tweed-base")
 
-	modImplementation "de.siphalor:coat-1.16:0.1.1"
+	modImplementation "de.siphalor:coat-1.16:0.1.2"
 	modImplementation "com.terraformersmc:modmenu:1.16+"
 }

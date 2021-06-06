@@ -1,13 +1,13 @@
 package de.siphalor.tweedtest;
 
 import com.google.common.base.CaseFormat;
+import de.siphalor.tweed4.annotated.*;
 import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
-import de.siphalor.tweed4.annotated.*;
 import de.siphalor.tweed4.config.constraints.RangeConstraint;
 import de.siphalor.tweed4.tailor.cloth.ClothData;
 
-@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed4:cloth", casing = CaseFormat.LOWER_HYPHEN)
+@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed4:coat", casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed4_testmod")
 public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")

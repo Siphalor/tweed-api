@@ -1,6 +1,8 @@
 package de.siphalor.tweed4.config;
 
+import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.data.DataContainer;
@@ -8,6 +10,8 @@ import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import org.apache.commons.logging.Log;
+import org.apache.logging.log4j.Level;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -114,11 +118,10 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 				e.printStackTrace();
 				return;
 			}
-			try {
-				entry.getValue().applyConstraints();
-			} catch (ConfigReadException e) {
-                Tweed.LOGGER.error("Error reading " + entry.getKey() + " in post-constraints:");
-                e.printStackTrace();
+
+			Constraint.Result<?> result = entry.getValue().applyConstraints();
+			for (Pair<Constraint.Severity, String> message : result.messages) {
+				Tweed.LOGGER.log(Level.getLevel(message.getFirst().name()), "Error in constraint: " + message.getSecond());
 			}
 		});
 		onReload();
