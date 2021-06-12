@@ -38,6 +38,7 @@ public class Config {
 
 	TestRecursiveType recursiveType;
 
+	@AConfigBackground(value = "minecraft:textures/block/netherrack.png")
 	public static class A {
 		public String name = "Siphalor";
 	}

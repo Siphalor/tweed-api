@@ -1,7 +1,6 @@
 package de.siphalor.tweed4.tailor.cloth;
 
 import com.mojang.datafixers.util.Pair;
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.client.CustomNoticeScreen;
 import de.siphalor.tweed4.client.TweedClient;
@@ -10,7 +9,8 @@ import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.DropdownMaterial;
-import de.siphalor.tweed4.tailor.Tailor;
+import de.siphalor.tweed4.tailor.screen.ScreenTailor;
+import de.siphalor.tweed4.tailor.screen.ScreenTailorScreenFactory;
 import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -36,14 +36,14 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
-public class ClothTailor extends Tailor {
+public class ClothTailor extends ScreenTailor {
 	public static final ClothTailor INSTANCE = new ClothTailor();
 
 	protected static final String SCREEN_NAME_PREFIX = "tweed_tailor_cloth.screen.";
 	protected boolean waitingForFile;
 
 	private static final Map<Class<?>, EntryConverter<?>> ENTRY_CONVERTERS = new HashMap<>();
-	private final Map<String, ConfigScreenFactory<?>> screenFactories = new HashMap<>();
+	private final Map<String, ScreenTailorScreenFactory<?>> screenFactories = new HashMap<>();
 
 	@Override
 	public void process(ConfigFile configFile) {
@@ -55,7 +55,7 @@ public class ClothTailor extends Tailor {
 		screenFactories.put(modId, parent -> convert(configFile, parent));
 	}
 
-	public Map<String, ConfigScreenFactory<?>> getScreenFactories() {
+	public Map<String, ScreenTailorScreenFactory<?>> getScreenFactories() {
 		return screenFactories;
 	}
 

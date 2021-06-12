@@ -1,6 +1,6 @@
 {
-    "schemaVersion": 1,
     "license": "CC0-1.0",
+    "schemaVersion": 1,
     "contact": {
         "email": "info@siphalor.de",
         "issues": "https://github.com/Siphalor/tweed-api/issues",
@@ -18,7 +18,7 @@
                 "id": "tweed4",
                 "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed4_tailor_coat/icon.png",
+                "icon": "assets/tweed4_tailor_screen/icon.png",
                 "badges": [
                     "library"
                 ]
@@ -26,18 +26,15 @@
         },
         "modmenu:api": true
     },
-    "entrypoints": {
-        "tweed4:client_init": [
-            "de.siphalor.tweed4.tailor.coat.TweedCoatInitializer"
-        ]
-    },
-    "breaks": {
-        "coat": "<=0.1.2"
-    },
-    "icon": "assets/tweed4_tailor_coat/icon.png",
-    "id": "tweed4_tailor_coat",
+    "icon": "assets/tweed4_tailor_screen/icon.png",
+    "id": "tweed4_tailor_screen",
     "version": "${version}",
     "authors": [
         "Siphalor"
-    ]
+    ],
+    "entrypoints": {
+        "modmenu": [
+            "de.siphalor.tweed4.tailor.screen.ModMenuEntry"
+        ]
+    }
 }

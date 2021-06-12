@@ -1,6 +1,5 @@
 dependencies {
-	implementation project(":tweed-base")
+	implementation project(":tweed-tailor-screen")
 
 	modImplementation "de.siphalor:coat-1.16:0.1.4"
-	modImplementation "com.terraformersmc:modmenu:1.16+"
 }

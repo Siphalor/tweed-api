@@ -34,9 +34,6 @@
     "entrypoints": {
         "tweed4:client_init": [
             "de.siphalor.tweed4.tailor.cloth.TweedClothInitializer"
-        ],
-        "modmenu": [
-            "de.siphalor.tweed4.tailor.cloth.ModMenuEntry"
         ]
     },
     "version": "${version}"

@@ -1,7 +1,6 @@
 package de.siphalor.tweed4.tailor.coat;
 
 import com.mojang.datafixers.util.Pair;
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
 import de.siphalor.coat.input.CheckBoxConfigInput;
@@ -14,9 +13,10 @@ import de.siphalor.tweed4.config.ConfigCategory;
 import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
-import de.siphalor.tweed4.tailor.Tailor;
 import de.siphalor.tweed4.tailor.coat.entryhandler.ConvertingConfigEntryHandler;
 import de.siphalor.tweed4.tailor.coat.entryhandler.SimpleConfigEntryHandler;
+import de.siphalor.tweed4.tailor.screen.ScreenTailor;
+import de.siphalor.tweed4.tailor.screen.ScreenTailorScreenFactory;
 import de.siphalor.tweed4.util.DirectListMultimap;
 import de.siphalor.tweed4.util.StaticStringConvertible;
 import net.minecraft.client.MinecraftClient;
@@ -28,20 +28,20 @@ import net.minecraft.text.TranslatableText;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class CoatTailor extends Tailor {
+public class CoatTailor extends ScreenTailor {
 	private static final String TRANSLATION_PREFIX = "tweed4_tailor_coat.screen.";
 	private static final DirectListMultimap<Class<?>, TweedCoatEntryProcessor<?>, LinkedList<TweedCoatEntryProcessor<?>>> CONVERTERS =
 			new DirectListMultimap<>(new HashMap<>(), LinkedList::new);
 
 	public static final CoatTailor INSTANCE = new CoatTailor();
 
-	private final Map<String, ConfigScreenFactory<?>> screenFactories = new HashMap<>();
+	private final Map<String, ScreenTailorScreenFactory<?>> screenFactories = new HashMap<>();
 
 	public static <T> void registerConverter(Class<T> clazz, TweedCoatEntryProcessor<T> entryConverter) {
 		CONVERTERS.put(clazz, entryConverter);
 	}
 
-	public Map<String, ConfigScreenFactory<?>> getScreenFactories() {
+	public Map<String, ScreenTailorScreenFactory<?>> getScreenFactories() {
 		return screenFactories;
 	}
 
