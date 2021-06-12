@@ -34,6 +34,9 @@
             "de.siphalor.tweed4.tailor.coat.ModMenuEntry"
         ]
     },
+    "breaks": {
+        "coat": "<=0.1.2"
+    },
     "icon": "assets/tweed4_tailor_coat/icon.png",
     "id": "tweed4_tailor_coat",
     "version": "${version}",

@@ -86,7 +86,7 @@ public class CoatTailor extends Tailor {
 		while (type != null && type != Object.class) {
 			//noinspection unchecked
 			if (tryProcess(
-					(LinkedList<TweedCoatEntryProcessor<T>>)(Object) CONVERTERS.get(type),
+					(LinkedList<TweedCoatEntryProcessor<T>>) (Object) CONVERTERS.get(type),
 					parentWidget, configEntry, path
 			)) {
 				return true;
@@ -95,7 +95,7 @@ public class CoatTailor extends Tailor {
 			for (Class<?> anInterface : type.getInterfaces()) {
 				//noinspection unchecked
 				if (tryProcess(
-						(LinkedList<TweedCoatEntryProcessor<T>>)(Object) CONVERTERS.get(anInterface),
+						(LinkedList<TweedCoatEntryProcessor<T>>) (Object) CONVERTERS.get(anInterface),
 						parentWidget, configEntry, path
 				)) {
 					return true;
@@ -154,14 +154,16 @@ public class CoatTailor extends Tailor {
 		try {
 			return new Constraint.Result<>(true, runnable.get(), Collections.emptyList());
 		} catch (Exception e) {
-			return new Constraint.Result<>(false, null, Collections.singletonList(Pair.of(Constraint.Severity.ERROR, e.getMessage())));
+			return new Constraint.Result<>(
+					false, null,
+					Collections.singletonList(Pair.of(Constraint.Severity.ERROR, e.getClass().getSimpleName() + ": " + e.getLocalizedMessage()))
+			);
 		}
 	}
 
 	static {
 		registerConverter(String.class, (parentWidget, configEntry, path) -> {
-			TextConfigInput textConfigInput = new TextConfigInput(new LiteralText(configEntry.getValue()));
-			textConfigInput.setValue(configEntry.getValue());
+			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue());
 			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput));
 			return true;
 		});
@@ -172,8 +174,7 @@ public class CoatTailor extends Tailor {
 		});
 
 		registerConverter(StaticStringConvertible.class, (parentWidget, configEntry, path) -> {
-			TextConfigInput textConfigInput = new TextConfigInput(new LiteralText(configEntry.getValue().asString()));
-			textConfigInput.setValue(configEntry.getValue().asString());
+			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue().asString());
 			parentWidget.addEntry(convertSimpleConfigEntry(path, textConfigInput, new ConvertingConfigEntryHandler<>(
 					configEntry, StaticStringConvertible::asString, input -> wrapExceptions(() -> configEntry.getDefaultValue().valueOf(input))
 			)));

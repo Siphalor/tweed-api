@@ -17,8 +17,7 @@ public class TCNumberEntryProcessor<N extends Number> implements TweedCoatEntryP
 
 	@Override
 	public boolean process(ConfigListWidget parentWidget, ValueConfigEntry<N> configEntry, String path) {
-		TextConfigInput textConfigInput = new TextConfigInput(new LiteralText(configEntry.getValue().toString()));
-		textConfigInput.setValue(configEntry.getValue().toString());
+		TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue().toString());
 		parentWidget.addEntry(CoatTailor.convertSimpleConfigEntry(
 				path, textConfigInput, new ConvertingConfigEntryHandler<>(
 						configEntry, Object::toString, input -> CoatTailor.wrapExceptions(() -> parseFunction.apply(input))
