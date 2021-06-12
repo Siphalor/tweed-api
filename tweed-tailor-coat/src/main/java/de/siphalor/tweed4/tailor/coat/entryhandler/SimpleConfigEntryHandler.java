@@ -1,9 +1,10 @@
-package de.siphalor.tweed4.tailor.coat;
+package de.siphalor.tweed4.tailor.coat.entryhandler;
 
 import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
+import de.siphalor.tweed4.tailor.coat.CoatTailor;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;

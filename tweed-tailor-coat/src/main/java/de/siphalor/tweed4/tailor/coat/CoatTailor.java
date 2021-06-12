@@ -2,6 +2,7 @@ package de.siphalor.tweed4.tailor.coat;
 
 import com.mojang.datafixers.util.Pair;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
+import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
 import de.siphalor.coat.input.CheckBoxConfigInput;
 import de.siphalor.coat.input.ConfigInput;
@@ -14,6 +15,10 @@ import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.Tailor;
+import de.siphalor.tweed4.tailor.coat.entryhandler.ConvertingConfigEntryHandler;
+import de.siphalor.tweed4.tailor.coat.entryhandler.SimpleConfigEntryHandler;
+import de.siphalor.tweed4.util.DirectListMultimap;
+import de.siphalor.tweed4.util.StaticStringConvertible;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.text.LiteralText;
@@ -21,10 +26,12 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class CoatTailor extends Tailor {
 	private static final String TRANSLATION_PREFIX = "tweed4_tailor_coat.screen.";
-	private static final Map<Class<?>, TweedCoatEntryProcessor<?>> CONVERTERS = new HashMap<>();
+	private static final DirectListMultimap<Class<?>, TweedCoatEntryProcessor<?>, LinkedList<TweedCoatEntryProcessor<?>>> CONVERTERS =
+			new DirectListMultimap<>(new HashMap<>(), LinkedList::new);
 
 	public static final CoatTailor INSTANCE = new CoatTailor();
 
@@ -73,28 +80,44 @@ public class CoatTailor extends Tailor {
 		return listWidget;
 	}
 
-	public void process(ConfigListWidget parentWidget, ValueConfigEntry<?> configEntry, String path) {
+	public <T> boolean process(ConfigListWidget parentWidget, ValueConfigEntry<T> configEntry, String path) {
 		Class<?> type = configEntry.getType();
-		//noinspection rawtypes
-		TweedCoatEntryProcessor entryConverter;
 
 		while (type != null && type != Object.class) {
-			entryConverter = CONVERTERS.get(type);
-			if (entryConverter != null) {
-				//noinspection unchecked
-				entryConverter.process(parentWidget, configEntry, path);
+			//noinspection unchecked
+			if (tryProcess(
+					(LinkedList<TweedCoatEntryProcessor<T>>)(Object) CONVERTERS.get(type),
+					parentWidget, configEntry, path
+			)) {
+				return true;
 			}
 
 			for (Class<?> anInterface : type.getInterfaces()) {
-				entryConverter = CONVERTERS.get(anInterface);
-				if (entryConverter != null) {
-					//noinspection unchecked
-					entryConverter.process(parentWidget, configEntry, path);
+				//noinspection unchecked
+				if (tryProcess(
+						(LinkedList<TweedCoatEntryProcessor<T>>)(Object) CONVERTERS.get(anInterface),
+						parentWidget, configEntry, path
+				)) {
+					return true;
 				}
 			}
 
 			type = type.getSuperclass();
 		}
+		return false;
+	}
+
+	protected <T> boolean tryProcess(LinkedList<TweedCoatEntryProcessor<T>> entryProcessors, ConfigListWidget parentWidget, ValueConfigEntry<T> configEntry, String path) {
+		if (entryProcessors == null) {
+			return false;
+		}
+		Iterator<TweedCoatEntryProcessor<T>> iterator = entryProcessors.descendingIterator();
+		while (iterator.hasNext()) {
+			if (iterator.next().process(parentWidget, configEntry, path)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static Message convert(Pair<Constraint.Severity, String> constraintMessage) {
@@ -118,15 +141,50 @@ public class CoatTailor extends Tailor {
 		);
 	}
 
+	public static <V, W> ConfigListConfigEntry<W> convertSimpleConfigEntry(String path, ConfigInput<W> configInput, ConfigEntryHandler<W> entryHandler) {
+		return new ConfigListConfigEntry<>(
+				new TranslatableText(path),
+				new TranslatableText(path + ".description"),
+				entryHandler,
+				configInput
+		);
+	}
+
+	public static <V> Constraint.Result<V> wrapExceptions(Supplier<V> runnable) {
+		try {
+			return new Constraint.Result<>(true, runnable.get(), Collections.emptyList());
+		} catch (Exception e) {
+			return new Constraint.Result<>(false, null, Collections.singletonList(Pair.of(Constraint.Severity.ERROR, e.getMessage())));
+		}
+	}
+
 	static {
 		registerConverter(String.class, (parentWidget, configEntry, path) -> {
-			TextConfigInput textConfigInput = new TextConfigInput(LiteralText.EMPTY);
+			TextConfigInput textConfigInput = new TextConfigInput(new LiteralText(configEntry.getValue()));
 			textConfigInput.setValue(configEntry.getValue());
 			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput));
+			return true;
 		});
 
-		registerConverter(Boolean.class, (parentWidget, configEntry, path) ->
-				parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getValue(), false)))
-		);
+		registerConverter(Boolean.class, (parentWidget, configEntry, path) -> {
+			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getValue(), false)));
+			return true;
+		});
+
+		registerConverter(StaticStringConvertible.class, (parentWidget, configEntry, path) -> {
+			TextConfigInput textConfigInput = new TextConfigInput(new LiteralText(configEntry.getValue().asString()));
+			textConfigInput.setValue(configEntry.getValue().asString());
+			parentWidget.addEntry(convertSimpleConfigEntry(path, textConfigInput, new ConvertingConfigEntryHandler<>(
+					configEntry, StaticStringConvertible::asString, input -> wrapExceptions(() -> configEntry.getDefaultValue().valueOf(input))
+			)));
+			return true;
+		});
+
+		registerConverter(Byte.class, new TCNumberEntryProcessor<>(Byte::parseByte));
+		registerConverter(Short.class, new TCNumberEntryProcessor<>(Short::parseShort));
+		registerConverter(Integer.class, new TCNumberEntryProcessor<>(Integer::parseInt));
+		registerConverter(Long.class, new TCNumberEntryProcessor<>(Long::parseLong));
+		registerConverter(Float.class, new TCNumberEntryProcessor<>(Float::parseFloat));
+		registerConverter(Double.class, new TCNumberEntryProcessor<>(Double::parseDouble));
 	}
 }
