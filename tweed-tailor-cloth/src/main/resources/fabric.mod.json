@@ -9,7 +9,7 @@
         "issues": "https://github.com/Siphalor/tweed-api/issues",
         "sources": "https://github.com/Siphalor/tweed-api"
     },
-    "license": "CC0-1.0",
+    "license": "Apache-2.0",
     "icon": "assets/tweed4_tailor_cloth/icon.png",
     "custom": {
         "modmenu": {

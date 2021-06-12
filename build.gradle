@@ -6,6 +6,7 @@ plugins {
 	id 'java'
 	id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
 	id 'fabric-loom' version '0.7-SNAPSHOT' apply false
+	id 'org.cadixdev.licenser' version '0.6.0' apply false
 }
 
 group = project.maven_group
@@ -13,6 +14,7 @@ group = project.maven_group
 allprojects {
 	apply plugin: 'fabric-loom'
 	apply plugin: 'java-library'
+	apply plugin: 'org.cadixdev.licenser'
 
 	repositories {
 		mavenCentral()
@@ -61,6 +63,11 @@ allprojects {
 				}
 			})
 		}
+	}
+
+	license {
+		header rootProject.file('LICENSE_HEADER')
+		include '**/*.java'
 	}
 }
 
