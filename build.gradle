@@ -148,15 +148,13 @@ subprojects {
 }
 
 dependencies {
-	beforeEvaluate {
-		subprojects.each {
-			if (!it.name.contains("testmod")) {
-				include(modApi(project("${it.name}:")))
-			}
+	subprojects.each {
+		if (!it.name.contains("testmod")) {
+			include(modApi(project("${it.name}:")))
+		}
 
-			modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
-				exclude module: "fabric-loader"
-			}
+		modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
+			exclude module: "fabric-loader"
 		}
 	}
 }
