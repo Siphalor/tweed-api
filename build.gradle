@@ -148,9 +148,8 @@ subprojects {
 dependencies {
 	subprojects.each {
 		if (!it.name.contains("testmod")) {
-			def dep = modApi(project("${it.name}:"))
 			if (it.jar.archivePath.exists()) {
-				include(dep)
+				include(modApi(project("${it.name}:")))
 			}
 		}
 
