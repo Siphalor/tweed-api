@@ -148,7 +148,10 @@ subprojects {
 dependencies {
 	subprojects.each {
 		if (!it.name.contains("testmod")) {
-			include(modApi(project("${it.name}:")))
+			def dep = modApi(project("${it.name}:"))
+			if (it.jar.archivePath.exists()) {
+				include(dep)
+			}
 		}
 
 		modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
