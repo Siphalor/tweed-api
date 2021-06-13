@@ -45,26 +45,6 @@ allprojects {
 		dependsOn(processResources)
 	}
 
-	afterEvaluate {
-		// configure the maven publication
-		publishing {
-			publications.create(archivesBaseName.replaceAll(/-(\w)/, { it[1].toUpperCase() }), MavenPublication.class, {
-				version = project.version
-				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
-				// add all the jars that should be included when publishing to maven
-				artifact(remapJar) {
-					builtBy remapJar
-				}
-
-				if (project.hasProperty("sourcesJar")) {
-					artifact(sourcesJar) {
-						builtBy remapSourcesJar
-					}
-				}
-			})
-		}
-	}
-
 	license {
 		header rootProject.file('LICENSE_HEADER')
 		include '**/*.java'
@@ -145,6 +125,24 @@ subprojects {
 					.write(JsonOutput.prettyPrint(JsonOutput.toJson(json)).replace("\${project}", projectId))
 		}
 	}
+
+	afterEvaluate {
+		// configure the maven publication
+		publishing {
+			publications.create(archivesBaseName.replaceAll(/-(\w)/, { it[1].toUpperCase() }), MavenPublication.class, {
+				version = project.version
+				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
+				// add all the jars that should be included when publishing to maven
+				artifact(remapJar) {
+					builtBy remapJar
+				}
+
+				artifact(sourcesJar) {
+					builtBy remapSourcesJar
+				}
+			})
+		}
+	}
 }
 
 dependencies {
@@ -174,4 +172,24 @@ publishing {
 		// uncomment to publish to the local maven
 		// mavenLocal()
 	}
+
+	publications.create("tweed4", MavenPublication.class, {
+		version = project.version
+		artifactId = archivesBaseName + "-" + minecraft_major_version
+
+		artifact(remapJar) {
+			builtBy remapJar
+		}
+
+		pom.withXml {
+			def deps = asNode().appendNode("dependencies")
+
+			configurations.modApi.allDependencies.each {
+				def dep = deps.appendNode("dependency")
+				dep.appendNode("groupId", rootProject.group)
+				dep.appendNode("artifactId", it.name.replace("tweed", "tweed4"))
+				dep.appendNode("version", it.version)
+			}
+		}
+	})
 }
