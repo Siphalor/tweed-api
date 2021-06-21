@@ -64,16 +64,18 @@ public class CoatTailor extends ScreenTailor {
 	@Override
 	public void process(ConfigFile configFile) {
 		String modId = configFile.getName();
-		screenFactories.put(configFile.getName(), parent -> {
-			ConfigScreen configScreen = new ConfigScreen(
-					parent, new TranslatableText(TRANSLATION_PREFIX + modId),
-					Collections.singletonList(convert(configFile.getRootCategory(), TRANSLATION_PREFIX + modId))
-			);
-			configScreen.setOnSave(() -> {
+		screenFactories.put(configFile.getName(), parent ->
+			syncAndCreateScreen(configFile, parent_ -> {
+				ConfigScreen configScreen = new ConfigScreen(
+						parent_, new TranslatableText(TRANSLATION_PREFIX + modId),
+						Collections.singletonList(convert(configFile.getRootCategory(), TRANSLATION_PREFIX + modId))
+				);
+				configScreen.setOnSave(() -> {
 
-			});
-			return configScreen;
-		});
+				});
+				return configScreen;
+			}, parent)
+		);
 	}
 
 	public ConfigListWidget convert(ConfigCategory category, String path) {
@@ -157,7 +159,7 @@ public class CoatTailor extends ScreenTailor {
 		);
 	}
 
-	public static <V, W> ConfigListConfigEntry<W> convertSimpleConfigEntry(String path, ConfigInput<W> configInput, ConfigEntryHandler<W> entryHandler) {
+	public static <V> ConfigListConfigEntry<V> convertSimpleConfigEntry(String path, ConfigInput<V> configInput, ConfigEntryHandler<V> entryHandler) {
 		return new ConfigListConfigEntry<>(
 				new TranslatableText(path),
 				new TranslatableText(path + ".description"),

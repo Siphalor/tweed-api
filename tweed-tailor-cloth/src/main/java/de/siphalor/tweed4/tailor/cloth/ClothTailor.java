@@ -18,7 +18,6 @@ package de.siphalor.tweed4.tailor.cloth;
 
 import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.Tweed;
-import de.siphalor.tweed4.client.CustomNoticeScreen;
 import de.siphalor.tweed4.client.TweedClient;
 import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.config.constraints.Constraint;
@@ -27,18 +26,15 @@ import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.DropdownMaterial;
 import de.siphalor.tweed4.tailor.screen.ScreenTailor;
 import de.siphalor.tweed4.tailor.screen.ScreenTailorScreenFactory;
-import io.netty.buffer.Unpooled;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.BaseText;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -68,44 +64,11 @@ public class ClothTailor extends ScreenTailor {
 		if (clothData != null && !clothData.modid().isEmpty()) {
 			modId = clothData.modid();
 		}
-		screenFactories.put(modId, parent -> convert(configFile, parent));
+		screenFactories.put(modId, parent -> syncAndCreateScreen(configFile, p -> buildConfigScreen(configFile, p), parent));
 	}
 
 	public Map<String, ScreenTailorScreenFactory<?>> getScreenFactories() {
 		return screenFactories;
-	}
-
-	public Screen convert(ConfigFile configFile, Screen parentScreen) {
-		boolean inGame = MinecraftClient.getInstance().world != null;
-		if (inGame && configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
-			return new CustomNoticeScreen(
-					() -> {
-						waitingForFile = true;
-
-						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-						buf.writeString(configFile.getName());
-						buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
-						buf.writeEnumConstant(ConfigScope.SMALLEST);
-						buf.writeEnumConstant(ConfigOrigin.MAIN);
-						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
-
-						TweedClient.setSyncRunnable(() -> {
-							if (waitingForFile) {
-								waitingForFile = false;
-								MinecraftClient.getInstance().openScreen(buildConfigScreen(configFile, parentScreen));
-							}
-						});
-					},
-					() -> {
-						waitingForFile = false;
-						MinecraftClient.getInstance().openScreen(parentScreen);
-					},
-					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer"),
-					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer.note")
-			);
-		} else {
-			return buildConfigScreen(configFile, parentScreen);
-		}
 	}
 
 	public Screen buildConfigScreen(ConfigFile configFile, Screen parentScreen) {

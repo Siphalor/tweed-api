@@ -16,10 +16,58 @@
 
 package de.siphalor.tweed4.tailor.screen;
 
+import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.client.CustomNoticeScreen;
+import de.siphalor.tweed4.client.TweedClient;
+import de.siphalor.tweed4.config.ConfigEnvironment;
+import de.siphalor.tweed4.config.ConfigFile;
+import de.siphalor.tweed4.config.ConfigOrigin;
+import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.tailor.Tailor;
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.TranslatableText;
 
 import java.util.Map;
 
 public abstract class ScreenTailor extends Tailor {
+	protected boolean waitingForFile = false;
+
 	public abstract Map<String, ScreenTailorScreenFactory<?>> getScreenFactories();
+
+	protected Screen syncAndCreateScreen(ConfigFile configFile, ScreenTailorScreenFactory<?> screenFactory, Screen parentScreen) {
+		boolean inGame = MinecraftClient.getInstance().world != null;
+		if (inGame && configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
+			return new CustomNoticeScreen(
+					() -> {
+						waitingForFile = true;
+
+						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+						buf.writeString(configFile.getName());
+						buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
+						buf.writeEnumConstant(ConfigScope.SMALLEST);
+						buf.writeEnumConstant(ConfigOrigin.MAIN);
+						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
+
+						TweedClient.setSyncRunnable(() -> {
+							if (waitingForFile) {
+								waitingForFile = false;
+								MinecraftClient.getInstance().openScreen(screenFactory.create(parentScreen));
+							}
+						});
+					},
+					() -> {
+						waitingForFile = false;
+						MinecraftClient.getInstance().openScreen(parentScreen);
+					},
+					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer"),
+					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer.note")
+			);
+		} else {
+			return screenFactory.create(parentScreen);
+		}
+	}
 }
