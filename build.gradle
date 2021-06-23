@@ -5,8 +5,8 @@ plugins {
 	id 'maven-publish'
 	id 'java'
 	id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
-	id 'fabric-loom' version '0.7-SNAPSHOT' apply false
-	id 'org.cadixdev.licenser' version '0.6.0' apply false
+	id 'fabric-loom' version '0.8-SNAPSHOT' apply false
+	id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
 
 group = project.maven_group
@@ -25,12 +25,12 @@ allprojects {
 	}
 
 	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_16
 
 	dependencies {
 		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
 		mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
-		modCompile "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+		modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 	}
 
 	// ensure that the encoding is set to UTF-8, no matter what the system default is

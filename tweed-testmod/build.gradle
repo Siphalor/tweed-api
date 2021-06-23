@@ -1,7 +1,7 @@
 dependencies {
-	compile project(":tweed-base")
-	compile project(":tweed-annotated")
-	compile project(":tweed-tailor-cloth")
-	compile project(":tweed-tailor-coat")
-	compile project(":tweed-data-hjson")
+	implementation project(":tweed-base")
+	implementation project(":tweed-annotated")
+	implementation project(":tweed-tailor-cloth")
+	implementation project(":tweed-tailor-coat")
+	implementation project(":tweed-data-hjson")
 }
