@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import me.shedaniel.clothconfig2.gui.entries.TooltipListEntry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
@@ -163,6 +164,11 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 	@Override
 	public int getItemHeight() {
 		return super.getItemHeight() + (optionsVisible ? getOptionsVisibleLength() * 14 + 5 : 0);
+	}
+
+	@Override
+	public List<? extends Selectable> narratables() {
+		return null;
 	}
 
 	private int getOptionsTop() {

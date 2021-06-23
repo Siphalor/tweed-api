@@ -50,7 +50,7 @@ public class TweedClient implements ClientModInitializer {
 			}
 
 			@Override
-			public void apply(ResourceManager resourceManager) {
+			public void reload(ResourceManager resourceManager) {
 				try {
 					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
 				} catch (Throwable e) {

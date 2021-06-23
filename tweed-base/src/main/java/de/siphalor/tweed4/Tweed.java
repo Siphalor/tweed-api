@@ -59,7 +59,7 @@ public class Tweed implements ModInitializer {
 			}
 
 			@Override
-			public void apply(ResourceManager resourceManager) {
+			public void reload(ResourceManager resourceManager) {
 				try {
 					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
 				} catch (Throwable e) {
