@@ -4,7 +4,7 @@ import groovy.json.JsonSlurper
 plugins {
 	id 'maven-publish'
 	id 'java'
-	id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
+	id 'com.github.johnrengelman.shadow' version '7.0.0' apply false
 	id 'fabric-loom' version '0.8-SNAPSHOT' apply false
 	id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
@@ -148,7 +148,7 @@ dependencies {
 	subprojects.each {
 		if (!it.name.contains("testmod")) {
 			if (it.jar.archivePath.exists()) {
-				include(modApi(project("${it.name}:")))
+				//include(modApi(project("${it.name}:")))
 			}
 		}
 
