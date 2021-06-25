@@ -66,6 +66,7 @@ subprojects {
 				archiveBaseName.set(archivesBaseName)
 				archiveClassifier.set("sources")
 			}
+			remapSourcesJar.dependsOn(shadowSourcesJar)
 
 			remapJar {
 				dependsOn(shadowJar)
@@ -83,7 +84,7 @@ subprojects {
 		}
 
 		remapJar {
-			archiveName = "${project.archivesBaseName}-${version}.jar"
+			archiveFileName = "${project.archivesBaseName}-${project.version}.jar"
 		}
 
 		processResources {
