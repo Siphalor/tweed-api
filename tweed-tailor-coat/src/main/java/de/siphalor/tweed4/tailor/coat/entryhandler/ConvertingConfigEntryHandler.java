@@ -63,7 +63,12 @@ public class ConvertingConfigEntryHandler<V, C> implements ConfigEntryHandler<C>
 
 	@Override
 	public void save(C value) {
-
+		Constraint.Result<V> conversionResult = converterFrom.apply(value);
+		if (conversionResult.ok) {
+			configEntry.setMainConfigValue(conversionResult.value);
+		} else {
+			Tweed.LOGGER.warn("Encountered error while trying to save config entry");
+		}
 	}
 
 	@Override

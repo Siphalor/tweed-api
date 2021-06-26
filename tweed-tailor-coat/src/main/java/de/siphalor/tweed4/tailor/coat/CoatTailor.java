@@ -70,9 +70,7 @@ public class CoatTailor extends ScreenTailor {
 						parent_, new TranslatableText(TRANSLATION_PREFIX + modId),
 						Collections.singletonList(convert(configFile.getRootCategory(), TRANSLATION_PREFIX + modId))
 				);
-				configScreen.setOnSave(() -> {
-
-				});
+				configScreen.setOnSave(() -> save(configFile));
 				return configScreen;
 			}, parent)
 		);
