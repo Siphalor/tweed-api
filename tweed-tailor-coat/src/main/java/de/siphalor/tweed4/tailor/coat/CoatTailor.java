@@ -37,9 +37,12 @@ import de.siphalor.tweed4.util.DirectListMultimap;
 import de.siphalor.tweed4.util.StaticStringConvertible;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.text.BaseText;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -84,6 +87,12 @@ public class CoatTailor extends ScreenTailor {
 						? category.getBackgroundTexture()
 						: DrawableHelper.OPTIONS_BACKGROUND_TEXTURE
 		);
+
+		if (!category.getDescription().isEmpty()) {
+			listWidget.addEntry(new ConfigListTextEntry(
+					getTranslation(path + ".description", category.getDescription()).formatted(Formatting.GRAY)
+			));
+		}
 
 		category.entryStream().forEachOrdered(mapEntry -> {
 			String subPath = path + "." + mapEntry.getKey();
@@ -148,19 +157,26 @@ public class CoatTailor extends ScreenTailor {
 		}
 	}
 
+	public static BaseText getTranslation(String key, String fallback) {
+		if (I18n.hasTranslation(key)) {
+			return new TranslatableText(key);
+		}
+		return new LiteralText(fallback == null ? key : fallback.replace("\t", "    "));
+	}
+
 	public static <V> ConfigListConfigEntry<V> convertSimpleConfigEntry(ValueConfigEntry<V> configEntry, String path, ConfigInput<V> configInput) {
 		return new ConfigListConfigEntry<>(
 				new TranslatableText(path),
-				new TranslatableText(path + ".description"),
+				getTranslation(path + ".description", configEntry.getComment()),
 				new SimpleConfigEntryHandler<>(configEntry),
 				configInput
 		);
 	}
 
-	public static <V> ConfigListConfigEntry<V> convertSimpleConfigEntry(String path, ConfigInput<V> configInput, ConfigEntryHandler<V> entryHandler) {
+	public static <V> ConfigListConfigEntry<V> convertSimpleConfigEntry(ValueConfigEntry<?> configEntry, String path, ConfigInput<V> configInput, ConfigEntryHandler<V> entryHandler) {
 		return new ConfigListConfigEntry<>(
 				new TranslatableText(path),
-				new TranslatableText(path + ".description"),
+				getTranslation(path + ".description", configEntry.getComment()),
 				entryHandler,
 				configInput
 		);
@@ -191,7 +207,7 @@ public class CoatTailor extends ScreenTailor {
 
 		registerConverter(StaticStringConvertible.class, (parentWidget, configEntry, path) -> {
 			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue().asString());
-			parentWidget.addEntry(convertSimpleConfigEntry(path, textConfigInput, new ConvertingConfigEntryHandler<>(
+			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput, new ConvertingConfigEntryHandler<>(
 					configEntry, StaticStringConvertible::asString, input -> wrapExceptions(() -> configEntry.getDefaultValue().valueOf(input))
 			)));
 			return true;

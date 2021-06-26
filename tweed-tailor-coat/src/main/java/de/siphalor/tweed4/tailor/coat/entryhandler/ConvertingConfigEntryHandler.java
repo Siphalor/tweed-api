@@ -18,6 +18,7 @@ package de.siphalor.tweed4.tailor.coat.entryhandler;
 
 import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
+import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.coat.CoatTailor;
