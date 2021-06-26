@@ -24,11 +24,14 @@ import de.siphalor.coat.input.ConfigInput;
 import de.siphalor.coat.input.TextConfigInput;
 import de.siphalor.coat.list.ConfigListWidget;
 import de.siphalor.coat.list.entry.ConfigListConfigEntry;
+import de.siphalor.coat.list.entry.ConfigListTextEntry;
 import de.siphalor.coat.screen.ConfigScreen;
 import de.siphalor.tweed4.config.ConfigCategory;
 import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
+import de.siphalor.tweed4.tailor.DropdownMaterial;
+import de.siphalor.tweed4.tailor.coat.entry.CoatDropdownSelectInput;
 import de.siphalor.tweed4.tailor.coat.entryhandler.ConvertingConfigEntryHandler;
 import de.siphalor.tweed4.tailor.coat.entryhandler.SimpleConfigEntryHandler;
 import de.siphalor.tweed4.tailor.screen.ScreenTailor;
@@ -210,6 +213,19 @@ public class CoatTailor extends ScreenTailor {
 			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput, new ConvertingConfigEntryHandler<>(
 					configEntry, StaticStringConvertible::asString, input -> wrapExceptions(() -> configEntry.getDefaultValue().valueOf(input))
 			)));
+			return true;
+		});
+
+		registerConverter(DropdownMaterial.class,(parentWidget, configEntry, path) -> {
+			//noinspection rawtypes,unchecked,SimplifyStreamApiCallChains
+			CoatDropdownSelectInput<DropdownMaterial> input = new CoatDropdownSelectInput<>(
+					configEntry.getValue(),
+					(DropdownMaterial[]) configEntry.getDefaultValue().values().stream().toArray(DropdownMaterial[]::new),
+					val -> new TranslatableText(val.getTranslationKey()));
+			//noinspection rawtypes
+			ConfigListConfigEntry<DropdownMaterial> entry = convertSimpleConfigEntry(configEntry, path, input);
+			input.setParent(entry);
+			parentWidget.addEntry(entry);
 			return true;
 		});
 
