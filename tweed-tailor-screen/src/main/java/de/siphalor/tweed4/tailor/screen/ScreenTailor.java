@@ -63,8 +63,8 @@ public abstract class ScreenTailor extends Tailor {
 						waitingForFile = false;
 						MinecraftClient.getInstance().openScreen(parentScreen);
 					},
-					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer"),
-					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer.note")
+					new TranslatableText("tweed4_tailor_screen.syncFromServer"),
+					new TranslatableText("tweed4_tailor_screen.syncFromServer.note")
 			);
 		} else {
 			return screenFactory.create(parentScreen);

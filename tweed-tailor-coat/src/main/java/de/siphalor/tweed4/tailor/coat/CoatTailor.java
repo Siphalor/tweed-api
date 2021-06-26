@@ -45,7 +45,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class CoatTailor extends ScreenTailor {
-	private static final String TRANSLATION_PREFIX = "tweed4_tailor_coat.screen.";
+	private static final String TRANSLATION_PREFIX = "tweed4_tailor_screen.screen.";
 	private static final DirectListMultimap<Class<?>, TweedCoatEntryProcessor<?>, LinkedList<TweedCoatEntryProcessor<?>>> CONVERTERS =
 			new DirectListMultimap<>(new HashMap<>(), LinkedList::new);
 
