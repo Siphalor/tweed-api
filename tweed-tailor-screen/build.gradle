@@ -1,5 +1,7 @@
 dependencies {
 	api project(":tweed-base")
 
+	modImplementation("net.fabricmc.fabric-api:fabric-networking-api-v1:$project.fabric_api_networking")
+
 	modImplementation "com.terraformersmc:modmenu:1.16+"
 }
