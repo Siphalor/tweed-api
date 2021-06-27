@@ -36,5 +36,9 @@
         "modmenu": [
             "de.siphalor.tweed4.tailor.screen.ModMenuEntry"
         ]
+    },
+    "depends": {
+        "tweed4_base": "^1",
+        "fabric-networking-api-v1": "*"
     }
 }

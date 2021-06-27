@@ -36,5 +36,8 @@
     "authors": [
         "Siphalor"
     ],
-    "version": "${version}"
+    "version": "${version}",
+    "depends": {
+        "tweed4_data": "^1"
+    }
 }

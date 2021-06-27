@@ -36,5 +36,14 @@
             "de.siphalor.tweed4.tailor.cloth.TweedClothInitializer"
         ]
     },
-    "version": "${version}"
+    "version": "${version}",
+    "depends": {
+        "tweed4_tailor_screen": "^1"
+    },
+    "breaks": {
+        "cloth-config2": [
+            "<5",
+            ">=6"
+        ]
+    }
 }

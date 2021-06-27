@@ -45,5 +45,12 @@
     "authors": [
         "Siphalor"
     ],
-    "version": "${version}"
+    "version": "${version}",
+    "depends": {
+        "fabric-api-base": "*",
+        "fabric-networking-api-v1": "*",
+        "fabric-resource-loader-v0": "*",
+        "fabric-lifecycle-events-v1": "*",
+        "tweed4_data": "^1"
+    }
 }
