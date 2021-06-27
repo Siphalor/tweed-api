@@ -146,16 +146,8 @@ subprojects {
 }
 
 dependencies {
-	subprojects.each {
-		if (!it.name.contains("testmod")) {
-			if (it.jar.archivePath.exists()) {
-				//include(modApi(project("${it.name}:")))
-			}
-		}
-
-		modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
-			exclude module: "fabric-loader"
-		}
+	modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
+		exclude module: "fabric-loader"
 	}
 }
 
