@@ -19,10 +19,7 @@ package de.siphalor.tweed4.tailor.screen;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.client.CustomNoticeScreen;
 import de.siphalor.tweed4.client.TweedClient;
-import de.siphalor.tweed4.config.ConfigEnvironment;
-import de.siphalor.tweed4.config.ConfigFile;
-import de.siphalor.tweed4.config.ConfigOrigin;
-import de.siphalor.tweed4.config.ConfigScope;
+import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.tailor.Tailor;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -63,11 +60,22 @@ public abstract class ScreenTailor extends Tailor {
 						waitingForFile = false;
 						MinecraftClient.getInstance().openScreen(parentScreen);
 					},
-					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer"),
-					new TranslatableText("tweed_tailor_cloth.gui.screen.syncFromServer.note")
+					new TranslatableText("tweed4_tailor_screen.syncFromServer"),
+					new TranslatableText("tweed4_tailor_screen.syncFromServer.note")
 			);
 		} else {
 			return screenFactory.create(parentScreen);
+		}
+	}
+
+	protected void save(ConfigFile configFile) {
+		if (TweedClient.isOnRemoteServer()) {
+			configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
+			ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+			ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
+		} else {
+			ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+			ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
 		}
 	}
 }

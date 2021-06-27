@@ -48,7 +48,7 @@ public class SimpleConfigEntryHandler<V> implements ConfigEntryHandler<V> {
 
 	@Override
 	public void save(V value) {
-
+		configEntry.setMainConfigValue(value);
 	}
 
 	@Override

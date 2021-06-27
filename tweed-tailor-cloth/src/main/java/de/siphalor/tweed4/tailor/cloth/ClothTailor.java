@@ -51,7 +51,7 @@ import java.util.function.Consumer;
 public class ClothTailor extends ScreenTailor {
 	public static final ClothTailor INSTANCE = new ClothTailor();
 
-	protected static final String SCREEN_NAME_PREFIX = "tweed_tailor_cloth.screen.";
+	protected static final String SCREEN_NAME_PREFIX = "tweed4_tailor_screen.screen.";
 	protected boolean waitingForFile;
 
 	private static final Map<Class<?>, EntryConverter<?>> ENTRY_CONVERTERS = new HashMap<>();
@@ -137,17 +137,6 @@ public class ClothTailor extends ScreenTailor {
 		}
 		clothCategory.addEntry(configBuilder.entryBuilder().startTextDescription(categoryDescription(name, configCategory).formatted(Formatting.GRAY)).build());
 		convertCategory(configBuilder.entryBuilder(), clothCategory::addEntry, configCategory, name);
-	}
-
-	private void save(ConfigFile configFile) {
-		if (TweedClient.isOnRemoteServer()) {
-			configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
-			ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
-			ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
-		} else {
-			ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
-			ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
-		}
 	}
 
 	public static <V> void registerEntryConverter(Class<V> valueType, EntryConverter<V> converter) {

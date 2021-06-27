@@ -18,6 +18,7 @@ package de.siphalor.tweed4.tailor.coat.entryhandler;
 
 import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
+import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.coat.CoatTailor;
@@ -63,7 +64,12 @@ public class ConvertingConfigEntryHandler<V, C> implements ConfigEntryHandler<C>
 
 	@Override
 	public void save(C value) {
-
+		Constraint.Result<V> conversionResult = converterFrom.apply(value);
+		if (conversionResult.ok) {
+			configEntry.setMainConfigValue(conversionResult.value);
+		} else {
+			Tweed.LOGGER.warn("Encountered error while trying to save config entry");
+		}
 	}
 
 	@Override
