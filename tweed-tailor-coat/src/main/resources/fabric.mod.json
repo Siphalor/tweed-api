@@ -32,12 +32,18 @@
         ]
     },
     "breaks": {
-        "coat": "<=0.1.2"
+        "coat": [
+            "<=0.1.2",
+            ">=2"
+        ]
     },
     "icon": "assets/tweed4_tailor_coat/icon.png",
     "id": "tweed4_tailor_coat",
     "version": "${version}",
     "authors": [
         "Siphalor"
-    ]
+    ],
+    "depends": {
+        "tweed4_tailor_screen": "^1"
+    }
 }

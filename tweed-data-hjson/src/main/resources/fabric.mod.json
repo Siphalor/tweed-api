@@ -36,5 +36,8 @@
             "de.siphalor.tweed4.data.hjson.HjsonSerializer::INSTANCE"
         ]
     },
-    "version": "${version}"
+    "version": "${version}",
+    "depends": {
+        "tweed4_data": "^1"
+    }
 }

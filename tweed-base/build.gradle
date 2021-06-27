@@ -6,7 +6,7 @@ dependencies {
 			"fabric-lifecycle-events-v1": project.fabric_api_lifecycle_events,
 	]
 	for (dep in fabric_deps.entrySet()) {
-		modApi(include("net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}"))
+		modApi("net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}")
 	}
 
 	api project(path: ":tweed-data")
