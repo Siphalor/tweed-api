@@ -23,15 +23,11 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -167,7 +163,7 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 	@Override
 	public void render(int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
 		super.render(index, y, x, entryWidth, entryHeight, mouseX, mouseY, isHovered, delta);
-		Window window = MinecraftClient.getInstance().getWindow();
+		Window window = MinecraftClient.getInstance().window;
 
 		mainButton.active = isEditable();
 		resetButton.active = isEditable() && getDefaultValue().map(def -> !def.equals(value)).orElse(false);

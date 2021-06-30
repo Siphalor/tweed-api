@@ -16,26 +16,28 @@
 
 package de.siphalor.tweed4.tailor.screen;
 
+import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.TweedRegistry;
-import io.github.prospector.modmenu.api.ConfigScreenFactory;
 import io.github.prospector.modmenu.api.ModMenuApi;
+import net.minecraft.client.MinecraftClient;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ModMenuEntry implements ModMenuApi {
-	@Override
-	public Map<String, ConfigScreenFactory<?>> getProvidedConfigScreenFactories() {
-		Map<String, ConfigScreenFactory<?>> factories = new HashMap<>();
-
+	static {
 		TweedRegistry.TAILORS.stream().forEach(tailor -> {
 			if (tailor instanceof ScreenTailor) {
-				for (Map.Entry<String, ScreenTailorScreenFactory<?>> entry : ((ScreenTailor) tailor).getScreenFactories().entrySet()) {
-					factories.put(entry.getKey(), parent -> entry.getValue().create(parent));
-				}
+				((ScreenTailor) tailor).getScreenFactories().forEach((modid, factory) -> {
+					ModMenuApi.addConfigOverride(modid, () ->
+							MinecraftClient.getInstance().openScreen(factory.create(MinecraftClient.getInstance().currentScreen)));
+				});
 			}
 		});
+	}
 
-		return factories;
+	@Override
+	public String getModId() {
+		return Tweed.MOD_ID;
 	}
 }

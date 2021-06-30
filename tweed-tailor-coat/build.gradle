@@ -1,5 +1,5 @@
 dependencies {
 	implementation project(":tweed-tailor-screen")
 
-	modImplementation "de.siphalor:coat-1.15:1.0.0-beta.9"
+	modImplementation "de.siphalor:coat-1.14:1.0.0-beta.9"
 }

@@ -5,7 +5,7 @@ repositories {
 dependencies {
 	implementation project(":tweed-tailor-screen")
 
-	modApi("me.shedaniel.cloth:config-2:2.14.2") {
+	modApi("me.shedaniel.cloth:config-2:1.8") {
 		exclude group: "net.fabricmc.fabric"
 		exclude module: "modmenu"
 	}

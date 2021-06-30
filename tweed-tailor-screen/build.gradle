@@ -1,7 +1,11 @@
+repositories {
+	maven { url "https://minecraft.curseforge.com/api/maven"}
+}
+
 dependencies {
 	api project(":tweed-base")
 
 	modImplementation("net.fabricmc.fabric-api:fabric-networking-api-v1:$project.fabric_api_networking")
 
-	modImplementation "com.terraformersmc:modmenu:1.10.6"
+	modImplementation "io.github.prospector:modmenu:1.7.17+build.1"
 }
