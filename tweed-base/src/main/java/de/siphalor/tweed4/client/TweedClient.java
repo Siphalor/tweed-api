@@ -60,7 +60,7 @@ public class TweedClient implements ClientModInitializer {
 			}
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer ->
-				ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD)
+				ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getServerResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD)
 		);
 
 		ClientPlayNetworking.registerGlobalReceiver(Tweed.CONFIG_SYNC_S2C_PACKET, (client, handler, packetByteBuf, packetSender) -> {

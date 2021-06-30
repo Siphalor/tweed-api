@@ -138,7 +138,7 @@ public class Tweed implements ModInitializer {
 
 		if (TweedRegistry.getDefaultSerializer() == null) {
 			//noinspection deprecation
-			TweedRegistry.setDefaultSerializer(TweedRegistry.SERIALIZERS.getEntries().iterator().next().getValue());
+			TweedRegistry.setDefaultSerializer(TweedRegistry.SERIALIZERS.get(0));
 		}
 
 		if (loaderAPI.getEnvironmentType() == EnvType.CLIENT) {

@@ -88,7 +88,7 @@ public class CoatTailor extends ScreenTailor {
 				MinecraftClient.getInstance(), name, Collections.emptyList(),
 				category.getBackgroundTexture() != null
 						? category.getBackgroundTexture()
-						: DrawableHelper.OPTIONS_BACKGROUND_TEXTURE
+						: DrawableHelper.BACKGROUND_LOCATION
 		);
 
 		if (!category.getDescription().isEmpty()) {
@@ -204,7 +204,7 @@ public class CoatTailor extends ScreenTailor {
 		});
 
 		registerConverter(Boolean.class, (parentWidget, configEntry, path) -> {
-			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getValue(), false)));
+			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(new LiteralText(""), configEntry.getValue(), false)));
 			return true;
 		});
 

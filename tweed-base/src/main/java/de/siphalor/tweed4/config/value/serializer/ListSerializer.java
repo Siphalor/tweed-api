@@ -20,7 +20,7 @@ import de.siphalor.tweed4.config.ConfigReadException;
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.PacketByteBuf;
 
 import java.util.List;
 import java.util.function.Supplier;

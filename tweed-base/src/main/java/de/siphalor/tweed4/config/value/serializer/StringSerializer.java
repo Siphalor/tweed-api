@@ -18,7 +18,7 @@ package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.PacketByteBuf;
 
 public class StringSerializer extends ConfigValueSerializer<String> {
 	@Override

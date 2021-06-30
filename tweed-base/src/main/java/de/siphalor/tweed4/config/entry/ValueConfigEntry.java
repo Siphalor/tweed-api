@@ -24,7 +24,7 @@ import de.siphalor.tweed4.config.value.SimpleConfigValue;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.PacketByteBuf;
 
 import java.util.Arrays;
 import java.util.LinkedList;

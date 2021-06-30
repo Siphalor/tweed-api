@@ -28,7 +28,7 @@ public class CustomNoticeScreen extends NoticeScreen {
 	}
 
 	public CustomNoticeScreen(Runnable openHandler, Runnable closeHandler, Text title, Text notice, Text text) {
-		super(closeHandler, title, notice, text);
+		super(closeHandler, title, notice, text.asFormattedString());
 		this.openHandler = openHandler;
 	}
 

@@ -16,13 +16,11 @@
 
 package de.siphalor.tweed4.config;
 
-import com.mojang.serialization.Lifecycle;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -39,12 +37,12 @@ public class TweedRegistry {
 	 * This registry contains all of the known {@link ConfigDataSerializer}s.<br />
 	 * By default available serializers are <code>gson</code>, <code>hjson</code> and <code>jankson</code>.
 	 */
-	public static final Registry<ConfigDataSerializer<?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
+	public static final Registry<ConfigDataSerializer<?>> SERIALIZERS = new SimpleRegistry<>();
 	/**
 	 * This registry contains all of the known {@link Tailor}s.<br />
 	 * By default only a serializer for the Cloth config UI is available as <code>tweed4:cloth</code>.
 	 */
-	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "tailors")), Lifecycle.experimental());
+	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>();
 
 	public static ConfigFile registerConfigFile(String fileName) {
 		return registerConfigFile(fileName, defaultSerializer);

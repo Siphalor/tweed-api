@@ -16,9 +16,9 @@
 
 package de.siphalor.tweed4.tailor.screen;
 
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
-import com.terraformersmc.modmenu.api.ModMenuApi;
 import de.siphalor.tweed4.config.TweedRegistry;
+import io.github.prospector.modmenu.api.ConfigScreenFactory;
+import io.github.prospector.modmenu.api.ModMenuApi;
 
 import java.util.HashMap;
 import java.util.Map;

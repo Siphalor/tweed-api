@@ -21,6 +21,7 @@ import de.siphalor.coat.input.InputChangeListener;
 import de.siphalor.coat.list.entry.ConfigListConfigEntry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvents;
@@ -48,7 +49,7 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	public CoatDropdownSelectInput(V value, V[] options, Function<V, Text> valueConverter) {
 		this.options = options;
 		this.valueConverter = valueConverter;
-		button = new ButtonWidget(0,0, 20, 20, LiteralText.EMPTY, button_ -> {
+		button = new ButtonWidget(0,0, 20, 20, "", button_ -> {
 			expanded = !expanded;
 			scroll = 0;
 			if (parent != null) {
@@ -62,9 +63,9 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	@Override
 	public int getHeight() {
 		if (expanded) {
-			return button.getHeight() + 5 + getOptionsVisibleLength() * 14;
+			return 20 + 5 + getOptionsVisibleLength() * 14;
 		}
-		return button.getHeight() + 2;
+		return 20 + 2;
 	}
 
 	@Override
@@ -76,9 +77,9 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	public void setValue(V value) {
 		this.value = value;
 		if (value == null) {
-			button.setMessage(new TranslatableText("tweed4.cloth.dropdown.empty"));
+			button.setMessage(I18n.translate("tweed4.cloth.dropdown.empty"));
 		} else {
-			button.setMessage(valueConverter.apply(value));
+			button.setMessage(valueConverter.apply(value).asFormattedString());
 		}
 		if (changeListener != null) {
 			changeListener.inputChanged(value);
@@ -108,15 +109,15 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int x, int y, int width, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+	public void render(int x, int y, int width, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
 		button.x = x;
 		button.y = y;
 		button.setWidth(width);
-		button.render(matrices, mouseX, mouseY, tickDelta);
+		button.render(mouseX, mouseY, tickDelta);
 
 		if (expanded) {
 			int length = getOptionsVisibleLength();
-			int top = button.y + button.getHeight();
+			int top = button.y + 20;
 			int right = button.x + button.getWidth();
 			int height = length * 14;
 
@@ -125,14 +126,14 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 				mousePos = (mouseY - top - 3) / 14 + scroll;
 			}
 
-			fill(matrices, button.x, top, button.x + button.getWidth(), top + height, 0xff000000);
+			fill(button.x, top, button.x + button.getWidth(), top + height, 0xff000000);
 			if (options.length > length) {
 				int l = options.length - 1;
-				fill(matrices, right - 3, top + scroll * height / l, right, top + (MAX_VISIBLE_LINES + scroll) * height / l, 0xffbbbbbb);
+				fill(right - 3, top + scroll * height / l, right, top + (MAX_VISIBLE_LINES + scroll) * height / l, 0xffbbbbbb);
 			}
 
 			for (int i = scroll; i < scroll + length; i++) {
-				MinecraftClient.getInstance().textRenderer.draw(matrices, valueConverter.apply(options[i]), button.x + 3F, top + (i - scroll) * 14 + 3,
+				MinecraftClient.getInstance().textRenderer.draw(valueConverter.apply(options[i]).asFormattedString(), button.x + 3F, top + (i - scroll) * 14 + 3,
 						mousePos == i ? 0xffffffff : 0xffbbbbbb
 				);
 			}
@@ -140,7 +141,7 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	public void render(int mouseX, int mouseY, float delta) {
 
 	}
 
@@ -153,7 +154,7 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
 		if (
-				mouseY >= button.y + button.getHeight() && mouseY < button.y + getHeight()
+				mouseY >= button.y + 20 && mouseY < button.y + getHeight()
 						&& mouseX >= button.x && mouseX < button.x + button.getWidth()
 		) {
 			int newScroll = scroll - (int) amount;
@@ -167,7 +168,7 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
 		if (mouseY >= button.y) {
 			if (expanded && mouseX >= button.x && mouseX < button.x + button.getWidth()) {
-				int pos = (int) ((mouseY - (button.y + button.getHeight() + 3)) / 14);
+				int pos = (int) ((mouseY - (button.y + 20 + 3)) / 14);
 				if (pos >= 0 && pos < MAX_VISIBLE_LINES) {
 					pos += scroll;
 					setValue(options[pos]);

@@ -23,9 +23,9 @@ import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataValue;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.PacketByteBuf;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
