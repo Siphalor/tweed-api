@@ -37,6 +37,7 @@
         "Siphalor"
     ],
     "version": "${version}",
+    "description": "JSON5 support for Tweed 4\n\nThis project uses and embeds the Jankson library by falkreon, licensed as MIT: https://github.com/falkreon/Jankson",
     "depends": {
         "tweed4_data": "^1"
     }

@@ -23,7 +23,7 @@ import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.RangeConstraint;
 import de.siphalor.tweed4.tailor.cloth.ClothData;
 
-@ATweedConfig(scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = "tweed4:coat", casing = CaseFormat.LOWER_HYPHEN)
+@ATweedConfig(serializer = "tweed4:gson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed4_testmod")
 public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")

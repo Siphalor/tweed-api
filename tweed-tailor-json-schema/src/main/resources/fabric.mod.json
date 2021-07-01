@@ -1,16 +1,11 @@
 {
     "schemaVersion": 1,
-    "id": "tweed4_tailor_cloth",
-    "authors": [
-        "Siphalor"
-    ],
+    "license": "Apache-2.0",
     "contact": {
         "email": "info@siphalor.de",
         "issues": "https://github.com/Siphalor/tweed-api/issues",
         "sources": "https://github.com/Siphalor/tweed-api"
     },
-    "license": "Apache-2.0",
-    "icon": "assets/tweed4_tailor_cloth/icon.png",
     "custom": {
         "modmenu": {
             "badges": [
@@ -23,7 +18,7 @@
                 "id": "tweed4",
                 "name": "Tweed 4",
                 "description": "Configuration focused libraries",
-                "icon": "assets/tweed4_tailor_cloth/icon.png",
+                "icon": "assets/tweed4_tailor_json_schema/icon.png",
                 "badges": [
                     "library"
                 ]
@@ -31,19 +26,18 @@
         },
         "modmenu:api": true
     },
-    "entrypoints": {
-        "tweed4:client_init": [
-            "de.siphalor.tweed4.tailor.cloth.TweedClothInitializer"
-        ]
-    },
+    "icon": "assets/tweed4_tailor_json_schema/icon.png",
+    "id": "tweed4_tailor_json_schema",
     "version": "${version}",
+    "authors": [
+        "Siphalor"
+    ],
     "depends": {
-        "tweed4_tailor_screen": "^1"
+        "tweed4_base": "^1.1"
     },
-    "breaks": {
-        "cloth-config2": [
-            "<4",
-            ">=5"
+    "entrypoints": {
+        "tweed4:init": [
+            "de.siphalor.tweed4.tailor.jsonschema.JsonSchemaTailor"
         ]
     }
 }

@@ -69,7 +69,12 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		return "jankson";
 	}
 
-    static class JanksonValue implements DataValue<JsonElement> {
+	@Override
+	public String getId() {
+		return "tweed4:jankson";
+	}
+
+	static class JanksonValue implements DataValue<JsonElement> {
         protected final JsonElement element;
         Consumer<String> setComment;
         Supplier<String> getComment;
