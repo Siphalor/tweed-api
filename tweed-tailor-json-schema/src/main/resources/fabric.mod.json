@@ -1,0 +1,43 @@
+{
+    "schemaVersion": 1,
+    "license": "Apache-2.0",
+    "contact": {
+        "email": "info@siphalor.de",
+        "issues": "https://github.com/Siphalor/tweed-api/issues",
+        "sources": "https://github.com/Siphalor/tweed-api"
+    },
+    "custom": {
+        "modmenu": {
+            "badges": [
+                "library"
+            ],
+            "links": {
+                "modmenu.discord": "https://discord.gg/6gaXmbj"
+            },
+            "parent": {
+                "id": "tweed4",
+                "name": "Tweed 4",
+                "description": "Configuration focused libraries",
+                "icon": "assets/tweed4_tailor_json_schema/icon.png",
+                "badges": [
+                    "library"
+                ]
+            }
+        },
+        "modmenu:api": true
+    },
+    "icon": "assets/tweed4_tailor_json_schema/icon.png",
+    "id": "tweed4_tailor_json_schema",
+    "version": "${version}",
+    "authors": [
+        "Siphalor"
+    ],
+    "depends": {
+        "tweed4_base": "^1.1"
+    },
+    "entrypoints": {
+        "tweed4:init": [
+            "de.siphalor.tweed4.tailor.jsonschema.JsonSchemaTailor"
+        ]
+    }
+}

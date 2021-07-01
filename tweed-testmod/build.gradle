@@ -3,7 +3,9 @@ dependencies {
 	implementation project(":tweed-annotated")
 	implementation project(":tweed-tailor-cloth")
 	implementation project(":tweed-tailor-coat")
+	implementation project(":tweed-tailor-json-schema")
 	implementation project(":tweed-data-hjson")
+	implementation project(":tweed-data-gson")
 
 	modRuntime("com.github.astei:lazydfu:master-SNAPSHOT")
 }
