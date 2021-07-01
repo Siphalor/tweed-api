@@ -1,6 +1,7 @@
 {
     "schemaVersion": 1,
     "id": "tweed4_data_hjson",
+    "description": "Hjson support for Tweed 4\n\nThis project uses and embeds the hjson-java fork of PersonTheCat, licensed as MIT: https://github.com/PersonTheCat/hjson-java",
     "authors": [
         "Siphalor"
     ],
