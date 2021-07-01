@@ -30,7 +30,7 @@ import java.io.*;
 import java.util.Iterator;
 
 public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
-	protected static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
+	protected static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
 	public static final GsonSerializer INSTANCE = new GsonSerializer();
 
@@ -63,6 +63,11 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 	@Override
 	public String getFileExtension() {
 		return "json";
+	}
+
+	@Override
+	public String getId() {
+		return "tweed4:gson";
 	}
 
 	static class GsonValue implements DataValue<JsonElement> {
