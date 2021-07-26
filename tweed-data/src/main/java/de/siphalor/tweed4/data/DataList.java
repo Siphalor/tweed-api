@@ -16,11 +16,20 @@
 
 package de.siphalor.tweed4.data;
 
+import de.siphalor.tweed4.data.serializer.DataSerializer;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataContainer<RawValue, Integer> {
 	@Override
 	default boolean has(Integer index) {
 		return index < size();
 	}
+
+	@Override
+	void remove(Integer index);
 
 	@Override
 	DataValue<RawValue> get(Integer index);
@@ -62,24 +71,6 @@ public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataC
 	DataObject<RawValue> addObject(Integer index);
 
 	@Override
-	void remove(Integer index);
-
-	@Override
-	default boolean isNumber() {
-		return false;
-	}
-
-	@Override
-	default boolean isString() {
-		return false;
-	}
-
-	@Override
-	default boolean isBoolean() {
-		return false;
-	}
-
-	@Override
 	default boolean isObject() {
 		return false;
 	}
@@ -87,5 +78,25 @@ public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataC
 	@Override
 	default boolean isList() {
 		return true;
+	}
+
+	@Override
+	default DataObject<RawValue> asObject() {
+		return null;
+	}
+
+	@Override
+	default DataList<RawValue> asList() {
+		return this;
+	}
+
+	@Override
+	default Set<Integer> keys() {
+		return IntStream.range(0, size()).boxed().collect(Collectors.toSet());
+	}
+
+	@Override
+	default <Other> DataList<Other> convert(DataSerializer<Other> serializer) {
+		return (DataList<Other>) DataContainer.super.convert(serializer);
 	}
 }

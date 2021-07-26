@@ -20,6 +20,9 @@ public interface DataValue<RawValue> {
 	void setComment(String comment);
 	String getComment();
 
+	default boolean isGenericNumber() {
+		return false;
+	}
 	boolean isNumber();
 	boolean isByte();
 	boolean isShort();
@@ -41,6 +44,9 @@ public interface DataValue<RawValue> {
 		return false;
 	}
 
+	default Number asNumber() {
+		return null;
+	}
 	byte asByte();
 	short asShort();
 	int asInt();

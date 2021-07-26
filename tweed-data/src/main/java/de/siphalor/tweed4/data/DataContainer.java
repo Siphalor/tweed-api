@@ -16,6 +16,10 @@
 
 package de.siphalor.tweed4.data;
 
+import de.siphalor.tweed4.data.serializer.DataSerializer;
+
+import java.util.Set;
+
 public interface DataContainer<RawValue, Key> extends DataValue<RawValue> {
 	boolean has(Key key);
 	int size();
@@ -148,5 +152,158 @@ public interface DataContainer<RawValue, Key> extends DataValue<RawValue> {
 	DataObject<RawValue> addObject(Key key);
 	DataList<RawValue> addList(Key key);
 
+	@Override
+	default boolean isGenericNumber() {
+		return false;
+	}
+
+	@Override
+	default boolean isNumber() {
+		return false;
+	}
+
+	@Override
+	default boolean isByte() {
+		return false;
+	}
+
+	@Override
+	default boolean isShort() {
+		return false;
+	}
+
+	@Override
+	default boolean isInt() {
+		return false;
+	}
+
+	@Override
+	default boolean isLong() {
+		return false;
+	}
+
+	@Override
+	default boolean isFloat() {
+		return false;
+	}
+
+	@Override
+	default boolean isDouble() {
+		return false;
+	}
+
+	@Override
+	default boolean isString() {
+		return false;
+	}
+
+	@Override
+	default boolean isBoolean() {
+		return false;
+	}
+
+	@Override
+	default Number asNumber() {
+		return 0;
+	}
+
+	@Override
+	default byte asByte() {
+		return 0;
+	}
+
+	@Override
+	default short asShort() {
+		return 0;
+	}
+
+	@Override
+	default int asInt() {
+		return 0;
+	}
+
+	@Override
+	default long asLong() {
+		return 0;
+	}
+
+	@Override
+	default float asFloat() {
+		return 0;
+	}
+
+	@Override
+	default double asDouble() {
+		return 0;
+	}
+
+	@Override
+	default String asString() {
+		return "";
+	}
+
+	@Override
+	default boolean asBoolean() {
+		return !isEmpty();
+	}
+
+	Set<Key> keys();
+
 	void remove(Key key);
+
+	@SuppressWarnings("unchecked")
+	default <Other> DataContainer<Other, Key> convert(DataSerializer<Other> serializer) {
+		DataContainer<Other, Key> other;
+		if (this instanceof DataList) {
+			other = (DataContainer<Other, Key>) serializer.newList();
+		} else if (this instanceof DataObject) {
+			other = (DataContainer<Other, Key>) serializer.newObject();
+		} else {
+			throw new RuntimeException("Unknown data type " + this.getClass().getTypeName());
+		}
+
+		for (Key key : other.keys()) {
+			DataValue<Other> dataValue = other.get(key);
+			if (dataValue.isChar()) {
+				other.set(key, dataValue.asChar());
+			} else if (dataValue.isString()) {
+				other.set(key, dataValue.asString());
+			} else if (dataValue.isBoolean()) {
+				other.set(key, dataValue.asBoolean());
+			} else if (dataValue.isGenericNumber()) {
+				Number number = dataValue.asNumber();
+				if (number instanceof Byte) {
+					other.set(key, number.byteValue());
+				} else if (number instanceof Short) {
+					other.set(key, number.shortValue());
+				} else if (number instanceof Integer) {
+					other.set(key, number.intValue());
+				} else if (number instanceof Long) {
+					other.set(key, number.longValue());
+				} else if (number instanceof Float) {
+					other.set(key, number.floatValue());
+				} else {
+					other.set(key, number.doubleValue());
+				}
+			} else if (dataValue.isByte()) {
+				other.set(key, dataValue.asByte());
+			} else if (dataValue.isShort()) {
+				other.set(key, dataValue.asShort());
+			} else if (dataValue.isInt()) {
+				other.set(key, dataValue.asInt());
+			} else if (dataValue.isLong()) {
+				other.set(key, dataValue.asLong());
+			} else if (dataValue.isFloat()) {
+				other.set(key, dataValue.asFloat());
+			} else if (dataValue.isDouble()) {
+				other.set(key, dataValue.asDouble());
+			} else if (dataValue.isList()) {
+				other.set(key, dataValue.asList().convert(serializer));
+			} else if (dataValue.isObject()) {
+				other.set(key, dataValue.asObject().convert(serializer));
+			}
+		}
+
+		return other;
+	}
 }
