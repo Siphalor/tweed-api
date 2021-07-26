@@ -21,6 +21,14 @@ import de.siphalor.tweed4.data.DataObject;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * A serializer that can read and write an abstract data representation to and from streams.
+ * @param <RawValue> The raw internal values used by the implementation.
+ *                  This helps differentiating between multiple data implementations in generic scenarios.
+ * @deprecated Extend {@link DataSerializer} instead.
+ */
+@SuppressWarnings("DeprecatedIsStillUsed")
+@Deprecated
 public interface ConfigDataSerializer<RawValue> {
 	DataObject<RawValue> newObject();
 	DataObject<RawValue> read(InputStream inputStream);
