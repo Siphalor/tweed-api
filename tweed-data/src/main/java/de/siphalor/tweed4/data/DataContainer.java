@@ -262,8 +262,8 @@ public interface DataContainer<RawValue, Key> extends DataValue<RawValue> {
 			throw new RuntimeException("Unknown data type " + this.getClass().getTypeName());
 		}
 
-		for (Key key : other.keys()) {
-			DataValue<Other> dataValue = other.get(key);
+		for (Key key : keys()) {
+			DataValue<RawValue> dataValue = get(key);
 			if (dataValue.isChar()) {
 				other.set(key, dataValue.asChar());
 			} else if (dataValue.isString()) {

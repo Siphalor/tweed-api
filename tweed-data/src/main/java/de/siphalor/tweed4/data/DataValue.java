@@ -44,9 +44,7 @@ public interface DataValue<RawValue> {
 		return false;
 	}
 
-	default Number asNumber() {
-		return null;
-	}
+	Number asNumber();
 	byte asByte();
 	short asShort();
 	int asInt();

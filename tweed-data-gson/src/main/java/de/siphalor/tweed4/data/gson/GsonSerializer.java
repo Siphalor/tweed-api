@@ -22,14 +22,14 @@ import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
-import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed4.data.serializer.DataSerializer;
 import net.minecraft.util.JsonHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.Iterator;
 
-public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
+public class GsonSerializer implements DataSerializer<JsonElement> {
 	protected static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
 	public static final GsonSerializer INSTANCE = new GsonSerializer();
@@ -37,6 +37,11 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 	@Override
 	public DataObject<JsonElement> newObject() {
 		return new GsonObject(new JsonObject());
+	}
+
+	@Override
+	public DataList<JsonElement> newList() {
+		return new GsonList(new JsonArray());
 	}
 
 	@Override

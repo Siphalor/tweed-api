@@ -22,7 +22,7 @@ import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
-import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed4.data.serializer.DataSerializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -34,12 +34,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
+public class JanksonSerializer implements DataSerializer<JsonElement> {
     public static final JanksonSerializer INSTANCE = new JanksonSerializer();
 
 	@Override
 	public DataObject<JsonElement> newObject() {
-		return new JanksonObject(new JsonObject(), (comment) -> {}, () -> "", (clazz) -> null);
+		return new JanksonObject(new JsonObject(), comment -> {}, () -> "", clazz -> null);
+	}
+
+	@Override
+	public DataList<JsonElement> newList() {
+		return new JanksonList(new JsonArray(), comment -> {}, () -> "", clazz -> null);
 	}
 
 	@Override
@@ -167,7 +172,7 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 
 		@Override
 		public Number asNumber() {
-			return (Number) as.apply(Number.class);
+			return (Number) as.apply(Double.class);
 		}
 
 		@Override

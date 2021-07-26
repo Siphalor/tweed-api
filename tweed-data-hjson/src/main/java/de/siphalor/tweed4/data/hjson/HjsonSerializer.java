@@ -21,13 +21,14 @@ import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed4.data.serializer.DataSerializer;
 import org.hjson.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.Iterator;
 
-public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
+public class HjsonSerializer implements DataSerializer<JsonValue> {
 	public static final HjsonSerializer INSTANCE = new HjsonSerializer();
 
 	private final HjsonOptions hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
@@ -35,6 +36,11 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 	@Override
 	public DataObject<JsonValue> newObject() {
         return new HjsonObject(new JsonObject());
+	}
+
+	@Override
+	public DataList<JsonValue> newList() {
+		return new HjsonList(new JsonArray());
 	}
 
 	@Override
