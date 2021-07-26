@@ -64,4 +64,47 @@ public interface DataValue<RawValue> {
 	 * @return the raw value
 	 */
 	RawValue getRaw();
+
+	default boolean equals(DataValue<?> other) {
+		if (isNumber()) {
+			return other.isNumber() && asNumber().equals(other.asNumber());
+		} else if (isChar()) {
+			return other.isChar() && asChar() == other.asChar();
+		} else if (isString()) {
+			return other.isString() && asString().equals(other.asString());
+		} else if (isBoolean()) {
+			return other.isBoolean() && asBoolean() == other.asBoolean();
+		} else if (isObject()) {
+			if (!other.isObject()) {
+				return false;
+			}
+			DataObject<RawValue> object = asObject();
+			DataObject<?> otherObject = other.asObject();
+			if (!object.keys().equals(otherObject.keys())) {
+				return false;
+			}
+			for (String key : object.keys()) {
+				if (!object.get(key).equals(otherObject.get(key))) {
+					return false;
+				}
+			}
+			return true;
+		} else if (isList()) {
+			if (!other.isList()) {
+				return false;
+			}
+			DataList<RawValue> list = asList();
+			DataList<?> otherList = other.asList();
+			if (list.size() != otherList.size()) {
+				return false;
+			}
+			for (int i = 0; i < list.size(); i++) {
+				if (!list.get(i).equals(otherList.get(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 }
