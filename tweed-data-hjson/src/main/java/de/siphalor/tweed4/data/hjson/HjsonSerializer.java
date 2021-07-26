@@ -95,6 +95,11 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		}
 
 		@Override
+		public boolean isGenericNumber() {
+			return isNumber();
+		}
+
+		@Override
 		public boolean isNumber() {
 			return jsonValue.isNumber();
 		}
@@ -152,6 +157,11 @@ public class HjsonSerializer implements ConfigDataSerializer<JsonValue> {
 		@Override
 		public boolean isList() {
 			return jsonValue.isArray();
+		}
+
+		@Override
+		public Number asNumber() {
+			return jsonValue.asDouble();
 		}
 
 		@Override

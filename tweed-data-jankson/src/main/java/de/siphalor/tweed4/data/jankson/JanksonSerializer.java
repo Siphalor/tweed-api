@@ -98,6 +98,11 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public boolean isGenericNumber() {
+			return isNumber();
+		}
+
+		@Override
 		public boolean isNumber() {
             return element instanceof JsonPrimitive && ((JsonPrimitive) element).getValue() instanceof Number;
 		}
@@ -158,6 +163,11 @@ public class JanksonSerializer implements ConfigDataSerializer<JsonElement> {
 		@Override
 		public boolean isList() {
 			return element instanceof JsonArray;
+		}
+
+		@Override
+		public Number asNumber() {
+			return (Number) as.apply(Number.class);
 		}
 
 		@Override

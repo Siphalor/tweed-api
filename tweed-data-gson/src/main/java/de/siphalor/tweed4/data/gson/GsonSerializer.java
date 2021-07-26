@@ -88,6 +88,11 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		}
 
 		@Override
+		public boolean isGenericNumber() {
+			return isNumber();
+		}
+
+		@Override
 		public boolean isNumber() {
 			return JsonHelper.isNumber(jsonElement);
 		}
@@ -145,6 +150,11 @@ public class GsonSerializer implements ConfigDataSerializer<JsonElement> {
 		@Override
 		public boolean isList() {
 			return jsonElement.isJsonArray();
+		}
+
+		@Override
+		public Number asNumber() {
+			return jsonElement.getAsNumber();
 		}
 
 		@Override
