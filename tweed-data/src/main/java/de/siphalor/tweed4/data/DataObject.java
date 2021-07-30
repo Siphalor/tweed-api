@@ -18,7 +18,6 @@ package de.siphalor.tweed4.data;
 
 import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
-import de.siphalor.tweed4.data.serializer.DataSerializer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,7 +25,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<RawValue>>>, DataContainer<RawValue, String> {
+public interface DataObject<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends Iterable<Pair<String, V>>, DataContainer<String, V, L, O> {
 	@Override
 	boolean has(String key);
 
@@ -34,43 +33,43 @@ public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<Ra
 	void remove(String key);
 
 	@Override
-	DataValue<RawValue> set(String key, DataValue<RawValue> value);
+	V set(String key, V value);
 
 	@Override
-	DataValue<RawValue> set(String key, boolean value);
+	V set(String key, boolean value);
 
 	@Override
-	DataValue<RawValue> set(String key, String value);
+	V set(String key, String value);
 
 	@Override
-	DataValue<RawValue> set(String key, char value);
+	V set(String key, char value);
 
 	@Override
-	DataValue<RawValue> set(String key, double value);
+	V set(String key, double value);
 
 	@Override
-	DataValue<RawValue> set(String key, float value);
+	V set(String key, float value);
 
 	@Override
-	DataValue<RawValue> set(String key, long value);
+	V set(String key, long value);
 
 	@Override
-	DataValue<RawValue> set(String key, int value);
+	V set(String key, int value);
 
 	@Override
-	DataValue<RawValue> set(String key, short value);
+	V set(String key, short value);
 
 	@Override
-	DataValue<RawValue> set(String key, byte value);
+	V set(String key, byte value);
 
 	@Override
-	DataObject<RawValue> addObject(String key);
+	O addObject(String key);
 
 	@Override
-	DataList<RawValue> addList(String key);
+	L addList(String key);
 
 	@Override
-	DataValue<RawValue> get(String key);
+	V get(String key);
 
 	@Override
 	default boolean isObject() {
@@ -83,12 +82,13 @@ public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<Ra
 	}
 
 	@Override
-	default DataObject<RawValue> asObject() {
-		return this;
+	default O asObject() {
+		//noinspection unchecked
+		return (O) this;
 	}
 
 	@Override
-	default DataList<RawValue> asList() {
+	default L asList() {
 		return null;
 	}
 
@@ -105,23 +105,25 @@ public interface DataObject<RawValue> extends Iterable<Pair<String, DataValue<Ra
 	@NotNull
 	@Deprecated
 	@ApiStatus.OverrideOnly
-	Iterator<Pair<String, DataValue<RawValue>>> iterator();
+	Iterator<Pair<String, V>> iterator();
 
 	@Deprecated
-	default Spliterator<Pair<String, DataValue<RawValue>>> spliterator() {
+	default Spliterator<Pair<String, V>> spliterator() {
 		return Spliterators.spliteratorUnknownSize(iterator(), 0);
 	}
 
 	@Deprecated
-	default void forEach(Consumer<? super Pair<String, DataValue<RawValue>>> action) {
+	default void forEach(Consumer<? super Pair<String, V>> action) {
 		Objects.requireNonNull(action);
-		for (Pair<String, DataValue<RawValue>> pair : this) {
+		for (Pair<String, V> pair : this) {
 			action.accept(pair);
 		}
 	}
 
+	/*
 	@Override
 	default <Other> DataObject<Other> convert(DataSerializer<Other> serializer) {
 		return (DataObject<Other>) DataContainer.super.convert(serializer);
 	}
+	 */
 }

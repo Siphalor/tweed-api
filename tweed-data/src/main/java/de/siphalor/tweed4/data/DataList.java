@@ -16,13 +16,11 @@
 
 package de.siphalor.tweed4.data;
 
-import de.siphalor.tweed4.data.serializer.DataSerializer;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataContainer<RawValue, Integer> {
+public interface DataList<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends Iterable<V>, DataContainer<Integer, V, L, O> {
 	@Override
 	default boolean has(Integer index) {
 		return index < size();
@@ -32,43 +30,43 @@ public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataC
 	void remove(Integer index);
 
 	@Override
-	DataValue<RawValue> get(Integer index);
+	V get(Integer index);
 
 	@Override
-	DataValue<RawValue> set(Integer index, byte value);
+	V set(Integer index, byte value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, short value);
+	V set(Integer index, short value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, int value);
+	V set(Integer index, int value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, long value);
+	V set(Integer index, long value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, float value);
+	V set(Integer index, float value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, double value);
+	V set(Integer index, double value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, char value);
+	V set(Integer index, char value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, String value);
+	V set(Integer index, String value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, boolean value);
+	V set(Integer index, boolean value);
 
 	@Override
-	DataValue<RawValue> set(Integer index, DataValue<RawValue> value);
+	V set(Integer index, V value);
 
 	@Override
-	DataList<RawValue> addList(Integer index);
+	L addList(Integer index);
 
 	@Override
-	DataObject<RawValue> addObject(Integer index);
+	O addObject(Integer index);
 
 	@Override
 	default boolean isObject() {
@@ -81,13 +79,14 @@ public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataC
 	}
 
 	@Override
-	default DataObject<RawValue> asObject() {
+	default O asObject() {
 		return null;
 	}
 
 	@Override
-	default DataList<RawValue> asList() {
-		return this;
+	default L asList() {
+		//noinspection unchecked
+		return (L) this;
 	}
 
 	@Override
@@ -95,8 +94,10 @@ public interface DataList<RawValue> extends Iterable<DataValue<RawValue>>, DataC
 		return IntStream.range(0, size()).boxed().collect(Collectors.toSet());
 	}
 
+	/*
 	@Override
 	default <Other> DataList<Other> convert(DataSerializer<Other> serializer) {
 		return (DataList<Other>) DataContainer.super.convert(serializer);
 	}
+	 */
 }

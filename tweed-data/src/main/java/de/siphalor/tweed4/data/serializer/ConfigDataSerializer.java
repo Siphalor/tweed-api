@@ -16,23 +16,26 @@
 
 package de.siphalor.tweed4.data.serializer;
 
+import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataValue;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
  * A serializer that can read and write an abstract data representation to and from streams.
- * @param <RawValue> The raw internal values used by the implementation.
- *                  This helps differentiating between multiple data implementations in generic scenarios.
+ * @param <V> The {@link DataValue} class associated with this serializer
+ * @param <L> The {@link DataList} class associated with this serializer
+ * @param <O> The {@link DataObject} class associated with this serializer
  * @deprecated Extend {@link DataSerializer} instead.
  */
 @SuppressWarnings("DeprecatedIsStillUsed")
 @Deprecated
-public interface ConfigDataSerializer<RawValue> {
-	DataObject<RawValue> newObject();
-	DataObject<RawValue> read(InputStream inputStream);
-	void write(OutputStream outputStream, DataObject<RawValue> dataObject);
+public interface ConfigDataSerializer<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> {
+	O newObject();
+	O read(InputStream inputStream);
+	void write(OutputStream outputStream, O dataObject);
 	String getFileExtension();
 
 	/**

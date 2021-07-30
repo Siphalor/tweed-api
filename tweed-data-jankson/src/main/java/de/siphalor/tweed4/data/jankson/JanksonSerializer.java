@@ -34,21 +34,70 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class JanksonSerializer implements DataSerializer<JsonElement> {
+public class JanksonSerializer implements DataSerializer<JanksonSerializer.JanksonValue, JanksonSerializer.JanksonList, JanksonSerializer.JanksonObject> {
     public static final JanksonSerializer INSTANCE = new JanksonSerializer();
 
+    private static final Consumer<String> SET_COMMENT_VOID = comment -> {};
+    private static final Supplier<String> GET_COMMENT_VOID = () -> "";
+    private static final Function<Class<?>, Object> AS_VOID = clazz -> null;
+
 	@Override
-	public DataObject<JsonElement> newObject() {
-		return new JanksonObject(new JsonObject(), comment -> {}, () -> "", clazz -> null);
+	public JanksonObject newObject() {
+		return new JanksonObject(new JsonObject(), SET_COMMENT_VOID, GET_COMMENT_VOID, AS_VOID);
 	}
 
 	@Override
-	public DataList<JsonElement> newList() {
-		return new JanksonList(new JsonArray(), comment -> {}, () -> "", clazz -> null);
+	public JanksonList newList() {
+		return new JanksonList(new JsonArray(), SET_COMMENT_VOID, GET_COMMENT_VOID, AS_VOID);
 	}
 
 	@Override
-	public DataObject<JsonElement> read(InputStream inputStream) {
+	public JanksonValue newBoolean(boolean value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newChar(char value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newString(String value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newByte(byte value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newShort(short value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newInt(int value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newLong(long value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newFloat(float value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonValue newDouble(double value) {
+		return new JanksonValue(new JsonPrimitive(value));
+	}
+
+	@Override
+	public JanksonObject read(InputStream inputStream) {
 		try {
 			JsonObject jsonObject = Jankson.builder().build().load(inputStream);
             return new JanksonObject(jsonObject, (comment) -> {}, () -> "", (clazz) -> null);
@@ -60,7 +109,7 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 	}
 
 	@Override
-	public void write(OutputStream outputStream, DataObject<JsonElement> dataObject) {
+	public void write(OutputStream outputStream, JanksonObject dataObject) {
 		try {
 			outputStream.write(dataObject.getRaw().toJson(true, true).getBytes());
 		} catch (IOException e) {
@@ -79,11 +128,15 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 		return "tweed4:jankson";
 	}
 
-	static class JanksonValue implements DataValue<JsonElement> {
+	static class JanksonValue implements DataValue<JanksonValue, JanksonList, JanksonObject> {
         protected final JsonElement element;
         Consumer<String> setComment;
         Supplier<String> getComment;
         Function<Class<?>, Object> as;
+
+        JanksonValue(JsonElement jsonElement) {
+        	this(jsonElement, SET_COMMENT_VOID, GET_COMMENT_VOID, AS_VOID);
+		}
 
 		JanksonValue(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class<?>, Object> as) {
 			this.element = jsonElement;
@@ -221,12 +274,12 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 		}
 
 		@Override
-		public DataObject<JsonElement> asObject() {
+		public JanksonObject asObject() {
 			return new JanksonObject(element, setComment, getComment, as);
 		}
 
 		@Override
-		public DataList<JsonElement> asList() {
+		public JanksonList asList() {
 			return new JanksonList(element, setComment, getComment, as);
 		}
 
@@ -236,7 +289,7 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 		}
 	}
 
-	static class JanksonObject extends JanksonValue implements DataObject<JsonElement> {
+	static class JanksonObject extends JanksonValue implements DataObject<JanksonValue, JanksonList, JanksonObject> {
 		JsonObject self;
 
 		JanksonObject(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class<?>, Object> as) {
@@ -255,88 +308,88 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 		}
 
 		@Override
-		public DataValue<JsonElement> get(String key) {
+		public JanksonValue get(String key) {
 			return createDataValue(self.get(key), key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, int value) {
+		public JanksonValue set(String key, int value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, short value) {
+		public JanksonValue set(String key, short value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, byte value) {
+		public JanksonValue set(String key, byte value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, float value) {
+		public JanksonValue set(String key, float value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, long value) {
+		public JanksonValue set(String key, long value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, String value) {
+		public JanksonValue set(String key, String value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, char value) {
+		public JanksonValue set(String key, char value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, double value) {
+		public JanksonValue set(String key, double value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, boolean value) {
+		public JanksonValue set(String key, boolean value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.put(key, jsonPrimitive);
 			return createDataValue(jsonPrimitive, key);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(String key, DataValue<JsonElement> value) {
+		public JanksonValue set(String key, JanksonValue value) {
 			self.put(key, value.getRaw());
 			return createDataValue(value.getRaw(), key);
 		}
 
 		@Override
-		public DataObject<JsonElement> addObject(String key) {
+		public JanksonObject addObject(String key) {
 			JsonObject jsonObject = new JsonObject();
 			self.put(key, jsonObject);
 			return createDataValue(jsonObject, key).asObject();
 		}
 
 		@Override
-		public DataList<JsonElement> addList(String key) {
+		public JanksonList addList(String key) {
 			JsonArray jsonArray = new JsonArray();
 			self.put(key, jsonArray);
 			return createDataValue(jsonArray, key).asList();
@@ -349,16 +402,16 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 
 		@Override
 		@NotNull
-		public Iterator<Pair<String, DataValue<JsonElement>>> iterator() {
+		public Iterator<Pair<String, JanksonValue>> iterator() {
             return self.entrySet().stream().map(entry -> new Pair<>(entry.getKey(), createDataValue(entry.getValue(), entry.getKey()))).iterator();
 		}
 
-		DataValue<JsonElement> createDataValue(JsonElement jsonElement, String key) {
+		JanksonValue createDataValue(JsonElement jsonElement, String key) {
 			return new JanksonValue(jsonElement, (comment) -> self.setComment(key, comment), () -> self.getComment(key), (clazz) -> self.get(clazz, key));
 		}
 	}
 
-	static class JanksonList extends JanksonValue implements DataList<JsonElement> {
+	static class JanksonList extends JanksonValue implements DataList<JanksonValue, JanksonList, JanksonObject> {
 		JsonArray self;
 
 		JanksonList(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class<?>, Object> as) {
@@ -372,88 +425,88 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 		}
 
 		@Override
-		public DataValue<JsonElement> get(Integer index) {
+		public JanksonValue get(Integer index) {
 			return createDataValue(self.get(index), index);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, byte value) {
+		public JanksonValue set(Integer index, byte value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, short value) {
+		public JanksonValue set(Integer index, short value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, int value) {
+		public JanksonValue set(Integer index, int value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
             self.add(jsonPrimitive);
             return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, long value) {
+		public JanksonValue set(Integer index, long value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, float value) {
+		public JanksonValue set(Integer index, float value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, double value) {
+		public JanksonValue set(Integer index, double value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, char value) {
+		public JanksonValue set(Integer index, char value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, String value) {
+		public JanksonValue set(Integer index, String value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, boolean value) {
+		public JanksonValue set(Integer index, boolean value) {
 			JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
 			self.add(jsonPrimitive);
 			return createDataValue(jsonPrimitive, self.size() - 1);
 		}
 
 		@Override
-		public DataValue<JsonElement> set(Integer index, DataValue<JsonElement> value) {
+		public JanksonValue set(Integer index, JanksonValue value) {
 			self.add(value.getRaw());
 			return createDataValue(value.getRaw(), self.size() - 1);
 		}
 
 		@Override
-		public DataObject<JsonElement> addObject(Integer index) {
+		public JanksonObject addObject(Integer index) {
 			JsonObject jsonObject = new JsonObject();
 			self.add(jsonObject);
 			return createDataValue(jsonObject, self.size() - 1).asObject();
 		}
 
 		@Override
-		public DataList<JsonElement> addList(Integer index) {
+		public JanksonList addList(Integer index) {
 			JsonArray jsonArray = new JsonArray();
 			self.add(jsonArray);
 			return createDataValue(jsonArray, self.size() - 1).asList();
@@ -466,17 +519,16 @@ public class JanksonSerializer implements DataSerializer<JsonElement> {
 
 		@Override
 		@NotNull
-		public Iterator<DataValue<JsonElement>> iterator() {
+		public Iterator<JanksonValue> iterator() {
             JsonElement[] elements = self.toArray();
-			//noinspection unchecked
-			DataValue<JsonElement>[] results = new DataValue[size()];
+			JanksonValue[] results = new JanksonValue[size()];
             for(int i = 0; i < elements.length; i++) {
             	results[i] = createDataValue(elements[i], i);
 			}
             return Arrays.stream(results).iterator();
 		}
 
-		DataValue<JsonElement> createDataValue(JsonElement jsonElement, int index) {
+		JanksonValue createDataValue(JsonElement jsonElement, int index) {
 			return new JanksonValue(jsonElement, (comment) -> {}, () -> self.getComment(index), (clazz) -> self.get(clazz, index));
 		}
 	}

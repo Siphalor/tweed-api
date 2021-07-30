@@ -16,7 +16,7 @@
 
 package de.siphalor.tweed4.data;
 
-public interface DataValue<RawValue> {
+public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> {
 	void setComment(String comment);
 	String getComment();
 
@@ -54,16 +54,18 @@ public interface DataValue<RawValue> {
 	char asChar();
 	String asString();
 	boolean asBoolean();
-	DataObject<RawValue> asObject();
-	DataList<RawValue> asList();
+	O asObject();
+	L asList();
 
 	/**
 	 * Should only be used in {@link de.siphalor.tweed4.data.serializer.ConfigDataSerializer}
 	 * @return the raw value
 	 */
-	RawValue getRaw();
+	@Deprecated
+	Object getRaw();
 
-	default boolean equals(DataValue<?> other) {
+	default <V2 extends DataValue<V2, L2, O2>, L2 extends DataList<V2, L2, O2>, O2 extends DataObject<V2, L2, O2>>
+	boolean equals(DataValue<V2, L2, O2> other) {
 		if (isNumber()) {
 			return other.isNumber() && asNumber().equals(other.asNumber());
 		} else if (isChar()) {
@@ -76,8 +78,8 @@ public interface DataValue<RawValue> {
 			if (!other.isObject()) {
 				return false;
 			}
-			DataObject<RawValue> object = asObject();
-			DataObject<?> otherObject = other.asObject();
+			O object = asObject();
+			O2 otherObject = other.asObject();
 			if (!object.keys().equals(otherObject.keys())) {
 				return false;
 			}
@@ -91,8 +93,8 @@ public interface DataValue<RawValue> {
 			if (!other.isList()) {
 				return false;
 			}
-			DataList<RawValue> list = asList();
-			DataList<?> otherList = other.asList();
+			L list = asList();
+			L2 otherList = other.asList();
 			if (list.size() != otherList.size()) {
 				return false;
 			}

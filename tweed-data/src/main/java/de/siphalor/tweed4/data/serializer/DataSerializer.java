@@ -17,8 +17,19 @@
 package de.siphalor.tweed4.data.serializer;
 
 import de.siphalor.tweed4.data.DataList;
+import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataValue;
 
 @SuppressWarnings("deprecation")
-public interface DataSerializer<RawValue> extends ConfigDataSerializer<RawValue> {
-	DataList<RawValue> newList();
+public interface DataSerializer<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends ConfigDataSerializer<V, L, O> {
+	L newList();
+	V newBoolean(boolean value);
+	V newChar(char value);
+	V newString(String value);
+	V newByte(byte value);
+	V newShort(short value);
+	V newInt(int value);
+	V newLong(long value);
+	V newFloat(float value);
+	V newDouble(double value);
 }
