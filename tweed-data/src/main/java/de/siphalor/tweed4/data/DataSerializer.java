@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package de.siphalor.tweed4.data.serializer;
+package de.siphalor.tweed4.data;
 
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 
 import java.io.InputStream;
 import java.io.OutputStream;

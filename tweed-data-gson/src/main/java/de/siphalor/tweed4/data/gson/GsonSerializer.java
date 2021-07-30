@@ -18,7 +18,7 @@ package de.siphalor.tweed4.data.gson;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
-import de.siphalor.tweed4.data.serializer.DataSerializer;
+import de.siphalor.tweed4.data.DataSerializer;
 
 import java.io.*;
 

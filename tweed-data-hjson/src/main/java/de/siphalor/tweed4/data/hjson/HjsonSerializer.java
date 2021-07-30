@@ -16,8 +16,11 @@
 
 package de.siphalor.tweed4.data.hjson;
 
-import de.siphalor.tweed4.data.serializer.DataSerializer;
-import org.hjson.*;
+import de.siphalor.tweed4.data.DataSerializer;
+import org.hjson.HjsonOptions;
+import org.hjson.JsonArray;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
 import java.io.*;
 

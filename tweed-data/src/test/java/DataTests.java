@@ -17,12 +17,12 @@
 import com.google.common.collect.ImmutableList;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataSerializer;
 import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.data.gson.GsonSerializer;
 import de.siphalor.tweed4.data.gson.GsonValue;
 import de.siphalor.tweed4.data.hjson.HjsonSerializer;
 import de.siphalor.tweed4.data.jankson.JanksonSerializer;
-import de.siphalor.tweed4.data.serializer.DataSerializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

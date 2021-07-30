@@ -18,6 +18,7 @@ package de.siphalor.tweed4.data.serializer;
 
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataSerializer;
 import de.siphalor.tweed4.data.DataValue;
 
 import java.io.InputStream;

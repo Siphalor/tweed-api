@@ -16,8 +16,6 @@
 
 package de.siphalor.tweed4.data;
 
-import de.siphalor.tweed4.data.serializer.DataSerializer;
-
 public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> {
 	void setComment(String comment);
 	String getComment();
