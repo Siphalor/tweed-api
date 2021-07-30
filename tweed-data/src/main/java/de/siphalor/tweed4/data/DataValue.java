@@ -69,6 +69,13 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 	default <V2 extends DataValue<V2, L2, O2>, L2 extends DataList<V2, L2, O2>, O2 extends DataObject<V2, L2, O2>>
 	boolean equals(DataValue<V2, L2, O2> other) {
 		if (isNumber()) {
+			if (isGenericNumber() && other.isGenericNumber()){
+				Number num = asNumber();
+				Number otherNum = other.asNumber();
+				if (num.longValue() == otherNum.longValue() && num.doubleValue() == otherNum.doubleValue()) {
+					return true;
+				}
+			}
 			return other.isNumber() && asNumber().equals(other.asNumber());
 		} else if (isChar()) {
 			return other.isChar() && asChar() == other.asChar();
