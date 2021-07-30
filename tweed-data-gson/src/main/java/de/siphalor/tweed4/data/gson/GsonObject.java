@@ -56,6 +56,7 @@ public class GsonObject extends GsonValue implements DataObject<GsonValue, GsonL
 	@Override
 	public GsonValue set(String key, double value) {
 		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
+		jsonElement.getAsJsonObject().add(key, jsonPrimitive);
 		return new GsonValue(jsonPrimitive);
 	}
 
