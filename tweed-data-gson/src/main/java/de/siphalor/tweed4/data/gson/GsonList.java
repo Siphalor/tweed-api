@@ -1,9 +1,6 @@
 package de.siphalor.tweed4.data.gson;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import de.siphalor.tweed4.data.DataList;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,76 +23,75 @@ public class GsonList extends GsonValue implements DataList<GsonValue, GsonList,
 
 	@Override
 	public GsonValue set(Integer index, byte value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, short value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, int value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, long value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, float value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, double value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, char value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, String value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
 	}
 
 	@Override
 	public GsonValue set(Integer index, boolean value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		jsonElement.getAsJsonArray().set(index, jsonPrimitive);
-		return new GsonValue(jsonPrimitive);
+		return setPrimitive(index, new JsonPrimitive(value));
+	}
+
+	private GsonValue setPrimitive(int index, JsonPrimitive primitive) {
+		requireLength(index + 1);
+		jsonElement.getAsJsonArray().set(index, primitive);
+		return new GsonValue(primitive);
 	}
 
 	@Override
 	public GsonValue set(Integer index, GsonValue value) {
+		requireLength(index + 1);
 		jsonElement.getAsJsonArray().set(index, value.getRaw());
 		return value;
+	}
+
+	private void requireLength(int length) {
+		JsonArray array = jsonElement.getAsJsonArray();
+		if (length > array.size()) {
+			for (int i = array.size(); i < length; i++) {
+				array.add(JsonNull.INSTANCE);
+			}
+		}
 	}
 
 	@Override
 	public GsonList addList(Integer index) {
 		JsonArray jsonArray = new JsonArray();
+		requireLength(index + 1);
 		jsonElement.getAsJsonArray().set(index, jsonArray);
 		return new GsonList(jsonArray);
 	}
@@ -103,6 +99,7 @@ public class GsonList extends GsonValue implements DataList<GsonValue, GsonList,
 	@Override
 	public GsonObject addObject(Integer index) {
 		JsonObject jsonObject = new JsonObject();
+		requireLength(index + 1);
 		jsonElement.getAsJsonArray().set(index, jsonObject);
 		return new GsonObject(jsonObject);
 	}
