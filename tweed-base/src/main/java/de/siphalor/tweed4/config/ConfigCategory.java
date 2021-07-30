@@ -22,11 +22,11 @@ import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.data.DataContainer;
+import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import org.apache.commons.logging.Log;
 import org.apache.logging.log4j.Level;
 
 import java.util.Iterator;
@@ -120,13 +120,14 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(DataValue<?> dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
+	public  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
 		if(!dataValue.isObject()) {
 			throw new ConfigReadException("The entry should be an object (category)");
 		}
-		DataObject<?> dataObject = dataValue.asObject();
+		O dataObject = dataValue.asObject();
 		entryStream(environment, scope).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
-			DataValue<?> value = dataObject.get(entry.getKey());
+			V value = dataObject.get(entry.getKey());
 			try {
 				entry.getValue().read(value, environment, scope, origin);
 			} catch (ConfigReadException e) {
@@ -166,11 +167,13 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public <Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
-		DataContainer category;
-		if(key.equals("")) {
-			category = dataContainer;
-		} else if(!dataContainer.has(key)) {
+	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void write(DataContainer<Key, V, L, O> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
+		DataContainer<String, V, L, O> category;
+		if (key.equals("")) {
+			//noinspection unchecked
+			category = (DataContainer<String, V, L, O>) dataContainer;
+		} else if (!dataContainer.has(key)) {
             category = dataContainer.addObject(key);
 		} else {
 			category = dataContainer.get(key).asObject();

@@ -19,27 +19,29 @@ package de.siphalor.tweed4.config.value.serializer;
 import de.siphalor.tweed4.config.ConfigReadException;
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataList;
+import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<L> {
+public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<T> {
 	ConfigValueSerializer<E> valueSerializer;
-	Supplier<L> listSupplier;
+	Supplier<T> listSupplier;
 
-	public ListSerializer(ConfigValueSerializer<E> elementSerializer, Supplier<L> listSupplier) {
+	public ListSerializer(ConfigValueSerializer<E> elementSerializer, Supplier<T> listSupplier) {
 		this.valueSerializer = elementSerializer;
 		this.listSupplier = listSupplier;
 	}
 
 	@Override
-	public L read(DataValue<?> data) throws ConfigReadException {
-		L list = listSupplier.get();
+	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	T read(V data) throws ConfigReadException {
+		T list = listSupplier.get();
 		if (data.isList()) {
-			DataList<?> dataList = data.asList();
-			for (DataValue<?> dataValue : dataList) {
+			L dataList = data.asList();
+			for (V dataValue : dataList) {
 				list.add(valueSerializer.read(dataValue));
 			}
 		}
@@ -47,8 +49,9 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
-	public <Key> void write(DataContainer<?, Key> dataContainer, Key key, L value) {
-		DataList<?> dataList = dataContainer.addList(key);
+	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void write(DataContainer<Key, V, L, O> dataContainer, Key key, T value) {
+		DataList<?, ?, ?> dataList = dataContainer.addList(key);
 		int i = 0;
 		for (E element : value) {
 			valueSerializer.write(dataList, i, element);
@@ -56,9 +59,9 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
-	public L read(PacketByteBuf packetByteBuf) {
+	public T read(PacketByteBuf packetByteBuf) {
 		int l = packetByteBuf.readVarInt();
-		L list = listSupplier.get();
+		T list = listSupplier.get();
 		for (int i = 0; i < l; i++) {
 			list.add(valueSerializer.read(packetByteBuf));
 		}
@@ -66,7 +69,7 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
-	public void write(PacketByteBuf packetByteBuf, L value) {
+	public void write(PacketByteBuf packetByteBuf, T value) {
 		packetByteBuf.writeVarInt(value.size());
 		for (E element : value) {
 			valueSerializer.write(packetByteBuf, element);
@@ -74,7 +77,7 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
-	public String asString(L value) {
+	public String asString(T value) {
 		StringBuilder stringBuilder = new StringBuilder("[ ");
 		for (E element : value) {
 			stringBuilder.append(valueSerializer.asString(element)).append(", ");
@@ -83,7 +86,7 @@ public class ListSerializer<E, L extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
-	public Class<L> getType() {
-		return (Class<L>) listSupplier.get().getClass();
+	public Class<T> getType() {
+		return (Class<T>) listSupplier.get().getClass();
 	}
 }
