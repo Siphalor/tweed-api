@@ -93,11 +93,4 @@ public interface DataList<V extends DataValue<V, L, O>, L extends DataList<V, L,
 	default Set<Integer> keys() {
 		return IntStream.range(0, size()).boxed().collect(Collectors.toSet());
 	}
-
-	/*
-	@Override
-	default <Other> DataList<Other> convert(DataSerializer<Other> serializer) {
-		return (DataList<Other>) DataContainer.super.convert(serializer);
-	}
-	 */
 }

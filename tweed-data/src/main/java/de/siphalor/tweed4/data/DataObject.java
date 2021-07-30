@@ -119,11 +119,4 @@ public interface DataObject<V extends DataValue<V, L, O>, L extends DataList<V, 
 			action.accept(pair);
 		}
 	}
-
-	/*
-	@Override
-	default <Other> DataObject<Other> convert(DataSerializer<Other> serializer) {
-		return (DataObject<Other>) DataContainer.super.convert(serializer);
-	}
-	 */
 }

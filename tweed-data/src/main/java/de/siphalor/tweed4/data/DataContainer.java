@@ -16,8 +16,6 @@
 
 package de.siphalor.tweed4.data;
 
-import de.siphalor.tweed4.data.serializer.DataSerializer;
-
 import java.util.Set;
 
 public interface DataContainer<Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends DataValue<V, L, O> {
@@ -250,62 +248,4 @@ public interface DataContainer<Key, V extends DataValue<V, L, O>, L extends Data
 	Set<Key> keys();
 
 	void remove(Key key);
-
-	/*
-	@SuppressWarnings("unchecked")
-	default <Other> DataContainer<Other, Key> convert(DataSerializer<Other> serializer) {
-		DataContainer<Other, Key> other;
-		if (this instanceof DataList) {
-			other = (DataContainer<Other, Key>) serializer.newList();
-		} else if (this instanceof DataObject) {
-			other = (DataContainer<Other, Key>) serializer.newObject();
-		} else {
-			throw new RuntimeException("Unknown data type " + this.getClass().getTypeName());
-		}
-
-		for (Key key : keys()) {
-			V dataValue = get(key);
-			if (dataValue.isChar()) {
-				other.set(key, dataValue.asChar());
-			} else if (dataValue.isString()) {
-				other.set(key, dataValue.asString());
-			} else if (dataValue.isBoolean()) {
-				other.set(key, dataValue.asBoolean());
-			} else if (dataValue.isGenericNumber()) {
-				Number number = dataValue.asNumber();
-				if (number instanceof Byte) {
-					other.set(key, number.byteValue());
-				} else if (number instanceof Short) {
-					other.set(key, number.shortValue());
-				} else if (number instanceof Integer) {
-					other.set(key, number.intValue());
-				} else if (number instanceof Long) {
-					other.set(key, number.longValue());
-				} else if (number instanceof Float) {
-					other.set(key, number.floatValue());
-				} else {
-					other.set(key, number.doubleValue());
-				}
-			} else if (dataValue.isByte()) {
-				other.set(key, dataValue.asByte());
-			} else if (dataValue.isShort()) {
-				other.set(key, dataValue.asShort());
-			} else if (dataValue.isInt()) {
-				other.set(key, dataValue.asInt());
-			} else if (dataValue.isLong()) {
-				other.set(key, dataValue.asLong());
-			} else if (dataValue.isFloat()) {
-				other.set(key, dataValue.asFloat());
-			} else if (dataValue.isDouble()) {
-				other.set(key, dataValue.asDouble());
-			} else if (dataValue.isList()) {
-				other.set(key, dataValue.asList().convert(serializer));
-			} else if (dataValue.isObject()) {
-				other.set(key, dataValue.asObject().convert(serializer));
-			}
-		}
-
-		return other;
-	}
-	 */
 }

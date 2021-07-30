@@ -16,6 +16,8 @@
 
 package de.siphalor.tweed4.data;
 
+import de.siphalor.tweed4.data.serializer.DataSerializer;
+
 public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> {
 	void setComment(String comment);
 	String getComment();
@@ -106,5 +108,65 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 			return true;
 		}
 		return false;
+	}
+
+	@SuppressWarnings("unchecked")
+	default <V2 extends DataValue<V2, L2, O2>, L2 extends DataList<V2, L2, O2>, O2 extends DataObject<V2, L2, O2>>
+	V2 convert(DataSerializer<V2, L2, O2> otherSerializer) {
+		if (isList()) {
+			L2 otherList = otherSerializer.newList();
+			L list = asList();
+			for (int i = 0; i < list.size(); i++) {
+				otherList.set(i, list.get(i).convert(otherSerializer));
+			}
+			return (V2) otherList;
+		} else if (isObject()) {
+			O2 otherObject = otherSerializer.newObject();
+			O object = asObject();
+			for (String key : object.keys()) {
+				otherObject.set(key, object.get(key).convert(otherSerializer));
+			}
+			return (V2) otherObject;
+		} else if (isBoolean()) {
+			return otherSerializer.newBoolean(asBoolean());
+		} else if (isString()) {
+			return otherSerializer.newString(asString());
+		} else if (isChar()) {
+			return otherSerializer.newChar(asChar());
+		} else if (isGenericNumber()) {
+			Number number = asNumber();
+			if (
+					number.doubleValue() == Math.floor(number.doubleValue())
+							&& number.doubleValue() == Math.ceil(number.doubleValue())
+			) { // number is integral
+				if (number.longValue() > Integer.MAX_VALUE) {
+					return otherSerializer.newLong(number.longValue());
+				} else if (number.intValue() > Short.MAX_VALUE) {
+					return otherSerializer.newInt(number.intValue());
+				} else if (number.shortValue() > Byte.MAX_VALUE) {
+					return otherSerializer.newShort(number.shortValue());
+				} else {
+					return otherSerializer.newByte(number.byteValue());
+				}
+			} else {
+				// too annoying to filter out floats tbh
+				return otherSerializer.newDouble(number.doubleValue());
+			}
+		}
+
+		if (isByte()) {
+			return otherSerializer.newByte(asByte());
+		} else if (isShort()) {
+			return otherSerializer.newShort(asShort());
+		} else if (isInt()) {
+			return otherSerializer.newInt(asInt());
+		} else if (isLong()) {
+			return otherSerializer.newLong(asLong());
+		} else if (isFloat()) {
+			return otherSerializer.newFloat(asFloat());
+		} else if (isDouble()) {
+			return otherSerializer.newDouble(asDouble());
+		}
+		throw new RuntimeException("Failed to convert Tweed data \"" + this + "\" to " + otherSerializer.getId());
 	}
 }
