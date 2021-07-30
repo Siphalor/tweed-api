@@ -90,23 +90,23 @@ public class JanksonSerializer implements DataSerializer<JanksonValue, JanksonLi
 	}
 
 	@Override
-	public JanksonObject read(InputStream inputStream) {
+	public JanksonValue readValue(InputStream inputStream) {
 		try {
 			JsonObject jsonObject = Jankson.builder().build().load(inputStream);
-            return new JanksonObject(jsonObject, (comment) -> {}, () -> "", (clazz) -> null);
+			return new JanksonObject(jsonObject, (comment) -> {}, () -> "", (clazz) -> null);
 		} catch (IOException | SyntaxError e) {
-			System.err.println("Failed to read jankson config file");
+			System.err.println("Failed to read jankson:");
 			e.printStackTrace();
 		}
 		return null;
 	}
 
 	@Override
-	public void write(OutputStream outputStream, JanksonObject dataObject) {
+	public void writeValue(OutputStream outputStream, JanksonValue dataValue) {
 		try {
-			outputStream.write(dataObject.getRaw().toJson(true, true).getBytes());
+			outputStream.write(dataValue.getRaw().toJson(true, true).getBytes());
 		} catch (IOException e) {
-			System.err.println("Failed to write jankson config file");
+			System.err.println("Failed to write jankson:");
 			e.printStackTrace();
 		}
 	}

@@ -82,29 +82,25 @@ public class HjsonSerializer implements DataSerializer<HjsonValue, HjsonList, Hj
 	}
 
 	@Override
-	public HjsonObject read(InputStream inputStream) {
+	public HjsonValue readValue(InputStream inputStream) {
 		JsonValue json;
 		try {
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 			json = JsonValue.readHjson(inputStreamReader);
 			inputStreamReader.close();
+			return new HjsonValue(json);
 		} catch (Exception e) {
 			System.err.println("Couldn't load hjson config file");
-            e.printStackTrace();
-            return null;
+			e.printStackTrace();
+			return null;
 		}
-        if(!json.isObject()) {
-        	System.err.println("Config files should contain an hjson object!");
-        	return null;
-        }
-        return new HjsonObject(json.asObject());
 	}
 
 	@Override
-	public void write(OutputStream outputStream, HjsonObject dataObject) {
+	public void writeValue(OutputStream outputStream, HjsonValue dataValue) {
 		try {
 			OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
-			dataObject.getRaw().writeTo(outputStreamWriter, hjsonOptions);
+			dataValue.getRaw().writeTo(outputStreamWriter, hjsonOptions);
 			outputStreamWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();

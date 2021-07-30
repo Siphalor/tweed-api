@@ -19,7 +19,6 @@ package de.siphalor.tweed4.data.gson;
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
 import de.siphalor.tweed4.data.serializer.DataSerializer;
-import net.minecraft.util.JsonHelper;
 
 import java.io.*;
 
@@ -84,10 +83,10 @@ public class GsonSerializer implements DataSerializer<GsonValue, GsonList, GsonO
 	}
 
 	@Override
-	public GsonObject read(InputStream inputStream) {
+	public GsonValue readValue(InputStream inputStream) {
 		try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
-			JsonObject jsonObject = JsonHelper.deserialize(inputStreamReader);
-			return new GsonObject(jsonObject);
+			JsonElement element = new JsonParser().parse(inputStreamReader);
+			return new GsonValue(element);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -95,10 +94,10 @@ public class GsonSerializer implements DataSerializer<GsonValue, GsonList, GsonO
 	}
 
 	@Override
-	public void write(OutputStream outputStream, GsonObject dataObject) {
+	public void writeValue(OutputStream outputStream, GsonValue dataValue) {
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
 		try (JsonWriter jsonWriter = GSON.newJsonWriter(outputStreamWriter)) {
-			GSON.toJson(dataObject.getRaw(), jsonWriter);
+			GSON.toJson(dataValue.getRaw(), jsonWriter);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

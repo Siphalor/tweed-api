@@ -25,9 +25,9 @@ import java.io.OutputStream;
 
 /**
  * A serializer that can read and write an abstract data representation to and from streams.
- * @param <V> The {@link DataValue} class associated with this serializer
- * @param <L> The {@link DataList} class associated with this serializer
- * @param <O> The {@link DataObject} class associated with this serializer
+ * @param <V> The {@link DataValue} class associated with this serializer.
+ * @param <L> The {@link DataList} class associated with this serializer. L MUST extend V.
+ * @param <O> The {@link DataObject} class associated with this serializer. O MUST extend V.
  * @deprecated Extend {@link DataSerializer} instead.
  */
 @SuppressWarnings("DeprecatedIsStillUsed")
