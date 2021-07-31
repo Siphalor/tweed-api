@@ -191,6 +191,11 @@ public interface DataContainer<Key, V extends DataValue<V, L, O>, L extends Data
 	}
 
 	@Override
+	default boolean isChar() {
+		return false;
+	}
+
+	@Override
 	default boolean isString() {
 		return false;
 	}
