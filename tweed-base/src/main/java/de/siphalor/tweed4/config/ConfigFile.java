@@ -226,8 +226,8 @@ public class ConfigFile {
 	}
 
 	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void load(O dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		fixConfig(dataObject);
+	void load(DataObject<V, L, O> dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		this.fixConfig(dataObject.asObject());
 
 		try {
 			//noinspection unchecked

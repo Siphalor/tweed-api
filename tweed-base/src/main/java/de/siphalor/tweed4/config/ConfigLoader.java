@@ -35,7 +35,7 @@ import java.util.List;
 public final class ConfigLoader {
 	public static void initialReload(ConfigEnvironment configEnvironment) {
 		for (ConfigFile configFile : TweedRegistry.getConfigFiles()) {
-			configFile.load(readMainConfigFile(configFile), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
+			configFile.load(readMainConfigFile(configFile).asObject(), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
 			updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
 			configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
 		}
@@ -51,7 +51,7 @@ public final class ConfigLoader {
 		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, scope);
-			configFile.load(readMainConfigFile(configFile), environment, scope, ConfigOrigin.MAIN);
+			configFile.load(readMainConfigFile(configFile).asObject(), environment, scope, ConfigOrigin.MAIN);
             updateMainConfigFile(configFile, environment, scope);
 			try {
 				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
@@ -74,7 +74,7 @@ public final class ConfigLoader {
 	 */
 	public static <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
 	void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
-        O dataObject = readMainConfigFile(configFile);
+        O dataObject = ConfigLoader.<V, L, O>readMainConfigFile(configFile).asObject();
         configFile.write(dataObject, environment, scope);
 		File mainConfigFile = getMainConfigFile(configFile);
 		//noinspection ResultOfMethodCallIgnored
@@ -95,7 +95,7 @@ public final class ConfigLoader {
 	 * @return the read in data
 	 */
 	public static <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	O readMainConfigFile(ConfigFile configFile) {
+	DataObject<V, L, O> readMainConfigFile(ConfigFile configFile) {
 		File mainConfig = getMainConfigFile(configFile);
 		if(mainConfig.exists()) {
 			try {
