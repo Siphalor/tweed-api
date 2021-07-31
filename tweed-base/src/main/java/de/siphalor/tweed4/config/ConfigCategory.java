@@ -134,6 +134,10 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 				Tweed.LOGGER.error("Error reading " + entry.getKey() + ":");
 				e.printStackTrace();
 				return;
+			} catch (Exception e) {
+				Tweed.LOGGER.error("Unexpected exception thrown during deserialization of data:");
+				e.printStackTrace();
+				return;
 			}
 
 			Constraint.Result<?> result = entry.getValue().applyConstraints();
