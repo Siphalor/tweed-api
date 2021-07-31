@@ -38,6 +38,6 @@
         "Siphalor"
     ],
     "depends": {
-        "tweed4_data": "^1"
+        "tweed4_data": "^1.1"
     }
 }
