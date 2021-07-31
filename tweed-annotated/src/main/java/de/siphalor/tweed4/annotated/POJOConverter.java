@@ -29,7 +29,9 @@ import de.siphalor.tweed4.config.fixers.ConfigEntryFixer;
 import de.siphalor.tweed4.config.value.ConfigValue;
 import de.siphalor.tweed4.config.value.ReferenceConfigValue;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
+import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
 import de.siphalor.tweed4.util.ReflectionUtil;
@@ -68,7 +70,8 @@ public class POJOConverter {
 		if (file.isEmpty()) {
 			file = fallbackFileName;
 		}
-		ConfigDataSerializer<?> serializer = TweedRegistry.SERIALIZERS.getOrEmpty(new Identifier(tweedConfig.serializer())).orElse(TweedRegistry.getDefaultSerializer());
+		//noinspection deprecation
+		ConfigDataSerializer<?, ?, ?> serializer = TweedRegistry.SERIALIZERS.getOrEmpty(new Identifier(tweedConfig.serializer())).orElse(TweedRegistry.getDefaultSerializer());
 
 		ConfigFile configFile = new ConfigFile(file, serializer, rootCategory);
 
@@ -81,7 +84,8 @@ public class POJOConverter {
 
 					ConfigEntryFixer configEntryFixer = new ConfigEntryFixer() {
 						@Override
-						public void fix(DataObject<?> dataObject, String propertyName, DataObject<?> mainCompound) {
+						public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
+						void fix(O dataObject, String propertyName, O mainCompound) {
 							try {
 								method.invoke(pojo, dataObject, mainCompound);
 							} catch (IllegalAccessException | InvocationTargetException e) {
