@@ -68,59 +68,59 @@ public abstract class XmlValue implements DataValue<XmlValue, XmlList, XmlObject
 			return;
 		}
 
-		xmlComment.setNodeValue(comment);
+		xmlComment.setTextContent(comment);
 	}
 
 	@Override
 	public String getComment() {
 		findComment();
 		if (xmlComment == null) return null;
-		return xmlComment.getNodeValue();
+		return xmlComment.getTextContent();
 	}
 
 	@Override
 	public char asChar() {
-		return xmlElement.getNodeValue().charAt(0);
+		return xmlElement.getTextContent().charAt(0);
 	}
 
 	@Override
 	public String asString() {
-		return xmlElement.getNodeValue();
+		return xmlElement.getTextContent();
 	}
 
 	@Override
 	public boolean asBoolean() {
-		return "true".equals(xmlElement.getNodeValue());
+		return "true".equals(xmlElement.getTextContent());
 	}
 
 	@Override
 	public byte asByte() {
-		return Byte.parseByte(xmlElement.getNodeValue());
+		return Byte.parseByte(xmlElement.getTextContent());
 	}
 
 	@Override
 	public short asShort() {
-		return Short.parseShort(xmlElement.getNodeValue());
+		return Short.parseShort(xmlElement.getTextContent());
 	}
 
 	@Override
 	public int asInt() {
-		return Integer.parseInt(xmlElement.getNodeValue());
+		return Integer.parseInt(xmlElement.getTextContent());
 	}
 
 	@Override
 	public long asLong() {
-		return Long.parseLong(xmlElement.getNodeValue());
+		return Long.parseLong(xmlElement.getTextContent());
 	}
 
 	@Override
 	public float asFloat() {
-		return Float.parseFloat(xmlElement.getNodeValue());
+		return Float.parseFloat(xmlElement.getTextContent());
 	}
 
 	@Override
 	public double asDouble() {
-		return Double.parseDouble(xmlElement.getNodeValue());
+		return Double.parseDouble(xmlElement.getTextContent());
 	}
 
 	@Override

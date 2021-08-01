@@ -16,15 +16,73 @@
 
 package de.siphalor.tweed4.data.xml;
 
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 public class UntypedXmlValue extends XmlValue {
+	private final BitSet typeSet;
+
 	public UntypedXmlValue(Element xmlElement) {
 		super(xmlElement);
+
+		String value = xmlElement.getTextContent();
+		typeSet = new BitSet(12);
+		typeSet.set(0, canParse(value, Byte::parseByte));
+		typeSet.set(1, canParse(value, Short::parseShort));
+		typeSet.set(2, canParse(value, Integer::parseInt));
+		typeSet.set(3, canParse(value, Long::parseLong));
+		typeSet.set(4, canParse(value, Float::parseFloat));
+		typeSet.set(5, canParse(value, Double::parseDouble));
+		typeSet.set(6, typeSet.get(3) | typeSet.get(5));
+		typeSet.set(7, "true".equals(value) || "false".equals(value));
+
+		Set<String> keys = new HashSet<>();
+		boolean doubledKeys = false;
+		NodeList nodes = xmlElement.getChildNodes();
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			if (node instanceof Element) {
+				if (keys.contains(((Element) node).getTagName())) {
+					doubledKeys = true;
+					break;
+				}
+				keys.add(((Element) node).getTagName());
+			}
+		}
+		if (!keys.isEmpty()) {
+			if (keys.size() == 1) {
+				String singleKey = keys.iterator().next();
+				if (singleKey.equals("element")) {
+					typeSet.set(8);
+				} else {
+					String tagName = xmlElement.getTagName();
+					if (tagName.endsWith("ies")) {
+						typeSet.set(8, singleKey.equals(StringUtils.substring(tagName, 0, -3) + "y"));
+					} else if (tagName.endsWith("s")) {
+						typeSet.set(8, singleKey.equals(StringUtils.substring(tagName, 0, -1)));
+					}
+				}
+			}
+			if (!typeSet.get(8)) {
+				typeSet.set(8, doubledKeys);
+			}
+			typeSet.set(9, !typeSet.get(8));
+		}
+
+		if (typeSet.isEmpty()) {
+			if (value.length() == 1) {
+				typeSet.set(10);
+			} else {
+				typeSet.set(11);
+			}
+		}
 	}
 
 	private boolean canParse(String text, Function<String, Object> parseFunc) {
@@ -38,8 +96,7 @@ public class UntypedXmlValue extends XmlValue {
 
 	@Override
 	public boolean isNumber() {
-		return canParse(xmlElement.getNodeValue(), Double::parseDouble)
-				|| canParse(xmlElement.getNodeValue(), Long::parseLong);
+		return typeSet.get(6);
 	}
 
 	@Override
@@ -49,77 +106,65 @@ public class UntypedXmlValue extends XmlValue {
 
 	@Override
 	public boolean isByte() {
-		return canParse(xmlElement.getNodeValue(), Byte::parseByte);
+		return typeSet.get(0);
 	}
 
 	@Override
 	public boolean isShort() {
-		return canParse(xmlElement.getNodeValue(), Short::parseShort);
+		return typeSet.get(1);
 	}
 
 	@Override
 	public boolean isInt() {
-		return canParse(xmlElement.getNodeValue(), Integer::parseInt);
+		return typeSet.get(2);
 	}
 
 	@Override
 	public boolean isLong() {
-		return canParse(xmlElement.getNodeValue(), Long::parseLong);
+		return typeSet.get(3);
 	}
 
 	@Override
 	public boolean isFloat() {
-		return canParse(xmlElement.getNodeValue(), Float::parseFloat);
+		return typeSet.get(4);
 	}
 
 	@Override
 	public boolean isDouble() {
-		return canParse(xmlElement.getNodeValue(), Double::parseDouble);
+		return typeSet.get(5);
 	}
 
 	@Override
 	public boolean isChar() {
-		return xmlElement.getNodeValue().length() == 1;
+		return typeSet.get(10);
 	}
 
 	@Override
 	public boolean isString() {
-		return !isNumber() && !isBoolean() && !isChar();
+		return typeSet.get(11);
 	}
 
 	@Override
 	public boolean isBoolean() {
-		return "true".equals(xmlElement.getNodeValue()) || "false".equals(xmlElement.getNodeValue());
+		return "true".equals(xmlElement.getTextContent()) || "false".equals(xmlElement.getTextContent());
 	}
 
 	@Override
 	public boolean isObject() {
-		NodeList childNodes = xmlElement.getChildNodes();
-		for (int i = 0; i < childNodes.getLength(); i++) {
-			if (childNodes.item(i).getNodeType() == Node.ELEMENT_NODE) {
-				return true;
-			}
-		}
-		return false;
+		return typeSet.get(9);
 	}
 
 	@Override
 	public boolean isList() {
-		NodeList childNodes = xmlElement.getChildNodes();
-		for (int i = 0; i < childNodes.getLength(); i++) {
-			if (childNodes.item(i).getNodeType() == Node.ELEMENT_NODE) {
-				return true;
-			}
-		}
-		return false;
+		return typeSet.get(8);
 	}
 
 	@Override
 	public Number asNumber() {
-		if (xmlElement.getNodeValue().contains(".")) {
-			return Double.parseDouble(xmlElement.getNodeValue());
+		if (xmlElement.getTextContent().contains(".")) {
+			return Double.parseDouble(xmlElement.getTextContent());
 		} else {
-			return Long.parseLong(xmlElement.getNodeValue());
+			return Long.parseLong(xmlElement.getTextContent());
 		}
 	}
 }

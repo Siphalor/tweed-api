@@ -140,6 +140,6 @@ public class TypedXmlValue extends XmlValue {
 
 	@Override
 	public Number asNumber() {
-		return numberParser.apply(xmlElement.getNodeValue());
+		return numberParser.apply(xmlElement.getTextContent());
 	}
 }
