@@ -118,20 +118,20 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 	@SuppressWarnings("unchecked")
 	default <V2 extends DataValue<V2, L2, O2>, L2 extends DataList<V2, L2, O2>, O2 extends DataObject<V2, L2, O2>>
 	V2 convert(DataSerializer<V2, L2, O2> otherSerializer) {
-		if (isList()) {
-			L2 otherList = otherSerializer.newList();
-			L list = asList();
-			for (int i = 0; i < list.size(); i++) {
-				otherList.set(i, list.get(i).convert(otherSerializer));
-			}
-			return (V2) otherList;
-		} else if (isObject()) {
+		if (isObject()) {
 			O2 otherObject = otherSerializer.newObject();
 			O object = asObject();
 			for (String key : object.keys()) {
 				otherObject.set(key, object.get(key).convert(otherSerializer));
 			}
 			return (V2) otherObject;
+		} else if (isList()) {
+			L2 otherList = otherSerializer.newList();
+			L list = asList();
+			for (int i = 0; i < list.size(); i++) {
+				otherList.set(i, list.get(i).convert(otherSerializer));
+			}
+			return (V2) otherList;
 		} else if (isBoolean()) {
 			return otherSerializer.newBoolean(asBoolean());
 		} else if (isString()) {
