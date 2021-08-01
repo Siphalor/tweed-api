@@ -4,5 +4,5 @@ dependencies {
 	testImplementation project(":tweed-data-jankson")
 
 	testImplementation('com.github.Siphalor:hjson-java:master-SNAPSHOT')
-	testImplementation('blue.endless:jankson:1.1.0')
+	testImplementation('blue.endless:jankson:1.2.1')
 }

@@ -20,7 +20,7 @@ import blue.endless.jankson.Jankson;
 import blue.endless.jankson.JsonArray;
 import blue.endless.jankson.JsonObject;
 import blue.endless.jankson.JsonPrimitive;
-import blue.endless.jankson.impl.SyntaxError;
+import blue.endless.jankson.api.SyntaxError;
 import de.siphalor.tweed4.data.DataSerializer;
 
 import java.io.IOException;
