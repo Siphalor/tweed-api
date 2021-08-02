@@ -62,7 +62,9 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 	 * @return the raw value
 	 */
 	@Deprecated
-	Object getRaw();
+	default Object getRaw() {
+		return null;
+	}
 
 	default <V2 extends DataValue<V2, L2, O2>, L2 extends DataList<V2, L2, O2>, O2 extends DataObject<V2, L2, O2>>
 	boolean equals(DataValue<V2, L2, O2> other) {
