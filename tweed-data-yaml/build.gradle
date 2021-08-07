@@ -1,0 +1,5 @@
+dependencies {
+	implementation project(":tweed-base")
+
+	implementation include('org.snakeyaml:snakeyaml-engine:2.3')
+}
