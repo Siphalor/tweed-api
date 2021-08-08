@@ -17,6 +17,7 @@
 package de.siphalor.tweed4.config.fixers;
 
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import org.apache.commons.lang3.StringUtils;
@@ -38,15 +39,16 @@ public class ConfigEntryLocationFixer extends ConfigEntryFixer {
 	}
 
 	@Override
-	public void fix(DataObject<?> dataObject, String propertyName, DataObject<?> mainCompound) {
-		DataValue dataValue = dataObject.get(propertyName);
+	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
+	void fix(O dataObject, String propertyName, O mainCompound) {
+		V dataValue = dataObject.get(propertyName);
 		if(dataValue == null) return;
 		dataObject.remove(propertyName);
 
 		if(newLocation == null) {
 			dataObject.set(newName, dataValue);
 		} else {
-			DataObject location = mainCompound;
+			O location = mainCompound;
 			String[] parts = StringUtils.split(newLocation, Tweed.PATH_DELIMITER);
 			for(String part : parts) {
 				if(location.get(part) == null) {

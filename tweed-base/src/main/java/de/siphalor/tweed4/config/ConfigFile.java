@@ -19,6 +19,7 @@ package de.siphalor.tweed4.config;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.fixers.ConfigEntryFixer;
+import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
@@ -50,18 +51,18 @@ public class ConfigFile {
 	private String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
 	private Queue<Pair<String, ConfigEntryFixer>> configEntryFixers;
-	private ConfigDataSerializer<?> dataSerializer;
+	private ConfigDataSerializer<?, ?, ?> dataSerializer;
 
 	private Map<Class<? extends Annotation>, Annotation> tailorAnnotations;
 
 	protected ConfigCategory rootCategory;
 
-	protected ConfigFile(String name, ConfigDataSerializer<?> dataSerializer) {
+	protected ConfigFile(String name, ConfigDataSerializer<?, ?, ?> dataSerializer) {
 		this(name, dataSerializer, new ConfigCategory());
 	}
 
 	@ApiStatus.Internal
-	public ConfigFile(String name, ConfigDataSerializer<?> dataSerializer, ConfigCategory rootCategory) {
+	public ConfigFile(String name, ConfigDataSerializer<?, ?, ?> dataSerializer, ConfigCategory rootCategory) {
 		this.name = name;
 		this.rootCategory = rootCategory;
 		this.dataSerializer = dataSerializer;
@@ -80,8 +81,10 @@ public class ConfigFile {
 		return this;
 	}
 
-	public ConfigDataSerializer<?> getDataSerializer() {
-		return dataSerializer;
+	public  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	ConfigDataSerializer<V, L, O> getDataSerializer() {
+		//noinspection unchecked
+		return (ConfigDataSerializer<V, L, O>) dataSerializer;
 	}
 
 	public void finishReload(ConfigEnvironment environment, ConfigScope scope) {
@@ -169,7 +172,8 @@ public class ConfigFile {
 	 * @param scope the current definition scope
 	 * @return the new {@link DataObject}
 	 */
-	public DataObject<?> write(DataObject<?> dataObject, ConfigEnvironment environment, ConfigScope scope) {
+	public  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	O write(O dataObject, ConfigEnvironment environment, ConfigScope scope) {
 		fixConfig(dataObject);
 		rootCategory.write(dataObject, "", environment, scope);
 		return dataObject;
@@ -184,10 +188,11 @@ public class ConfigFile {
         rootCategory.reset(environment, scope);
 	}
 
-	public void fixConfig(DataObject<?> dataObject) {
+	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void fixConfig(O dataObject) {
 		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
 			String entryName;
-			DataObject<?> location;
+			O location;
 			if (stringConfigEntryFixerPair.getLeft().isEmpty()) {
 				entryName = "";
 				location = dataObject;
@@ -195,7 +200,7 @@ public class ConfigFile {
 				String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Tweed.PATH_DELIMITER);
 				location = dataObject;
 				for (int i = 0; i < parts.length - 1; i++) {
-					DataValue<?> dataValue = location.get(parts[i]);
+					V dataValue = location.get(parts[i]);
 					if (dataValue == null || !dataValue.isObject())
 						return;
 					location = dataValue.asObject();
@@ -206,8 +211,9 @@ public class ConfigFile {
 		});
 	}
 
-	public void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		DataObject<?> dataObject = dataSerializer.read(resource.getInputStream());
+	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		O dataObject = this.<V, L, O>getDataSerializer().read(resource.getInputStream());
 		try {
 			resource.close();
 		} catch (IOException e) {
@@ -219,11 +225,13 @@ public class ConfigFile {
 		}
 	}
 
-	public void load(DataObject<?> dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		fixConfig(dataObject);
+	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void load(DataObject<V, L, O> dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		this.fixConfig(dataObject.asObject());
 
 		try {
-			rootCategory.read(dataObject, environment, scope, origin);
+			//noinspection unchecked
+			rootCategory.read((V) dataObject, environment, scope, origin);
 		} catch (ConfigReadException e) {
             Tweed.LOGGER.error("The config file " + name + "." + dataSerializer.getFileExtension() + " must contain an object!");
 		}

@@ -1,0 +1,16 @@
+{
+	a: bcd
+	b: {
+		f: 123.456
+		g: [
+			abc
+			{
+				bool: false
+				type: y
+			}
+			123
+			false
+		]
+		i: 123
+	}
+}

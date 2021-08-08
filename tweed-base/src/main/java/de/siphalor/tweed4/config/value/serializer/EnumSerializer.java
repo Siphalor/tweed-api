@@ -17,6 +17,8 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.data.DataContainer;
+import de.siphalor.tweed4.data.DataList;
+import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
@@ -31,7 +33,8 @@ public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> 
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public E read(DataValue<?> data) {
+	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	E read(V data) {
 		if (data.isString()) {
 			String str = data.asString().toLowerCase(Locale.ENGLISH);
 			for (E value : (E[]) fallback.getClass().getEnumConstants()) {
@@ -44,7 +47,8 @@ public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> 
 	}
 
 	@Override
-	public <Key> void write(DataContainer<?, Key> dataContainer, Key key, E value) {
+	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void write(DataContainer<Key, V, L, O> dataContainer, Key key, E value) {
 		dataContainer.set(key, value.name());
 	}
 
