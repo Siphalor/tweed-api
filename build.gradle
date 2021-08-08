@@ -22,6 +22,9 @@ allprojects {
 		maven { url "https://maven.shedaniel.me" }
 		maven { url "https://maven.terraformersmc.com/releases" }
 		maven { url "https://jitpack.io" }
+		maven {
+			url "https://www.cursemaven.com"
+		}
 	}
 
 	sourceCompatibility = JavaVersion.VERSION_1_8

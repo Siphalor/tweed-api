@@ -7,5 +7,5 @@ dependencies {
 
 	modImplementation("net.fabricmc.fabric-api:fabric-networking-api-v1:$project.fabric_api_networking")
 
-	modImplementation "io.github.prospector:modmenu:1.7.17+build.1"
+	modImplementation "curse.maven:modmenu-308702:3121565"
 }
