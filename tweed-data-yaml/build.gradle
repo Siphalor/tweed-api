@@ -1,5 +1,11 @@
+apply plugin: "com.github.johnrengelman.shadow"
+
 dependencies {
 	implementation project(":tweed-base")
 
-	implementation include('org.snakeyaml:snakeyaml-engine:2.3')
+	shadow(implementation('org.snakeyaml:snakeyaml-engine:2.3'))
+}
+
+shadowJar {
+	relocate 'org.snakeyaml', 'de.siphalor.tweed4.data.yaml.shadow.org.snakeyaml'
 }
