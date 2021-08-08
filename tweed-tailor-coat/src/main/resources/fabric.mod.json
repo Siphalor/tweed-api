@@ -6,6 +6,7 @@
         "issues": "https://github.com/Siphalor/tweed-api/issues",
         "sources": "https://github.com/Siphalor/tweed-api"
     },
+    "environment": "client",
     "custom": {
         "modmenu": {
             "badges": [

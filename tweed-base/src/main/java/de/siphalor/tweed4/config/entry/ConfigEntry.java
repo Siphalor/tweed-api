@@ -22,6 +22,8 @@ import de.siphalor.tweed4.config.ConfigReadException;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.data.DataContainer;
+import de.siphalor.tweed4.data.DataList;
+import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
@@ -51,7 +53,8 @@ public interface ConfigEntry<T> {
 	 * @param scope the current reload scope
 	 * @throws ConfigReadException if an issue occurs during reading the value
 	 */
-	void read(DataValue<?> dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
+	<V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
 
 	/**
 	 * Read this kind of entry from a packet.
@@ -78,7 +81,8 @@ public interface ConfigEntry<T> {
 	 * @param environment the current environment (handled by the system, can be ignored in most cases)
 	 * @param scope the current scope (handled by the system, can be ignored in most cases)
 	 */
-	<Key> void write(DataContainer<?, Key> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope);
+	<Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void write(DataContainer<Key, V, L, O> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope);
 
 	/**
 	 * Sets the environment where this entry is defined
@@ -120,7 +124,6 @@ public interface ConfigEntry<T> {
 
 	/**
 	 * Method for handling possible constraints after reading in the value.
-	 * @throws ConstraintException an exception
 	 */
 	@Nullable
 	default Constraint.Result<?> applyConstraints() {

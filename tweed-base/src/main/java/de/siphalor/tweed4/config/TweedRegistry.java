@@ -31,15 +31,16 @@ import java.util.ArrayList;
 /**
  * Used to register {@link ConfigFile}s.
  */
+@SuppressWarnings("deprecation")
 public class TweedRegistry {
 	private static final ArrayList<ConfigFile> CONFIG_FILES = new ArrayList<>();
-	private static ConfigDataSerializer<?> defaultSerializer;
+	private static ConfigDataSerializer<?, ?, ?> defaultSerializer;
 
 	/**
 	 * This registry contains all of the known {@link ConfigDataSerializer}s.<br />
 	 * By default available serializers are <code>gson</code>, <code>hjson</code> and <code>jankson</code>.
 	 */
-	public static final Registry<ConfigDataSerializer<?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
+	public static final Registry<ConfigDataSerializer<?, ?, ?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
 	/**
 	 * This registry contains all of the known {@link Tailor}s.<br />
 	 * By default only a serializer for the Cloth config UI is available as <code>tweed4:cloth</code>.
@@ -56,7 +57,7 @@ public class TweedRegistry {
 	 * @param dataSerializer a serializer for this config file
 	 * @return the new {@link ConfigFile}
 	 */
-	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer<?> dataSerializer) {
+	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer<?, ?, ?> dataSerializer) {
         ConfigFile configFile = new ConfigFile(fileName, dataSerializer);
         CONFIG_FILES.add(configFile);
         return configFile;
@@ -85,7 +86,7 @@ public class TweedRegistry {
 	 * Gets the fallback config serializer.
 	 * @return The default config serializer
 	 */
-	public static ConfigDataSerializer<?> getDefaultSerializer() {
+	public static ConfigDataSerializer<?, ?, ?> getDefaultSerializer() {
 		return defaultSerializer;
 	}
 
@@ -96,7 +97,7 @@ public class TweedRegistry {
 	 */
 	@Deprecated
 	@ApiStatus.Internal
-	public static void setDefaultSerializer(ConfigDataSerializer<?> defaultSerializer) {
+	public static void setDefaultSerializer(ConfigDataSerializer<?, ?, ?> defaultSerializer) {
 		TweedRegistry.defaultSerializer = defaultSerializer;
 	}
 }

@@ -27,10 +27,16 @@ allprojects {
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
 
+	configurations {
+		testOutput
+	}
+
 	dependencies {
 		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
 		mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
 		modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+
+		testImplementation "org.junit.jupiter:junit-jupiter:5+"
 	}
 
 	// ensure that the encoding is set to UTF-8, no matter what the system default is
@@ -48,6 +54,10 @@ allprojects {
 	license {
 		header rootProject.file('LICENSE_HEADER')
 		include '**/*.java'
+	}
+
+	test {
+		useJUnitPlatform()
 	}
 }
 
@@ -122,7 +132,7 @@ subprojects {
 			def json = path.exists() ? slurper.parse(path) : new HashMap<>()
 			json += template
 			file("src/main/resources/fabric.mod.json")
-					.write(JsonOutput.prettyPrint(JsonOutput.toJson(json)).replace("\${project}", projectId))
+					.write(JsonOutput.prettyPrint(JsonOutput.toJson(json)).replace("\${project}", projectId)+"\n")
 		}
 	}
 

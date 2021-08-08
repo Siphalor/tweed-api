@@ -16,11 +16,13 @@
 
 package de.siphalor.tweed4.data;
 
-public interface DataContainer<RawValue, Key> extends DataValue<RawValue> {
+import java.util.Set;
+
+public interface DataContainer<Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends DataValue<V, L, O> {
 	boolean has(Key key);
 	int size();
 
-	DataValue<RawValue> get(Key key);
+	V get(Key key);
 
 	default boolean hasByte(Key key) {
 		return has(key) && get(key).isByte();
@@ -57,96 +59,198 @@ public interface DataContainer<RawValue, Key> extends DataValue<RawValue> {
 	}
 
 	default byte getByte(Key key, byte def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isByte()) {
 			return value.asByte();
 		}
 		return def;
 	}
 	default short getShort(Key key, short def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isShort()) {
 			return value.asShort();
 		}
 		return def;
 	}
 	default int getInt(Key key, int def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isInt()) {
 			return value.asInt();
 		}
 		return def;
 	}
 	default long getLong(Key key, long def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isLong()) {
 			return value.asLong();
 		}
 		return def;
 	}
 	default float getFloat(Key key, float def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isFloat()) {
 			return value.asFloat();
 		}
 		return def;
 	}
 	default double getDouble(Key key, double def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isDouble()) {
 			return value.asDouble();
 		}
 		return def;
 	}
 	default char getCharacter(Key key, char def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isChar()) {
 			return value.asChar();
 		}
 		return def;
 	}
 	default String getString(Key key, String def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isString()) {
 			return value.asString();
 		}
 		return def;
 	}
 	default boolean getBoolean(Key key, boolean def) {
-		DataValue<RawValue> value = get(key);
+		V value = get(key);
 		if (value != null && value.isBoolean()) {
 			return value.asBoolean();
 		}
 		return def;
 	}
-	default DataObject<RawValue> getObject(Key key, DataObject<RawValue> def) {
-		DataValue<RawValue> value = get(key);
+	default O getObject(Key key, O def) {
+		V value = get(key);
 		if (value != null && value.isObject()) {
 			return value.asObject();
 		}
 		return def;
 	}
-	default DataList<RawValue> getByte(Key key, DataList<RawValue> def) {
-		DataValue<RawValue> value = get(key);
+	default L getByte(Key key, L def) {
+		V value = get(key);
 		if (value != null && value.isList()) {
 			return value.asList();
 		}
 		return def;
 	}
 
-	DataValue<RawValue> set(Key key, byte value);
-	DataValue<RawValue> set(Key key, short value);
-	DataValue<RawValue> set(Key key, int value);
-	DataValue<RawValue> set(Key key, long value);
-	DataValue<RawValue> set(Key key, float value);
-	DataValue<RawValue> set(Key key, double value);
-	DataValue<RawValue> set(Key key, char value);
-	DataValue<RawValue> set(Key key, String value);
-	DataValue<RawValue> set(Key key, boolean value);
-	DataValue<RawValue> set(Key key, DataValue<RawValue> value);
+	V set(Key key, byte value);
+	V set(Key key, short value);
+	V set(Key key, int value);
+	V set(Key key, long value);
+	V set(Key key, float value);
+	V set(Key key, double value);
+	V set(Key key, char value);
+	V set(Key key, String value);
+	V set(Key key, boolean value);
+	V set(Key key, V value);
 
-	DataObject<RawValue> addObject(Key key);
-	DataList<RawValue> addList(Key key);
+	O addObject(Key key);
+	L addList(Key key);
+
+	@Override
+	default boolean isGenericNumber() {
+		return false;
+	}
+
+	@Override
+	default boolean isNumber() {
+		return false;
+	}
+
+	@Override
+	default boolean isByte() {
+		return false;
+	}
+
+	@Override
+	default boolean isShort() {
+		return false;
+	}
+
+	@Override
+	default boolean isInt() {
+		return false;
+	}
+
+	@Override
+	default boolean isLong() {
+		return false;
+	}
+
+	@Override
+	default boolean isFloat() {
+		return false;
+	}
+
+	@Override
+	default boolean isDouble() {
+		return false;
+	}
+
+	@Override
+	default boolean isChar() {
+		return false;
+	}
+
+	@Override
+	default boolean isString() {
+		return false;
+	}
+
+	@Override
+	default boolean isBoolean() {
+		return false;
+	}
+
+	@Override
+	default Number asNumber() {
+		return 0;
+	}
+
+	@Override
+	default byte asByte() {
+		return 0;
+	}
+
+	@Override
+	default short asShort() {
+		return 0;
+	}
+
+	@Override
+	default int asInt() {
+		return 0;
+	}
+
+	@Override
+	default long asLong() {
+		return 0;
+	}
+
+	@Override
+	default float asFloat() {
+		return 0;
+	}
+
+	@Override
+	default double asDouble() {
+		return 0;
+	}
+
+	@Override
+	default String asString() {
+		return "";
+	}
+
+	@Override
+	default boolean asBoolean() {
+		return !isEmpty();
+	}
+
+	Set<Key> keys();
 
 	void remove(Key key);
 }

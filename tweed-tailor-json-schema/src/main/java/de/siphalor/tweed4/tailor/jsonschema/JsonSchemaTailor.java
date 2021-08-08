@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 Siphalor
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package de.siphalor.tweed4.tailor.jsonschema;
 
 import com.google.gson.*;
@@ -53,7 +69,7 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 	}
 
-	private static class ConvertingValue implements DataValue<JsonObject> {
+	private static class ConvertingValue implements DataValue<ConvertingValue, ConvertingList, ConvertingObject> {
 		private final JsonObject jsonObject;
 
 		public ConvertingValue(JsonObject jsonObject) {
@@ -74,6 +90,11 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		@Override
 		public String getComment() {
 			return jsonObject.get("description").getAsString();
+		}
+
+		@Override
+		public boolean isGenericNumber() {
+			return isNumber();
 		}
 
 		@Override
@@ -137,6 +158,11 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 
 		@Override
+		public Number asNumber() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public byte asByte() {
 			throw new UnsupportedOperationException();
 		}
@@ -182,12 +208,12 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 
 		@Override
-		public DataObject<JsonObject> asObject() {
+		public ConvertingObject asObject() {
 			return new ConvertingObject(jsonObject);
 		}
 
 		@Override
-		public DataList<JsonObject> asList() {
+		public ConvertingList asList() {
 			return new ConvertingList(jsonObject);
 		}
 
@@ -197,7 +223,7 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 	}
 
-	private static class ConvertingObject extends ConvertingValue implements DataObject<JsonObject> {
+	private static class ConvertingObject extends ConvertingValue implements DataObject<ConvertingValue, ConvertingList, ConvertingObject> {
 		private final JsonObject propertiesObject;
 
 		public ConvertingObject(JsonObject jsonObject) {
@@ -226,77 +252,77 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, DataValue<JsonObject> value) {
+		public ConvertingValue set(String key, ConvertingValue value) {
 			throw new UnsupportedOperationException();
 		}
 
-		private DataValue<JsonObject> createProperty(String key, String type) {
+		private ConvertingValue createProperty(String key, String type) {
 			ConvertingValue value = new ConvertingValue(type);
 			propertiesObject.add(key, value.getRaw());
 			return value;
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, boolean value) {
+		public ConvertingValue set(String key, boolean value) {
 			return createProperty(key, "boolean");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, String value) {
+		public ConvertingValue set(String key, String value) {
 			return createProperty(key, "string");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, char value) {
+		public ConvertingValue set(String key, char value) {
 			return createProperty(key, "string");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, double value) {
+		public ConvertingValue set(String key, double value) {
 			return createProperty(key, "number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, float value) {
+		public ConvertingValue set(String key, float value) {
 			return createProperty(key, "number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, long value) {
+		public ConvertingValue set(String key, long value) {
 			return createProperty(key, "number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, int value) {
+		public ConvertingValue set(String key, int value) {
 			return createProperty(key, "number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, short value) {
+		public ConvertingValue set(String key, short value) {
 			return createProperty(key, "number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(String key, byte value) {
+		public ConvertingValue set(String key, byte value) {
 			return createProperty(key, "number");
 		}
 
 		@Override
-		public DataObject<JsonObject> addObject(String key) {
+		public ConvertingObject addObject(String key) {
 			ConvertingObject object = new ConvertingObject();
 			propertiesObject.add(key, object.getRaw());
 			return object;
 		}
 
 		@Override
-		public DataList<JsonObject> addList(String key) {
+		public ConvertingList addList(String key) {
 			ConvertingList list = new ConvertingList();
 			propertiesObject.add(key, list.getRaw());
 			return list;
 		}
 
 		@Override
-		public DataValue<JsonObject> get(String key) {
+		public ConvertingValue get(String key) {
 			return new ConvertingValue(propertiesObject.getAsJsonObject(key));
 		}
 
@@ -307,15 +333,15 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 
 		@NotNull
 		@Override
-		public Iterator<Pair<String, DataValue<JsonObject>>> iterator() {
+		public Iterator<Pair<String, ConvertingValue>> iterator() {
 			return propertiesObject.entrySet().stream().map(entry -> Pair.of(
 					entry.getKey(),
-					(DataValue<JsonObject>) new ConvertingValue(entry.getValue().getAsJsonObject())
+					new ConvertingValue(entry.getValue().getAsJsonObject())
 			)).iterator();
 		}
 	}
 
-	private static class ConvertingList extends ConvertingValue implements DataList<JsonObject> {
+	private static class ConvertingList extends ConvertingValue implements DataList<ConvertingValue, ConvertingList, ConvertingObject> {
 		public ConvertingList(JsonObject jsonObject) {
 			super(jsonObject);
 		}
@@ -330,11 +356,11 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 
 		@Override
-		public DataValue<JsonObject> get(Integer index) {
+		public ConvertingValue get(Integer index) {
 			throw new UnsupportedOperationException();
 		}
 
-		private DataValue<JsonObject> addProperty(JsonObject property) {
+		private ConvertingValue addProperty(JsonObject property) {
 			JsonObject jsonObject = getRaw();
 
 			if (jsonObject.has("items")) {
@@ -361,69 +387,69 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 			return new ConvertingValue(property);
 		}
 
-		private DataValue<JsonObject> addType(String type) {
+		private ConvertingValue addType(String type) {
 			JsonObject property = new JsonObject();
 			property.addProperty("type", type);
 			return addProperty(property);
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, byte value) {
+		public ConvertingValue set(Integer index, byte value) {
 			return addType("number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, short value) {
+		public ConvertingValue set(Integer index, short value) {
 			return addType("number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, int value) {
+		public ConvertingValue set(Integer index, int value) {
 			return addType("number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, long value) {
+		public ConvertingValue set(Integer index, long value) {
 			return addType("number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, float value) {
+		public ConvertingValue set(Integer index, float value) {
 			return addType("number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, double value) {
+		public ConvertingValue set(Integer index, double value) {
 			return addType("number");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, char value) {
+		public ConvertingValue set(Integer index, char value) {
 			return addType("string");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, String value) {
+		public ConvertingValue set(Integer index, String value) {
 			return addType("string");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, boolean value) {
+		public ConvertingValue set(Integer index, boolean value) {
 			return addType("boolean");
 		}
 
 		@Override
-		public DataValue<JsonObject> set(Integer index, DataValue<JsonObject> value) {
+		public ConvertingValue set(Integer index, ConvertingValue value) {
 			return addProperty(value.getRaw());
 		}
 
 		@Override
-		public DataList<JsonObject> addList(Integer index) {
+		public ConvertingList addList(Integer index) {
 			return addType("array").asList();
 		}
 
 		@Override
-		public DataObject<JsonObject> addObject(Integer index) {
+		public ConvertingObject addObject(Integer index) {
 			return addType("object").asObject();
 		}
 
@@ -434,7 +460,7 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 
 		@NotNull
 		@Override
-		public Iterator<DataValue<JsonObject>> iterator() {
+		public Iterator<ConvertingValue> iterator() {
 			throw new UnsupportedOperationException();
 		}
 	}

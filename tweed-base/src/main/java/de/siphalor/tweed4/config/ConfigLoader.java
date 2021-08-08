@@ -17,7 +17,9 @@
 package de.siphalor.tweed4.config;
 
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 
@@ -33,7 +35,7 @@ import java.util.List;
 public final class ConfigLoader {
 	public static void initialReload(ConfigEnvironment configEnvironment) {
 		for (ConfigFile configFile : TweedRegistry.getConfigFiles()) {
-			configFile.load(readMainConfigFile(configFile), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
+			configFile.load(readMainConfigFile(configFile).asObject(), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
 			updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
 			configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
 		}
@@ -49,7 +51,7 @@ public final class ConfigLoader {
 		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, scope);
-			configFile.load(readMainConfigFile(configFile), environment, scope, ConfigOrigin.MAIN);
+			configFile.load(readMainConfigFile(configFile).asObject(), environment, scope, ConfigOrigin.MAIN);
             updateMainConfigFile(configFile, environment, scope);
 			try {
 				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
@@ -70,15 +72,16 @@ public final class ConfigLoader {
 	 * @param environment the current environment
 	 * @param scope the definition scope
 	 */
-	public static void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
-        DataObject dataObject = readMainConfigFile(configFile);
+	public static <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
+        O dataObject = ConfigLoader.<V, L, O>readMainConfigFile(configFile).asObject();
         configFile.write(dataObject, environment, scope);
 		File mainConfigFile = getMainConfigFile(configFile);
 		//noinspection ResultOfMethodCallIgnored
 		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
 			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
-			configFile.getDataSerializer().write(outputStream, dataObject);
+			configFile.<V, L, O>getDataSerializer().write(outputStream, dataObject);
             outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -91,23 +94,24 @@ public final class ConfigLoader {
 	 * @param configFile the config file
 	 * @return the read in data
 	 */
-	public static DataObject readMainConfigFile(ConfigFile configFile) {
+	public static <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	DataObject<V, L, O> readMainConfigFile(ConfigFile configFile) {
 		File mainConfig = getMainConfigFile(configFile);
 		if(mainConfig.exists()) {
 			try {
 				FileInputStream inputStream = new FileInputStream(mainConfig);
-				DataObject dataObject = configFile.getDataSerializer().read(inputStream);
+				O dataObject = configFile.<V, L, O>getDataSerializer().read(inputStream);
                 inputStream.close();
                 if(dataObject == null) {
                 	Tweed.LOGGER.error("Failed to read config file " + configFile.getFileName());
-					return configFile.getDataSerializer().newObject();
+					return configFile.<V, L, O>getDataSerializer().newObject();
 				}
 				return dataObject;
 			} catch (Exception ignored) {
 				Tweed.LOGGER.error("Failed to read config file " + configFile.getFileName());
 			}
 		}
-		return configFile.getDataSerializer().newObject();
+		return configFile.<V, L, O>getDataSerializer().newObject();
 	}
 
 	/**
@@ -116,13 +120,14 @@ public final class ConfigLoader {
 	 * @param environment the current environment
 	 * @param scope the definition scope
 	 */
-	public static void writeMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
+	public static  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void writeMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
 		File mainConfigFile = getMainConfigFile(configFile);
 		//noinspection ResultOfMethodCallIgnored
 		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
 			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
-			configFile.getDataSerializer().write(outputStream, (DataObject) configFile.write(configFile.getDataSerializer().newObject(), environment, scope));
+			configFile.<V, L, O>getDataSerializer().write(outputStream, configFile.write(configFile.<V, L, O>getDataSerializer().newObject(), environment, scope));
             outputStream.close();
 		} catch (Exception e) {
 			Tweed.LOGGER.error("Failed to load config file " + configFile.getFileName());
