@@ -109,9 +109,10 @@ public class Tweed implements ModInitializer {
 		FabricLoader loaderAPI = FabricLoader.getInstance();
 
 		{
-			//noinspection rawtypes
+			// noinspection RedundantSuppression,deprecation,rawtypes
 			List<ConfigDataSerializer> serializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":serializer", ConfigDataSerializer.class);
-			for (ConfigDataSerializer<?> serializer : serializers) {
+			//noinspection deprecation
+			for (ConfigDataSerializer<?, ?, ?> serializer : serializers) {
 				if (serializer.getId() == null) {
 					LOGGER.error("Failed to register serializer of kind " + serializer.getClass().getName() + " through entrypoint " +
 							"because it has no `getId()` method declared!");

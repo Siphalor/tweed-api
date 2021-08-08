@@ -1,4 +1,6 @@
-# Tweed
+# Tweed 4
+
+![logo](logo.png?raw=true)
 
 Yet another config API.
 

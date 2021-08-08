@@ -16,7 +16,9 @@
 
 package de.siphalor.tweed4.config.fixers;
 
+import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataValue;
 
 /**
  * Represents a data fixer for specific config entries
@@ -28,5 +30,6 @@ public abstract class ConfigEntryFixer {
 	 * @param propertyName The id of the entry to be fixed
 	 * @param mainCompound The main object which was read in. This object should be changed to represent the new data structure
 	 */
-	public abstract void fix(DataObject<?> dataObject, String propertyName, DataObject<?> mainCompound);
+	public abstract <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
+	void fix(O dataObject, String propertyName, O mainCompound);
 }
