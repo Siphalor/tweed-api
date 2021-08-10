@@ -23,6 +23,9 @@ import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.RangeConstraint;
 import de.siphalor.tweed4.tailor.cloth.ClothData;
 
+import java.util.Arrays;
+import java.util.List;
+
 @ATweedConfig(serializer = "tweed4:gson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed4_testmod")
 public class Config {
@@ -43,6 +46,16 @@ public class Config {
 			"\tand tabs")
 	public static A a;
 
+	public static List<Entry> entries = Arrays.asList(
+			new Entry("hi", "ho"),
+			new Entry("tweed4:id", "tweed4:type")
+	);
+
+	public static List<String> strings = Arrays.asList(
+			"Hello",
+			"World"
+	);
+
 	@AConfigTransitive
 	public static Trans trans;
 
@@ -57,6 +70,20 @@ public class Config {
 	@AConfigBackground(value = "minecraft:textures/block/netherrack.png")
 	public static class A {
 		public String name = "Siphalor";
+	}
+
+	public static class Entry {
+		public String id;
+		public String type;
+
+		public Entry() {
+
+		}
+
+		public Entry(String id, String type) {
+			this.id = id;
+			this.type = type;
+		}
 	}
 
 	public static class Trans {

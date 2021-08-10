@@ -22,6 +22,7 @@ import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,6 +31,7 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 	ConfigValueSerializer<E> valueSerializer;
 	Supplier<T> listSupplier;
 
+	@ApiStatus.Internal
 	public ListSerializer(ConfigValueSerializer<E> elementSerializer, Supplier<T> listSupplier) {
 		this.valueSerializer = elementSerializer;
 		this.listSupplier = listSupplier;
@@ -54,7 +56,7 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 		DataList<?, ?, ?> dataList = dataContainer.addList(key);
 		int i = 0;
 		for (E element : value) {
-			valueSerializer.write(dataList, i, element);
+			valueSerializer.write(dataList, i++, element);
 		}
 	}
 
@@ -87,6 +89,7 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 
 	@Override
 	public Class<T> getType() {
+		//noinspection unchecked
 		return (Class<T>) listSupplier.get().getClass();
 	}
 }
