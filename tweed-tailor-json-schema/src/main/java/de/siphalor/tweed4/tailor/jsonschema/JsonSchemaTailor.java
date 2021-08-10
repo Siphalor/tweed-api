@@ -25,7 +25,7 @@ import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.TweedRegistry;
 import de.siphalor.tweed4.config.entry.ConstantConfigEntry;
-import de.siphalor.tweed4.config.value.ConfigValue;
+import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
@@ -63,7 +63,7 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		File file = FabricLoader.getInstance().getConfigDir().resolve(schemaFileName).toFile();
 		try (FileWriter fileWriter = new FileWriter(file)) {
 			GSON.toJson(rootObject, fileWriter);
-			configFile.getRootCategory().register("$schema", new ConstantConfigEntry<>("./" + schemaFileName, ConfigValue.stringSerializer()));
+			configFile.getRootCategory().register("$schema", new ConstantConfigEntry<>("./" + schemaFileName, ConfigSerializers.getString()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
