@@ -21,23 +21,34 @@ import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Locale;
 
 public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> {
-	E fallback;
+	protected final E fallback;
+	protected final E[] enumConstants;
 
+	/**
+	 * Use {@link ConfigSerializers#createEnum(Enum)} instead
+	 */
+	@ApiStatus.Internal
 	public EnumSerializer(E fallback) {
-		this.fallback = fallback;
+		//noinspection unchecked
+		this(fallback, (E[]) fallback.getClass().getEnumConstants());
 	}
 
-	@SuppressWarnings("unchecked")
+	protected EnumSerializer(E fallback, E[] enumConstants) {
+		this.fallback = fallback;
+		this.enumConstants = enumConstants;
+	}
+
 	@Override
 	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
 	E read(V data) {
 		if (data.isString()) {
 			String str = data.asString().toLowerCase(Locale.ENGLISH);
-			for (E value : (E[]) fallback.getClass().getEnumConstants()) {
+			for (E value : enumConstants) {
 				if (value.name().toLowerCase(Locale.ENGLISH).equals(str)) {
 					return value;
 				}
@@ -52,11 +63,10 @@ public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> 
 		dataContainer.set(key, value.name());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public E read(PacketByteBuf packetByteBuf) {
 		String str = packetByteBuf.readString(32767);
-		for (E value : (E[]) fallback.getClass().getEnumConstants()) {
+		for (E value : enumConstants) {
 			if (value.name().toLowerCase(Locale.ENGLISH).equals(str)) {
 				return value;
 			}
@@ -76,6 +86,7 @@ public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> 
 
 	@Override
 	public Class<E> getType() {
-		return (Class<E>) fallback.getClass();
+		//noinspection unchecked
+		return (Class<E>) enumConstants[0].getClass();
 	}
 }

@@ -26,8 +26,8 @@ import de.siphalor.tweed4.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.config.fixers.ConfigEntryFixer;
-import de.siphalor.tweed4.config.value.ConfigValue;
 import de.siphalor.tweed4.config.value.ReferenceConfigValue;
+import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
@@ -38,23 +38,20 @@ import de.siphalor.tweed4.util.ReflectionUtil;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class POJOConverter {
-	private static final Map<Class<?>, ConfigValueSerializer<?>> SERIALIZER_MAP = new HashMap<>();
+	private static final Map<Class<?>, ConfigValueSerializer<Object>> SERIALIZER_MAP = new HashMap<>();
 
 	/**
 	 * Registers a custom serializer for a type.
 	 * @param clazz The class that should be captured
 	 * @param serializer The serializer to use
 	 */
-	public static void registerSerializer(Class<?> clazz, ConfigValueSerializer<?> serializer) {
+	public static void registerSerializer(Class<?> clazz, ConfigValueSerializer<Object> serializer) {
 		SERIALIZER_MAP.put(clazz, serializer);
 	}
 
@@ -187,6 +184,7 @@ public class POJOConverter {
 		field.setAccessible(true);
 
 		if (field.isAnnotationPresent(AConfigExclude.class)) return;
+		if (Modifier.isPrivate(field.getModifiers())) return;
 
 		if (field.isAnnotationPresent(AConfigTransitive.class)) {
 			try {
@@ -219,22 +217,31 @@ public class POJOConverter {
 	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field, CaseFormat casing) {
 		try {
 			Object entryObject = field.get(pojo);
-			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getType());
-			if (valueSerializer == null) {
-				 valueSerializer = SERIALIZER_MAP.get(field.getType());
+			if (entryObject == null) {
+				try {
+					Constructor<?> constructor = field.getType().getConstructor();
+					entryObject = constructor.newInstance();
+					field.set(pojo, entryObject);
+				} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+					e.printStackTrace();
+					return null;
+				}
 			}
+			ConfigSerializers.SerializerResolver resolver = new ConfigSerializers.SerializerResolver() {
+				@Override
+				public <T> ConfigValueSerializer<T> resolve(T value, Class<T> clazz, Type type) {
+					ConfigValueSerializer<Object> serializer = SERIALIZER_MAP.get(clazz);
+					if (serializer != null) {
+						return (ConfigValueSerializer<T>) serializer;
+					}
+					return ConfigSerializers.deduce(value, clazz, type, this);
+				}
+			};
+			ConfigValueSerializer<Object> valueSerializer = resolver.resolve(
+					entryObject, ((Class<Object>) field.getType()), field.getGenericType()
+			);
 			AbstractBasicEntry basicEntry;
 			if (valueSerializer == null) {
-				if (entryObject == null) {
-					try {
-						Constructor<?> constructor = field.getType().getConstructor();
-						entryObject = constructor.newInstance();
-						field.set(pojo, entryObject);
-					} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
-						e.printStackTrace();
-						return null;
-					}
-				}
 				basicEntry = toCategory(entryObject, casing);
 			} else {
 				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
