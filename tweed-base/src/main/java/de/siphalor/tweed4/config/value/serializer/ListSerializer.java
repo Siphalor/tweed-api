@@ -54,7 +54,7 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 		DataList<?, ?, ?> dataList = dataContainer.addList(key);
 		int i = 0;
 		for (E element : value) {
-			valueSerializer.write(dataList, i, element);
+			valueSerializer.write(dataList, i++, element);
 		}
 	}
 
@@ -87,6 +87,7 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 
 	@Override
 	public Class<T> getType() {
+		//noinspection unchecked
 		return (Class<T>) listSupplier.get().getClass();
 	}
 }
