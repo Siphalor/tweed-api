@@ -219,22 +219,22 @@ public class POJOConverter {
 	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field, CaseFormat casing) {
 		try {
 			Object entryObject = field.get(pojo);
-			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getType());
+			if (entryObject == null) {
+				try {
+					Constructor<?> constructor = field.getType().getConstructor();
+					entryObject = constructor.newInstance();
+					field.set(pojo, entryObject);
+				} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+					e.printStackTrace();
+					return null;
+				}
+			}
+			ConfigValueSerializer<?> valueSerializer = ConfigValue.serializer(entryObject, field.getType(), field.getGenericType());
 			if (valueSerializer == null) {
 				 valueSerializer = SERIALIZER_MAP.get(field.getType());
 			}
 			AbstractBasicEntry basicEntry;
 			if (valueSerializer == null) {
-				if (entryObject == null) {
-					try {
-						Constructor<?> constructor = field.getType().getConstructor();
-						entryObject = constructor.newInstance();
-						field.set(pojo, entryObject);
-					} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
-						e.printStackTrace();
-						return null;
-					}
-				}
 				basicEntry = toCategory(entryObject, casing);
 			} else {
 				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
