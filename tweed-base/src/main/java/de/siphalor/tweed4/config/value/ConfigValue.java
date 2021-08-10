@@ -19,6 +19,9 @@ package de.siphalor.tweed4.config.value;
 import de.siphalor.tweed4.config.value.serializer.*;
 import de.siphalor.tweed4.util.StaticStringConvertible;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -79,6 +82,52 @@ public abstract class ConfigValue<V> {
 
 	public static ConfigValueSerializer<?> serializer(Object value) {
 		return serializer(value, value.getClass());
+	}
+
+	public static ConfigValueSerializer<?> serializer(Object value, Class<?> clazz, Type type) {
+		ConfigValueSerializer<?> serializer;
+		serializer = serializerByClass(clazz);
+		if (serializer != null) {
+			return serializer;
+		}
+
+		if (type instanceof ParameterizedType) {
+			serializer = serializerByGeneric(value, clazz, (ParameterizedType) type);
+			if (serializer != null) {
+				return serializer;
+			}
+		}
+
+		return value != null ? specialSerializer(value) : null;
+	}
+
+	public static ConfigValueSerializer<?> serializerByGeneric(Object value, Class<?> clazz, ParameterizedType type) {
+		if (List.class.isAssignableFrom(clazz)) {
+			if (clazz.isInterface()) {
+				clazz = value.getClass();
+			}
+			Type[] typeArguments = type.getActualTypeArguments();
+			if (typeArguments.length == 1) {
+				List<?> list = (List<?>) value;
+				Class<?> finalClazz = clazz;
+				//noinspection unchecked
+				return ConfigValue.listSerializer(
+						((ConfigValueSerializer<Object>) serializer(
+								list.isEmpty() ? null : list.get(0), (Class<?>) typeArguments[0], typeArguments[0]
+						)),
+						() -> {
+							try {
+								//noinspection unchecked
+								return (List<Object>) finalClazz.getDeclaredConstructor().newInstance();
+							} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+								e.printStackTrace();
+							}
+							return new ArrayList<>();
+						}
+				);
+			}
+		}
+		return null;
 	}
 
 	public static ConfigValueSerializer<?> serializer(Object value, Class<?> clazz) {
