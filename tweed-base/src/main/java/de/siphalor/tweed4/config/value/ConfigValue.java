@@ -27,60 +27,65 @@ public abstract class ConfigValue<V> {
 	public abstract V get();
 	public abstract void set(V value);
 
-	private static final BooleanSerializer BOOLEAN_SERIALIZER = new BooleanSerializer();
-	private static final ByteSerializer BYTE_SERIALIZER = new ByteSerializer();
-	private static final ShortSerializer SHORT_SERIALIZER = new ShortSerializer();
-	private static final IntegerSerializer INTEGER_SERIALIZER = new IntegerSerializer();
-	private static final LongSerializer LONG_SERIALIZER = new LongSerializer();
-	private static final FloatSerializer FLOAT_SERIALIZER = new FloatSerializer();
-	private static final DoubleSerializer DOUBLE_SERIALIZER = new DoubleSerializer();
-	private static final CharacterSerializer CHARACTER_SERIALIZER = new CharacterSerializer();
-	private static final StringSerializer STRING_SERIALIZER = new StringSerializer();
-
+	@Deprecated
 	public static BooleanSerializer booleanSerializer() {
-		return BOOLEAN_SERIALIZER;
+		return ConfigSerializers.getBoolean();
 	}
+	@Deprecated
 	public static <E extends Enum<?>> EnumSerializer<E> enumSerializer(E fallback) {
 		return new EnumSerializer<>(fallback);
 	}
+	@Deprecated
 	public static <T extends StaticStringConvertible<T>> StringConvertibleSerializer<T> stringConvertibleSerializer(T fallback) {
 		return new StringConvertibleSerializer<>(fallback);
 	}
+	@Deprecated
 	public static ByteSerializer byteSerializer() {
-		return BYTE_SERIALIZER;
+		return ConfigSerializers.getByte();
 	}
+	@Deprecated
 	public static ShortSerializer shortSerializer() {
-		return SHORT_SERIALIZER;
+		return ConfigSerializers.getShort();
 	}
+	@Deprecated
 	public static IntegerSerializer integerSerializer() {
-		return INTEGER_SERIALIZER;
+		return ConfigSerializers.getInteger();
 	}
+	@Deprecated
 	public static LongSerializer longSerializer() {
-		return LONG_SERIALIZER;
+		return ConfigSerializers.getLong();
 	}
+	@Deprecated
 	public static FloatSerializer floatSerializer() {
-		return FLOAT_SERIALIZER;
+		return ConfigSerializers.getFloat();
 	}
+	@Deprecated
 	public static DoubleSerializer doubleSerializer() {
-		return DOUBLE_SERIALIZER;
+		return ConfigSerializers.getDouble();
 	}
+	@Deprecated
 	public static CharacterSerializer characterSerializer() {
-		return CHARACTER_SERIALIZER;
+		return ConfigSerializers.getCharacter();
 	}
+	@Deprecated
 	public static StringSerializer stringSerializer() {
-		return STRING_SERIALIZER;
+		return ConfigSerializers.getString();
 	}
+	@Deprecated
 	public static <E> ListSerializer<E, ArrayList<E>> listSerializer(ConfigValueSerializer<E> elementSerializer) {
 		return new ListSerializer<>(elementSerializer, ArrayList::new);
 	}
+	@Deprecated
 	public static <E, L extends List<E>> ListSerializer<E, L> listSerializer(ConfigValueSerializer<E> elementSerializer, Supplier<L> listSupplier) {
 		return new ListSerializer<>(elementSerializer, listSupplier);
 	}
 
+	@Deprecated
 	public static ConfigValueSerializer<?> serializer(Object value) {
 		return serializer(value, value.getClass());
 	}
 
+	@Deprecated
 	public static ConfigValueSerializer<?> serializer(Object value, Class<?> clazz) {
 		ConfigValueSerializer<?> serializer = serializerByClass(clazz);
 		if (serializer == null) {
@@ -89,6 +94,7 @@ public abstract class ConfigValue<V> {
 		return serializer;
 	}
 
+	@Deprecated
 	public static ConfigValueSerializer<?> specialSerializer(Object defaultValue) {
 		if (defaultValue instanceof Enum) {
 			return enumSerializer((Enum<?>) defaultValue);
@@ -99,6 +105,7 @@ public abstract class ConfigValue<V> {
 		return null;
 	}
 
+	@Deprecated
 	public static ConfigValueSerializer<?> serializerByClass(Class<?> clazz) {
 		if (clazz == Boolean.class || clazz == Boolean.TYPE) {
 			return booleanSerializer();

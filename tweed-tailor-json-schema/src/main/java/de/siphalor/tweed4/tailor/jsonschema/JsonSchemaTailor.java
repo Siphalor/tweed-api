@@ -25,7 +25,7 @@ import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.TweedRegistry;
 import de.siphalor.tweed4.config.entry.ConstantConfigEntry;
-import de.siphalor.tweed4.config.value.ConfigValue;
+import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
@@ -63,14 +63,14 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		File file = FabricLoader.getInstance().getConfigDir().resolve(schemaFileName).toFile();
 		try (FileWriter fileWriter = new FileWriter(file)) {
 			GSON.toJson(rootObject, fileWriter);
-			configFile.getRootCategory().register("$schema", new ConstantConfigEntry<>("./" + schemaFileName, ConfigValue.stringSerializer()));
+			configFile.getRootCategory().register("$schema", new ConstantConfigEntry<>("./" + schemaFileName, ConfigSerializers.getString()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private static class ConvertingValue implements DataValue<ConvertingValue, ConvertingList, ConvertingObject> {
-		private final JsonObject jsonObject;
+		protected final JsonObject jsonObject;
 
 		public ConvertingValue(JsonObject jsonObject) {
 			this.jsonObject = jsonObject;
@@ -216,11 +216,6 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		public ConvertingList asList() {
 			return new ConvertingList(jsonObject);
 		}
-
-		@Override
-		public JsonObject getRaw() {
-			return jsonObject;
-		}
 	}
 
 	private static class ConvertingObject extends ConvertingValue implements DataObject<ConvertingValue, ConvertingList, ConvertingObject> {
@@ -258,7 +253,7 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 
 		private ConvertingValue createProperty(String key, String type) {
 			ConvertingValue value = new ConvertingValue(type);
-			propertiesObject.add(key, value.getRaw());
+			propertiesObject.add(key, value.jsonObject);
 			return value;
 		}
 
@@ -310,14 +305,14 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		@Override
 		public ConvertingObject addObject(String key) {
 			ConvertingObject object = new ConvertingObject();
-			propertiesObject.add(key, object.getRaw());
+			propertiesObject.add(key, object.jsonObject);
 			return object;
 		}
 
 		@Override
 		public ConvertingList addList(String key) {
 			ConvertingList list = new ConvertingList();
-			propertiesObject.add(key, list.getRaw());
+			propertiesObject.add(key, list.jsonObject);
 			return list;
 		}
 
@@ -361,25 +356,25 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 
 		private ConvertingValue addProperty(JsonObject property) {
-			JsonObject jsonObject = getRaw();
-
 			if (jsonObject.has("items")) {
 				JsonObject items = jsonObject.getAsJsonObject("items");
-				if (items.has("oneOf")) {
-					JsonArray oneOf = items.getAsJsonArray("oneOf");
-					for (JsonElement element : oneOf) {
+				if (items.has("anyOf")) {
+					JsonArray anyOf = items.getAsJsonArray("anyOf");
+					for (JsonElement element : anyOf) {
 						if (property.get("type").getAsString().equals(element.getAsJsonObject().get("type").getAsString())) {
 							return new ConvertingValue(element.getAsJsonObject());
 						}
 					}
-					oneOf.add(property);
+					anyOf.add(property);
 				} else {
-					JsonObject newItems = new JsonObject();
-					JsonArray oneOf = new JsonArray();
-					newItems.add("oneOf", oneOf);
-					oneOf.add(items);
-					oneOf.add(property);
-					jsonObject.add("items", newItems);
+					if (!items.get("type").getAsString().equals(property.get("type").getAsString())) {
+						JsonObject newItems = new JsonObject();
+						JsonArray oneOf = new JsonArray();
+						newItems.add("anyOf", oneOf);
+						oneOf.add(items);
+						oneOf.add(property);
+						jsonObject.add("items", newItems);
+					}
 				}
 			} else {
 				jsonObject.add("items", property);
@@ -440,7 +435,7 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 
 		@Override
 		public ConvertingValue set(Integer index, ConvertingValue value) {
-			return addProperty(value.getRaw());
+			return addProperty(value.jsonObject);
 		}
 
 		@Override
