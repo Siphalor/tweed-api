@@ -38,6 +38,11 @@ public class GsonSerializer implements DataSerializer<GsonValue, GsonList, GsonO
 	}
 
 	@Override
+	public GsonValue newNull() {
+		return new GsonValue(JsonNull.INSTANCE);
+	}
+
+	@Override
 	public GsonValue newBoolean(boolean value) {
 		return new GsonValue(new JsonPrimitive(value));
 	}

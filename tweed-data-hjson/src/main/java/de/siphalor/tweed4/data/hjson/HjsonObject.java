@@ -121,6 +121,12 @@ public class HjsonObject extends HjsonValue implements DataObject<HjsonValue, Hj
 	}
 
 	@Override
+	public HjsonValue addNull(String key) {
+		jsonValue.asObject().set(key, JsonValue.valueOf(null));
+		return new HjsonValue(jsonValue.asObject().get(key));
+	}
+
+	@Override
 	public void remove(String key) {
 		jsonValue.asObject().remove(key);
 	}

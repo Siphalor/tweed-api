@@ -16,10 +16,7 @@
 
 package de.siphalor.tweed4.data.jankson;
 
-import blue.endless.jankson.JsonArray;
-import blue.endless.jankson.JsonElement;
-import blue.endless.jankson.JsonObject;
-import blue.endless.jankson.JsonPrimitive;
+import blue.endless.jankson.*;
 import de.siphalor.tweed4.data.DataValue;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -120,6 +117,11 @@ public class JanksonValue implements DataValue<JanksonValue, JanksonList, Jankso
 	@Override
 	public boolean isList() {
 		return element instanceof JsonArray;
+	}
+
+	@Override
+	public boolean isNull() {
+		return element instanceof JsonNull;
 	}
 
 	@Override

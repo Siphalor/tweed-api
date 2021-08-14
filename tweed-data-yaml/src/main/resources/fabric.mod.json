@@ -32,6 +32,9 @@
         },
         "modmenu:api": true
     },
+    "depends": {
+        "tweed4_data": "^1.2"
+    },
     "icon": "assets/tweed4_data_yaml/icon.png",
     "id": "tweed4_data_yaml",
     "version": "${version}",

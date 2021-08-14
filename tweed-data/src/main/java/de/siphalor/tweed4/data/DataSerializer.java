@@ -62,4 +62,14 @@ public interface DataSerializer<V extends DataValue<V, L, O>, L extends DataList
 	V newLong(long value);
 	V newFloat(float value);
 	V newDouble(double value);
+	/**
+	 * This should create a new null representative {@link DataValue}.
+	 * <i>This should always be overridden. The default is here for legacy reasons.</i>
+	 * @return A null representation.
+	 * This should not be <code>null</code> itself since that indicates that null is not supported.
+	 * @since 1.2
+	 */
+	default V newNull() {
+		return null;
+	}
 }
