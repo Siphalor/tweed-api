@@ -35,6 +35,13 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 	boolean isBoolean();
 	boolean isObject();
 	boolean isList();
+	/**
+	 * This should be overridden and is only default for backwards compatibility.
+	 * @since 1.2
+	 */
+	default boolean isNull() {
+		return false;
+	}
 
 	default boolean isEmpty() {
 		if(isString()) return asString().isEmpty();
@@ -58,7 +65,7 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 	L asList();
 
 	/**
-	 * Should only be used in {@link de.siphalor.tweed4.data.serializer.ConfigDataSerializer}
+	 * This should not be used anymore.
 	 * @return the raw value
 	 */
 	@Deprecated
@@ -68,7 +75,9 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 
 	default <V2 extends DataValue<V2, L2, O2>, L2 extends DataList<V2, L2, O2>, O2 extends DataObject<V2, L2, O2>>
 	boolean equals(DataValue<V2, L2, O2> other) {
-		if (isNumber()) {
+		if (isNull()) {
+			return other.isNull();
+		} else if (isNumber()) {
 			if (isGenericNumber() && other.isGenericNumber()){
 				Number num = asNumber();
 				Number otherNum = other.asNumber();
@@ -134,6 +143,8 @@ public interface DataValue<V extends DataValue<V, L, O>, L extends DataList<V, L
 				otherList.set(i, list.get(i).convert(otherSerializer));
 			}
 			return (V2) otherList;
+		} else if (isNull()) {
+			return otherSerializer.newNull();
 		} else if (isBoolean()) {
 			return otherSerializer.newBoolean(asBoolean());
 		} else if (isString()) {
