@@ -16,10 +16,7 @@
 
 package de.siphalor.tweed4.data.jankson;
 
-import blue.endless.jankson.JsonArray;
-import blue.endless.jankson.JsonElement;
-import blue.endless.jankson.JsonObject;
-import blue.endless.jankson.JsonPrimitive;
+import blue.endless.jankson.*;
 import de.siphalor.tweed4.data.DataList;
 import org.jetbrains.annotations.NotNull;
 
@@ -128,6 +125,12 @@ public class JanksonList extends JanksonValue implements DataList<JanksonValue, 
 		JsonArray jsonArray = new JsonArray();
 		self.add(jsonArray);
 		return createDataValue(jsonArray, self.size() - 1).asList();
+	}
+
+	@Override
+	public JanksonValue addNull(Integer index) {
+		self.add(JsonNull.INSTANCE);
+		return createDataValue(JsonNull.INSTANCE, index);
 	}
 
 	@Override

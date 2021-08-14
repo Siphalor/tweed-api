@@ -149,6 +149,16 @@ public interface DataContainer<Key, V extends DataValue<V, L, O>, L extends Data
 
 	O addObject(Key key);
 	L addList(Key key);
+	/**
+	 * Creates a new null representation with the given key. <br />
+	 * <i>This should always be overridden. The default is only here for legacy reasons.</i>
+	 * @param key The key to use.
+	 * @return A new null representation. <code>null</code> indicates not supporting null values.
+	 * @since 1.2
+	 */
+	default V addNull(Key key) {
+		return null;
+	}
 
 	@Override
 	default boolean isGenericNumber() {

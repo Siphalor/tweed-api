@@ -70,4 +70,9 @@ public abstract class XmlContainer<Key> extends XmlValue implements DataContaine
 	public XmlValue set(Key key, boolean value) {
 		return createTypedChild(key, "bool", Boolean.toString(value));
 	}
+
+	@Override
+	public XmlValue addNull(Key key) {
+		return createTypedChild(key, "null", "");
+	}
 }

@@ -11,7 +11,7 @@ pluginManagement {
 rootProject.name = "tweed"
 
 rootDir.eachDir {
-    if (it.name.startsWith("tweed-")) {
+    if (it.name.startsWith("tweed-") && it.toPath().resolve("gradle.properties").toFile().exists()) {
 		include(rootDir.relativePath(it).replace('/', ':'))
     }
 }

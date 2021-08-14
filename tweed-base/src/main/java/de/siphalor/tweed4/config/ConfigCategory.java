@@ -95,12 +95,15 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 
 	@Override
 	public ConfigEnvironment getEnvironment() {
-		if(entries.isEmpty()) return environment;
+		if (environment == ConfigEnvironment.DEFAULT) {
+			return ConfigEnvironment.DEFAULT;
+		}
+		if (entries.isEmpty()) return environment;
 		Iterator<ConfigEntry<?>> iterator = entries.values().iterator();
 		ConfigEnvironment environment = iterator.next().getEnvironment();
-		while(iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			ConfigEnvironment itEnvironment = iterator.next().getEnvironment();
-            while(!environment.contains(itEnvironment))
+            while (!environment.contains(itEnvironment))
             	environment = environment.parent;
 		}
 		return environment;
