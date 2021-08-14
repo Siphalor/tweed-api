@@ -113,6 +113,11 @@ public class YamlList extends YamlValue<SequenceNode> implements DataList<YamlVa
 	}
 
 	@Override
+	public YamlValue<Node> addNull(Integer index) {
+		return set(index, Tag.NULL, "null", ScalarStyle.PLAIN);
+	}
+
+	@Override
 	public YamlList addList(Integer index) {
 		SequenceNode node = new SequenceNode(Tag.SEQ, new ArrayList<>(), FlowStyle.AUTO);
 		set(index, node);

@@ -162,6 +162,11 @@ public class YamlValue<T extends Node> implements DataValue<YamlValue<Node>, Yam
 	}
 
 	@Override
+	public boolean isNull() {
+		return yamlNode.getTag() == Tag.NULL;
+	}
+
+	@Override
 	public Number asNumber() {
 		return asDouble();
 	}
