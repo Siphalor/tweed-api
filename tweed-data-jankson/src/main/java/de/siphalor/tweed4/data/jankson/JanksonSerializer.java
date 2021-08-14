@@ -16,10 +16,7 @@
 
 package de.siphalor.tweed4.data.jankson;
 
-import blue.endless.jankson.Jankson;
-import blue.endless.jankson.JsonArray;
-import blue.endless.jankson.JsonObject;
-import blue.endless.jankson.JsonPrimitive;
+import blue.endless.jankson.*;
 import blue.endless.jankson.api.SyntaxError;
 import de.siphalor.tweed4.data.DataSerializer;
 
@@ -45,6 +42,11 @@ public class JanksonSerializer implements DataSerializer<JanksonValue, JanksonLi
 	@Override
 	public JanksonList newList() {
 		return new JanksonList(new JsonArray(), SET_COMMENT_VOID, GET_COMMENT_VOID, AS_VOID);
+	}
+
+	@Override
+	public JanksonValue newNull() {
+		return new JanksonValue(JsonNull.INSTANCE);
 	}
 
 	@Override
