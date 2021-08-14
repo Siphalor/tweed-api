@@ -237,8 +237,8 @@ public class POJOConverter {
 					return ConfigSerializers.deduce(value, clazz, type, this);
 				}
 			};
-			ConfigValueSerializer<Object> valueSerializer = resolver.resolve(
-					entryObject, ((Class<Object>) field.getType()), field.getGenericType()
+			ConfigValueSerializer<Object> valueSerializer = ConfigSerializers.deduce(
+					entryObject, (Class<Object>) field.getType(), field.getGenericType(), resolver, false
 			);
 			AbstractBasicEntry basicEntry;
 			if (valueSerializer == null) {
