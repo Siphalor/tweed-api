@@ -105,6 +105,11 @@ public class HjsonValue implements DataValue<HjsonValue, HjsonList, HjsonObject>
 	}
 
 	@Override
+	public boolean isNull() {
+		return jsonValue.isNull();
+	}
+
+	@Override
 	public Number asNumber() {
 		return jsonValue.asDouble();
 	}

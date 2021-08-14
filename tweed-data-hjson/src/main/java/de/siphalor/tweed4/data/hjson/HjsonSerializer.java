@@ -40,6 +40,11 @@ public class HjsonSerializer implements DataSerializer<HjsonValue, HjsonList, Hj
 	}
 
 	@Override
+	public HjsonValue newNull() {
+		return new HjsonValue(JsonValue.valueOf(null));
+	}
+
+	@Override
 	public HjsonValue newBoolean(boolean value) {
 		return new HjsonValue(JsonValue.valueOf(value));
 	}

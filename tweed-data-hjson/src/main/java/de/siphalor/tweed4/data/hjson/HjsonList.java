@@ -124,6 +124,13 @@ public class HjsonList extends HjsonValue implements DataList<HjsonValue, HjsonL
 		return new HjsonList(jsonValue.asArray().get(index));
 	}
 
+	@Override
+	public HjsonValue addNull(Integer index) {
+		adjustLength(index);
+		jsonValue.asArray().set(index, JsonValue.valueOf(null));
+		return new HjsonValue(jsonValue.asArray().get(index));
+	}
+
 	private void adjustLength(int index) {
 		JsonArray jsonArray = jsonValue.asArray();
 		int length = jsonArray.size();
