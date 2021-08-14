@@ -75,8 +75,12 @@ public class ConfigSerializers {
 		return new EnumSerializer<>(fallback, enumConstants);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T> ConfigValueSerializer<T> deduce(T value, Class<T> clazz, Type type, SerializerResolver resolver) {
+		return deduce(value, clazz, type, resolver, true);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> ConfigValueSerializer<T> deduce(T value, Class<T> clazz, Type type, SerializerResolver resolver, boolean reflectiveSerializer) {
 		if (clazz == Boolean.class || clazz == Boolean.TYPE) {
 			return (ConfigValueSerializer<T>) getBoolean();
 		}
@@ -159,6 +163,10 @@ public class ConfigSerializers {
 					);
 				}
 			}
+		}
+
+		if (!reflectiveSerializer) {
+			return null;
 		}
 
 		// Reflective object serializer
