@@ -23,6 +23,7 @@ import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.RangeConstraint;
 import de.siphalor.tweed4.tailor.cloth.ClothData;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,6 +68,8 @@ public class Config {
 
 	TestRecursiveType recursiveType;
 
+	public static Category category;
+
 	@AConfigBackground(value = "minecraft:textures/block/netherrack.png")
 	public static class A {
 		public String name = "Siphalor";
@@ -88,5 +91,14 @@ public class Config {
 
 	public static class Trans {
 		public String type = "blob";
+	}
+
+	public static class Category {
+		public List<Entry> entries = new ArrayList<>();
+
+		@AConfigListener
+		public void reload() {
+			System.out.println("reload!");
+		}
 	}
 }
