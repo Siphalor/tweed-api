@@ -121,6 +121,13 @@ public class GsonList extends GsonValue implements DataList<GsonValue, GsonList,
 	}
 
 	@Override
+	public GsonValue addNull(Integer index) {
+		requireLength(index + 1);
+		jsonElement.getAsJsonArray().set(index, JsonNull.INSTANCE);
+		return new GsonValue(JsonNull.INSTANCE);
+	}
+
+	@Override
 	public void remove(Integer index) {
 		jsonElement.getAsJsonArray().remove(index);
 	}
