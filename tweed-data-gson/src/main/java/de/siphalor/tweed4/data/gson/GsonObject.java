@@ -16,10 +16,7 @@
 
 package de.siphalor.tweed4.data.gson;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.data.DataObject;
 import org.jetbrains.annotations.NotNull;
@@ -123,6 +120,12 @@ public class GsonObject extends GsonValue implements DataObject<GsonValue, GsonL
 		JsonArray jsonArray = new JsonArray();
 		jsonElement.getAsJsonObject().add(key, jsonArray);
 		return new GsonList(jsonArray);
+	}
+
+	@Override
+	public GsonValue addNull(String key) {
+		jsonElement.getAsJsonObject().add(key, JsonNull.INSTANCE);
+		return new GsonValue(JsonNull.INSTANCE);
 	}
 
 	@Override

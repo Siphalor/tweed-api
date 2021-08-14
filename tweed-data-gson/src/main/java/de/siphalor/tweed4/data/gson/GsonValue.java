@@ -105,6 +105,11 @@ public class GsonValue implements DataValue<GsonValue, GsonList, GsonObject> {
 	}
 
 	@Override
+	public boolean isNull() {
+		return jsonElement.isJsonNull();
+	}
+
+	@Override
 	public Number asNumber() {
 		return jsonElement.getAsNumber();
 	}

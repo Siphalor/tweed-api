@@ -129,6 +129,11 @@ public class YamlObject extends YamlValue<MappingNode> implements DataObject<Yam
 	}
 
 	@Override
+	public YamlValue<Node> addNull(String key) {
+		return create(key, Tag.NULL, "null", ScalarStyle.PLAIN);
+	}
+
+	@Override
 	public YamlObject addObject(String key) {
 		YamlObject yamlObject = new YamlObject(new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO));
 		setInternal(key, yamlObject);

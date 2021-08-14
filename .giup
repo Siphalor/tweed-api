@@ -13,8 +13,8 @@
 		},
 		{
 			"title": "Build & Publish",
-			"run": "./gradlew publish",
-			"nt": "gradlew publish"
+			"run": "./gradlew build publish",
+			"nt": "gradlew build publish"
 		},
 		{
 			"title": "Push changes",

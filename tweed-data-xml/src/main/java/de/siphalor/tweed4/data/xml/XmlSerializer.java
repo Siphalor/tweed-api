@@ -75,61 +75,70 @@ public class XmlSerializer implements DataSerializer<XmlValue, XmlList, XmlObjec
 
 	@Override
 	public XmlList newList() {
-		return null;
+		return new XmlList(createStandaloneElement());
 	}
 
 	@Override
 	public XmlValue newBoolean(boolean value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "bool");
 	}
 
 	@Override
 	public XmlValue newChar(char value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "char");
 	}
 
 	@Override
 	public XmlValue newString(String value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "string");
 	}
 
 	@Override
 	public XmlValue newByte(byte value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "byte");
 	}
 
 	@Override
 	public XmlValue newShort(short value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "short");
 	}
 
 	@Override
 	public XmlValue newInt(int value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "int");
 	}
 
 	@Override
 	public XmlValue newLong(long value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "long");
 	}
 
 	@Override
 	public XmlValue newFloat(float value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "float");
 	}
 
 	@Override
 	public XmlValue newDouble(double value) {
-		return null;
+		return new TypedXmlValue(createStandaloneElement(), "double");
 	}
 
 	@Override
 	public XmlObject newObject() {
+		return new XmlObject(createStandaloneElement());
+	}
+
+	@Override
+	public XmlValue newNull() {
+		return new TypedXmlValue(createStandaloneElement(), "null");
+	}
+
+	private Element createStandaloneElement() {
 		Document document = DOCUMENT_BUILDER.newDocument();
 		Element root = document.createElement("root");
 		document.setXmlStandalone(true);
 		document.appendChild(root);
-		return new XmlObject(root);
+		return root;
 	}
 
 	@Override

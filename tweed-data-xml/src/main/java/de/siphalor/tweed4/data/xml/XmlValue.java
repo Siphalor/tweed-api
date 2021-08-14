@@ -79,6 +79,11 @@ public abstract class XmlValue implements DataValue<XmlValue, XmlList, XmlObject
 	}
 
 	@Override
+	public boolean isNull() {
+		return "null".equals(xmlElement.getAttribute("type"));
+	}
+
+	@Override
 	public char asChar() {
 		return xmlElement.getTextContent().charAt(0);
 	}
@@ -131,10 +136,5 @@ public abstract class XmlValue implements DataValue<XmlValue, XmlList, XmlObject
 	@Override
 	public XmlObject asObject() {
 		return new XmlObject(xmlElement);
-	}
-
-	@Override
-	public Object getRaw() {
-		return null;
 	}
 }

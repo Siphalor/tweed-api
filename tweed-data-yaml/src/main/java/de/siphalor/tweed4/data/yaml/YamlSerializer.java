@@ -117,6 +117,11 @@ public class YamlSerializer implements DataSerializer<YamlValue<Node>, YamlList,
 	}
 
 	@Override
+	public YamlValue<Node> newNull() {
+		return new YamlValue<>(new ScalarNode(Tag.NULL, "null", ScalarStyle.PLAIN));
+	}
+
+	@Override
 	public String getFileExtension() {
 		return "yaml";
 	}
