@@ -21,10 +21,7 @@ import de.siphalor.tweed4.util.ReflectionUtil;
 import de.siphalor.tweed4.util.StaticStringConvertible;
 
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class ConfigSerializers {
@@ -91,6 +88,14 @@ public class ConfigSerializers {
 		return new EnumSerializer<>(fallback, enumConstants);
 	}
 
+	public static <T> OptionalSerializer<T> createOptional(ConfigValueSerializer<T> valueSerializer) {
+		return new OptionalSerializer<>(valueSerializer);
+	}
+
+	public static <T> NullableSerializer<T> createNullable(ConfigValueSerializer<T> valueSerializer) {
+		return new NullableSerializer<>(valueSerializer);
+	}
+
 	public static <T> ConfigValueSerializer<T> deduce(T value, Class<T> clazz, Type type, SerializerResolver resolver) {
 		return deduce(value, clazz, type, resolver, true);
 	}
@@ -135,6 +140,19 @@ public class ConfigSerializers {
 		if (StaticStringConvertible.class.isAssignableFrom(clazz)) {
 			//noinspection rawtypes
 			return new StringConvertibleSerializer((StaticStringConvertible<?>) value);
+		}
+		if (clazz == Optional.class) {
+			Object subValue;
+			if (value == null) {
+				subValue = null;
+			} else {
+				subValue = ((Optional<?>) value).orElse(null);
+			}
+			if (type instanceof ParameterizedType) {
+				Type subType = ((ParameterizedType) type).getActualTypeArguments()[0];
+				ConfigValueSerializer<Object> subSerializer = resolver.resolve(subValue, ((Class<Object>) subType), subType);
+				return ((ConfigValueSerializer<T>) new OptionalSerializer<>(subSerializer));
+			}
 		}
 		if (List.class.isAssignableFrom(clazz)) {
 			if (type instanceof ParameterizedType) {
@@ -198,15 +216,17 @@ public class ConfigSerializers {
 			}
 
 			try {
+				ConfigValueSerializer<Object> fieldSerializer = resolver.resolve(
+						value != null ? field.get(value) : null,
+						((Class<Object>) field.getType()),
+						field.getGenericType()
+				);
+				if (field.isAnnotationPresent(ReflectiveNullable.class)) {
+					fieldSerializer = new NullableSerializer<>(fieldSerializer);
+				}
+
 				reflectiveEntries.put(field.getName(),
-						new ReflectiveObjectSerializer.Entry(
-								field,
-								resolver.resolve(
-										value != null ? field.get(value) : null,
-										(Class<Object>) field.getType(),
-										field.getGenericType()
-								)
-						)
+						new ReflectiveObjectSerializer.Entry(field, fieldSerializer)
 				);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
