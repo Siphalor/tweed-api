@@ -23,6 +23,10 @@ import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 
+/**
+ * A serializer wrapper for nullable values
+ * @since 1.3.0
+ */
 public class NullableSerializer<T> extends ConfigValueSerializer<T> {
 	private final ConfigValueSerializer<T> valueSerializer;
 
