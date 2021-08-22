@@ -25,6 +25,10 @@ import net.minecraft.network.PacketByteBuf;
 
 import java.util.Optional;
 
+/**
+ * A serializer for {@link Optional}s
+ * @since 1.3.0
+ */
 public class OptionalSerializer<T> extends ConfigValueSerializer<Optional<T>> {
 	private final ConfigValueSerializer<T> valueSerializer;
 
