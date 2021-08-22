@@ -23,6 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a field used in reflective serialization as nullable.
+ * @since 1.3.0
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

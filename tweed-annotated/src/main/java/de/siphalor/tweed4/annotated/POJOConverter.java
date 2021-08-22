@@ -29,6 +29,8 @@ import de.siphalor.tweed4.config.fixers.ConfigEntryFixer;
 import de.siphalor.tweed4.config.value.ReferenceConfigValue;
 import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
+import de.siphalor.tweed4.config.value.serializer.NullableSerializer;
+import de.siphalor.tweed4.config.value.serializer.ReflectiveNullable;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
@@ -217,16 +219,6 @@ public class POJOConverter {
 	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field, CaseFormat casing) {
 		try {
 			Object entryObject = field.get(pojo);
-			if (entryObject == null) {
-				try {
-					Constructor<?> constructor = field.getType().getConstructor();
-					entryObject = constructor.newInstance();
-					field.set(pojo, entryObject);
-				} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
-					e.printStackTrace();
-					return null;
-				}
-			}
 			ConfigSerializers.SerializerResolver resolver = new ConfigSerializers.SerializerResolver() {
 				@Override
 				public <T> ConfigValueSerializer<T> resolve(T value, Class<T> clazz, Type type) {
@@ -241,10 +233,24 @@ public class POJOConverter {
 					entryObject, (Class<Object>) field.getType(), field.getGenericType(), resolver, false
 			);
 			AbstractBasicEntry basicEntry;
-			if (valueSerializer == null) {
-				basicEntry = toCategory(entryObject, casing);
-			} else {
+
+			if (valueSerializer != null) {
+				if (field.isAnnotationPresent(ReflectiveNullable.class)) {
+					valueSerializer = new NullableSerializer<>(valueSerializer);
+				}
 				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
+			} else {
+				if (entryObject == null) {
+					try {
+						Constructor<?> constructor = field.getType().getConstructor();
+						entryObject = constructor.newInstance();
+						field.set(pojo, entryObject);
+					} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+						e.printStackTrace();
+						return null;
+					}
+				}
+				basicEntry = toCategory(entryObject, casing);
 			}
 
 			String name = CaseFormat.LOWER_CAMEL.to(casing, field.getName());
