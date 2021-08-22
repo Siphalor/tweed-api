@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings({"unused", "OptionalUsedAsFieldOrParameterType"})
 @ATweedConfig(serializer = "tweed4:hjson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed4_testmod")
 public class Config {
@@ -39,6 +40,9 @@ public class Config {
 
 	@AConfigExclude
 	public static String test = "abc";
+
+	@ReflectiveNullable
+	public static String nullableString;
 
 	@AConfigEntry(constraints = @AConfigConstraint(value = RangeConstraint.class, param = "100..200"))
 	public static Integer number = 123;
