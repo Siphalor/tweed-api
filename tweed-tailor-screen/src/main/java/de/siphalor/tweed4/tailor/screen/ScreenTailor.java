@@ -52,7 +52,10 @@ public abstract class ScreenTailor extends Tailor {
 						TweedClient.setSyncRunnable(() -> {
 							if (waitingForFile) {
 								waitingForFile = false;
-								MinecraftClient.getInstance().openScreen(screenFactory.create(parentScreen));
+								MinecraftClient.getInstance().execute(() ->
+										MinecraftClient.getInstance().openScreen(screenFactory.create(parentScreen))
+
+								);
 							}
 						});
 					},
