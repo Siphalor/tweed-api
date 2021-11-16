@@ -53,7 +53,7 @@ public abstract class ScreenTailor extends Tailor {
 							if (waitingForFile) {
 								waitingForFile = false;
 								MinecraftClient.getInstance().execute(() ->
-										MinecraftClient.getInstance().openScreen(screenFactory.create(parentScreen))
+										MinecraftClient.getInstance().setScreen(screenFactory.create(parentScreen))
 
 								);
 							}
@@ -61,7 +61,7 @@ public abstract class ScreenTailor extends Tailor {
 					},
 					() -> {
 						waitingForFile = false;
-						MinecraftClient.getInstance().openScreen(parentScreen);
+						MinecraftClient.getInstance().setScreen(parentScreen);
 					},
 					new TranslatableText("tweed4_tailor_screen.syncFromServer"),
 					new TranslatableText("tweed4_tailor_screen.syncFromServer.note")
