@@ -9,5 +9,5 @@ dependencies {
 		modApi("net.fabricmc.fabric-api:${dep.getKey()}:${dep.getValue()}")
 	}
 
-	api project(path: ":tweed-data")
+	implementation project(path: ":tweed-data", configuration: "namedElements")
 }

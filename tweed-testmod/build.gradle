@@ -1,11 +1,13 @@
 dependencies {
-	implementation project(":tweed-base")
-	implementation project(":tweed-annotated")
-	implementation project(":tweed-tailor-cloth")
-	implementation project(":tweed-tailor-coat")
-	implementation project(":tweed-tailor-json-schema")
-	implementation project(":tweed-data-hjson")
-	implementation project(":tweed-data-gson")
+	implementation project(path: ":tweed-base", configuration: "namedElements")
+	implementation project(path: ":tweed-annotated", configuration: "namedElements")
+	implementation project(path: ":tweed-tailor-cloth", configuration: "namedElements")
+	implementation project(path: ":tweed-tailor-coat", configuration: "namedElements")
+	implementation project(path: ":tweed-tailor-json-schema", configuration: "namedElements")
+	implementation project(path: ":tweed-data-hjson", configuration: "namedElements")
+	implementation project(path: ":tweed-data-gson", configuration: "namedElements")
 
-	modRuntime("com.github.astei:lazydfu:master-SNAPSHOT")
+	modRuntimeOnly("com.github.astei:lazydfu:master-SNAPSHOT")
+	modRuntimeOnly("de.siphalor:coat-$minecraft_major_version:$coat_version")
+	modRuntimeOnly("com.terraformersmc:modmenu:$mod_menu_version")
 }
