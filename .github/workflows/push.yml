@@ -16,4 +16,10 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x gradlew
     - name: Build with Gradle
+      uses: burrunan/gradle-cache-action@v1
+      with:
+        job-id: jdk16
+        gradle-version: wrapper
+        arguments: build
+    - name: Build with Gradle
       run: ./gradlew build
