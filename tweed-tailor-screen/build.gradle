@@ -3,9 +3,8 @@ repositories {
 }
 
 dependencies {
-	api project(":tweed-base")
+	implementation project(path: ":tweed-base", configuration: "namedElements")
 
-	modImplementation("net.fabricmc.fabric-api:fabric-networking-api-v1:$project.fabric_api_networking")
-
-	modImplementation "curse.maven:modmenu-308702:3121565"
+	modImplementation "net.fabricmc.fabric-api:fabric-networking-api-v1:$project.fabric_api_networking"
+	modImplementation "curse.maven:modmenu-308702:$mod_menu_version"
 }

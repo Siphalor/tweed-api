@@ -41,7 +41,10 @@
     "depends": {
         "tweed4_tailor_screen": "^1"
     },
-    "breaks": {
+	"suggests": {
+		"cloth-config2": "~4"
+	},
+	"breaks": {
         "cloth-config2": [
             "<1",
             ">=2"
