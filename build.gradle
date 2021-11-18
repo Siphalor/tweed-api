@@ -156,6 +156,12 @@ dependencies {
 	modRuntimeOnly("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
 		exclude module: "fabric-loader"
 	}
+
+	afterEvaluate {
+		subprojects {
+			include(api(project(path: ":"+it.name, configuration: "namedElements")))
+		}
+	}
 }
 
 publishing {
@@ -179,16 +185,5 @@ publishing {
 		artifactId = archivesBaseName + "-" + minecraft_major_version
 
 		from components.java
-
-		pom.withXml {
-			def deps = asNode().appendNode("dependencies")
-
-			configurations.modApi.allDependencies.each {
-				def dep = deps.appendNode("dependency")
-				dep.appendNode("groupId", rootProject.group)
-				dep.appendNode("artifactId", it.name.replace("tweed", "tweed4"))
-				dep.appendNode("version", it.version)
-			}
-		}
 	})
 }
