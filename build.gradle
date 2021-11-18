@@ -164,6 +164,7 @@ dependencies {
 	afterEvaluate {
 		subprojects {
 			include(api(project(path: ":"+it.name, configuration: "namedElements")))
+			rootProject.getTasksByName("remapJar", false).iterator().next().dependsOn(it.getTasksByName("remapJar", false).iterator().next())
 		}
 	}
 }
