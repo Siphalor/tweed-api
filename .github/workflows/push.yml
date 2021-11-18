@@ -21,5 +21,3 @@ jobs:
         job-id: jdk16
         gradle-version: wrapper
         arguments: build
-    - name: Build with Gradle
-      run: ./gradlew build
