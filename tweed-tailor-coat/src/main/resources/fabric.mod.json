@@ -46,5 +46,8 @@
     ],
     "depends": {
         "tweed4_tailor_screen": "^1"
-    }
+    },
+	"suggests": {
+		"coat": "~1"
+	}
 }
