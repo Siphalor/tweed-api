@@ -5,7 +5,7 @@ plugins {
 	id 'maven-publish'
 	id 'java'
 	id 'com.github.johnrengelman.shadow' version '7.0.0' apply false
-	id 'fabric-loom' version '0.8-SNAPSHOT' apply false
+	id 'fabric-loom' version '0.10-SNAPSHOT' apply false
 	id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
 
@@ -25,11 +25,9 @@ allprojects {
 	}
 
 	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_16
 
-	configurations {
-		testOutput
-	}
+	loom {}
 
 	dependencies {
 		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
@@ -62,6 +60,11 @@ allprojects {
 }
 
 subprojects {
+	// Fix for Loom 0.10 transitive dependency mess: https://discord.com/channels/507304429255393322/842691768175951942/908391237806096444
+	configurations {
+		namedElements.extendsFrom implementation, api
+	}
+
 	jar {
 		archiveBaseName.set(archivesBaseName)
 		archiveClassifier.set("dev")
@@ -78,8 +81,8 @@ subprojects {
 			}
 			remapSourcesJar.dependsOn(shadowSourcesJar)
 
-			remapJar {
-				dependsOn(shadowJar)
+			jar {
+				finalizedBy(shadowJar)
 			}
 
 			sourcesJar {
@@ -90,6 +93,10 @@ subprojects {
 				configurations = [project.configurations.shadow]
 				archiveBaseName.set(archivesBaseName)
 				archiveClassifier.set("dev")
+			}
+
+			remapJar {
+				dependsOn(shadowJar)
 			}
 		}
 
@@ -142,22 +149,22 @@ subprojects {
 			publications.create(archivesBaseName.replaceAll(/-(\w)/, { it[1].toUpperCase() }), MavenPublication.class, {
 				version = project.version
 				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
-				// add all the jars that should be included when publishing to maven
-				artifact(remapJar) {
-					builtBy remapJar
-				}
 
-				artifact(sourcesJar) {
-					builtBy remapSourcesJar
-				}
+				from components.java
 			})
 		}
 	}
 }
 
 dependencies {
-	modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
+	modRuntimeOnly("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
 		exclude module: "fabric-loader"
+	}
+
+	afterEvaluate {
+		subprojects {
+			include(api(project(path: ":"+it.name, configuration: "namedElements")))
+		}
 	}
 }
 
@@ -181,19 +188,6 @@ publishing {
 		version = project.version
 		artifactId = archivesBaseName + "-" + minecraft_major_version
 
-		artifact(remapJar) {
-			builtBy remapJar
-		}
-
-		pom.withXml {
-			def deps = asNode().appendNode("dependencies")
-
-			configurations.modApi.allDependencies.each {
-				def dep = deps.appendNode("dependency")
-				dep.appendNode("groupId", rootProject.group)
-				dep.appendNode("artifactId", it.name.replace("tweed", "tweed4"))
-				dep.appendNode("version", it.version)
-			}
-		}
+		from components.java
 	})
 }
