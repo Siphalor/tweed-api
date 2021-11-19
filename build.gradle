@@ -1,20 +1,34 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import org.w3c.dom.Element
 
 plugins {
 	id 'maven-publish'
 	id 'java'
 	id 'com.github.johnrengelman.shadow' version '7.0.0' apply false
-	id 'fabric-loom' version '0.8-SNAPSHOT' apply false
+	id 'fabric-loom' version '0.10-SNAPSHOT' apply false
 	id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
 
-group = project.maven_group
+// This POM processor adjusts the dependencies on the Tweed subprojects to match the published artifact ids
+def pomFixer = {
+	def deps = it.asElement().getElementsByTagName("dependencies").item(0) as Element
+	deps = deps.getElementsByTagName("dependency")
+	for (i in 0..<deps.length) {
+		def dep = deps.item(i) as Element
+		if (dep.getElementsByTagName("groupId").item(0).getTextContent() == "de.siphalor.tweed4") {
+			def depArtifactId = dep.getElementsByTagName("artifactId").item(0) as Element
+			depArtifactId.setTextContent(depArtifactId.getTextContent().replace("tweed-", "tweed4-") + "-$minecraft_major_version")
+		}
+	}
+} as Action<? super XmlProvider>
 
 allprojects {
 	apply plugin: 'fabric-loom'
 	apply plugin: 'java-library'
 	apply plugin: 'org.cadixdev.licenser'
+
+	group = project.maven_group
 
 	repositories {
 		mavenCentral()
@@ -25,11 +39,9 @@ allprojects {
 	}
 
 	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_16
 
-	configurations {
-		testOutput
-	}
+	loom {}
 
 	dependencies {
 		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
@@ -62,6 +74,11 @@ allprojects {
 }
 
 subprojects {
+	// Fix for Loom 0.10 transitive dependency mess: https://discord.com/channels/507304429255393322/842691768175951942/908391237806096444
+	configurations {
+		namedElements.extendsFrom implementation, api
+	}
+
 	jar {
 		archiveBaseName.set(archivesBaseName)
 		archiveClassifier.set("dev")
@@ -78,8 +95,8 @@ subprojects {
 			}
 			remapSourcesJar.dependsOn(shadowSourcesJar)
 
-			remapJar {
-				dependsOn(shadowJar)
+			jar {
+				finalizedBy(shadowJar)
 			}
 
 			sourcesJar {
@@ -90,6 +107,10 @@ subprojects {
 				configurations = [project.configurations.shadow]
 				archiveBaseName.set(archivesBaseName)
 				archiveClassifier.set("dev")
+			}
+
+			remapJar {
+				dependsOn(shadowJar)
 			}
 		}
 
@@ -136,28 +157,31 @@ subprojects {
 		}
 	}
 
-	afterEvaluate {
-		// configure the maven publication
-		publishing {
-			publications.create(archivesBaseName.replaceAll(/-(\w)/, { it[1].toUpperCase() }), MavenPublication.class, {
-				version = project.version
-				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
-				// add all the jars that should be included when publishing to maven
-				artifact(remapJar) {
-					builtBy remapJar
-				}
+	def projectId = archivesBaseName.replaceAll(/-(\w)/, {it[1].toUpperCase()})
 
-				artifact(sourcesJar) {
-					builtBy remapSourcesJar
-				}
-			})
-		}
+	// configure the maven publication
+	publishing {
+		publications.create(projectId, MavenPublication.class, {
+			version = project.version
+			artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
+
+			from components.java
+
+			pom.withXml(pomFixer)
+		})
 	}
 }
 
 dependencies {
-	modRuntime("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
+	modRuntimeOnly("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
 		exclude module: "fabric-loader"
+	}
+
+	afterEvaluate {
+		subprojects {
+			include(api(project(path: ":"+it.name, configuration: "namedElements")))
+			rootProject.getTasksByName("remapJar", false).iterator().next().dependsOn(it.getTasksByName("remapJar", false).iterator().next())
+		}
 	}
 }
 
@@ -173,27 +197,14 @@ publishing {
 				}
 			}
 		}
-		// uncomment to publish to the local maven
-		// mavenLocal()
 	}
 
 	publications.create("tweed4", MavenPublication.class, {
 		version = project.version
 		artifactId = archivesBaseName + "-" + minecraft_major_version
 
-		artifact(remapJar) {
-			builtBy remapJar
-		}
+		from components.java
 
-		pom.withXml {
-			def deps = asNode().appendNode("dependencies")
-
-			configurations.modApi.allDependencies.each {
-				def dep = deps.appendNode("dependency")
-				dep.appendNode("groupId", rootProject.group)
-				dep.appendNode("artifactId", it.name.replace("tweed", "tweed4"))
-				dep.appendNode("version", it.version)
-			}
-		}
+		pom.withXml(pomFixer)
 	})
 }

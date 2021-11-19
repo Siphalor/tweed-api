@@ -1,7 +1,7 @@
 apply plugin: "com.github.johnrengelman.shadow"
 
 dependencies {
-	implementation project(":tweed-base")
+	implementation project(path: ":tweed-base", configuration: "namedElements")
 
 	shadow(implementation('org.snakeyaml:snakeyaml-engine:2.3'))
 }
