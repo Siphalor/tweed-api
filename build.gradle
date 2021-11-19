@@ -74,6 +74,11 @@ allprojects {
 	test {
 		useJUnitPlatform()
 	}
+
+	// Disable Gradle module format because subproject artifact ids currently don't seem to be changable easily
+	tasks.withType(GenerateModuleMetadata) {
+		enabled = false
+	}
 }
 
 subprojects {
