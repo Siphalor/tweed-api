@@ -1,5 +1,6 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import org.w3c.dom.Element
 
 plugins {
 	id 'maven-publish'
@@ -9,12 +10,25 @@ plugins {
 	id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
 
-group = project.maven_group
+// This POM processor adjusts the dependencies on the Tweed subprojects to match the published artifact ids
+def pomFixer = {
+	def deps = it.asElement().getElementsByTagName("dependencies").item(0) as Element
+	deps = deps.getElementsByTagName("dependency")
+	for (i in 0..<deps.length) {
+		def dep = deps.item(i) as Element
+		if (dep.getElementsByTagName("groupId").item(0).getTextContent() == "de.siphalor.tweed4") {
+			def depArtifactId = dep.getElementsByTagName("artifactId").item(0) as Element
+			depArtifactId.setTextContent(depArtifactId.getTextContent().replace("tweed-", "tweed4-") + "-$minecraft_major_version")
+		}
+	}
+} as Action<? super XmlProvider>
 
 allprojects {
 	apply plugin: 'fabric-loom'
 	apply plugin: 'java-library'
 	apply plugin: 'org.cadixdev.licenser'
+
+	group = project.maven_group
 
 	repositories {
 		mavenCentral()
@@ -143,16 +157,18 @@ subprojects {
 		}
 	}
 
-	afterEvaluate {
-		// configure the maven publication
-		publishing {
-			publications.create(archivesBaseName.replaceAll(/-(\w)/, { it[1].toUpperCase() }), MavenPublication.class, {
-				version = project.version
-				artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
+	def projectId = archivesBaseName.replaceAll(/-(\w)/, {it[1].toUpperCase()})
 
-				from components.java
-			})
-		}
+	// configure the maven publication
+	publishing {
+		publications.create(projectId, MavenPublication.class, {
+			version = project.version
+			artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
+
+			from components.java
+
+			pom.withXml(pomFixer)
+		})
 	}
 }
 
@@ -181,8 +197,6 @@ publishing {
 				}
 			}
 		}
-		// uncomment to publish to the local maven
-		// mavenLocal()
 	}
 
 	publications.create("tweed4", MavenPublication.class, {
@@ -190,5 +204,7 @@ publishing {
 		artifactId = archivesBaseName + "-" + minecraft_major_version
 
 		from components.java
+
+		pom.withXml(pomFixer)
 	})
 }
