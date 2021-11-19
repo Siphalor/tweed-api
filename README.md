@@ -4,7 +4,7 @@
 
 Yet another config API.
 
-For a quick example see [here](https://github.com/Siphalor/spiceoffabric/blob/master/src/main/java/de/siphalor/spiceoffabric/config/Config.java).
+For a quick example see [here](tweed-testmod/src/main/java/de/siphalor/tweedtest/Config.java).
 
 ## License
 
