@@ -16,6 +16,7 @@
 
 package de.siphalor.tweed4.config.value.serializer;
 
+import com.mojang.datafixers.util.Either;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.util.ReflectionUtil;
 import de.siphalor.tweed4.util.StaticStringConvertible;
@@ -92,6 +93,10 @@ public class ConfigSerializers {
 		return new OptionalSerializer<>(valueSerializer);
 	}
 
+	public static <A, B> EitherSerializer<A, B> createEither(ConfigValueSerializer<A> leftSerializer, ConfigValueSerializer<B> rightSerializer) {
+		return new EitherSerializer<>(leftSerializer, rightSerializer);
+	}
+
 	public static <T> NullableSerializer<T> createNullable(ConfigValueSerializer<T> valueSerializer) {
 		return new NullableSerializer<>(valueSerializer);
 	}
@@ -152,6 +157,15 @@ public class ConfigSerializers {
 				Type subType = ((ParameterizedType) type).getActualTypeArguments()[0];
 				ConfigValueSerializer<Object> subSerializer = resolver.resolve(subValue, ((Class<Object>) subType), subType);
 				return ((ConfigValueSerializer<T>) new OptionalSerializer<>(subSerializer));
+			}
+		}
+		if (clazz == Either.class) {
+			if (type instanceof ParameterizedType) {
+				Type[] subTypes = ((ParameterizedType) type).getActualTypeArguments();
+				return ((ConfigValueSerializer<T>) new EitherSerializer<>(
+						resolver.resolve(null, ((Class<Object>) subTypes[0]), subTypes[0]),
+						resolver.resolve(null, ((Class<Object>) subTypes[1]), subTypes[1])
+				));
 			}
 		}
 		if (List.class.isAssignableFrom(clazz)) {
