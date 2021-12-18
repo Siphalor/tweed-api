@@ -17,6 +17,7 @@
 package de.siphalor.tweedtest;
 
 import com.google.common.base.CaseFormat;
+import com.mojang.datafixers.util.Either;
 import de.siphalor.tweed4.annotated.*;
 import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
@@ -71,6 +72,8 @@ public class Config {
 	@AConfigEntry(scope = ConfigScope.SMALLEST, environment = ConfigEnvironment.CLIENT, comment = "This is a client side dropdown!")
 	public static TestDropdown dropdown = TestDropdown.B;
 	public static TestDropdown dropdown2 = TestDropdown.C;
+
+	public static Either<Integer, String> intOrString = Either.left(0);
 
 	TestRecursiveType recursiveType;
 
