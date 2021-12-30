@@ -31,11 +31,18 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
+import java.util.function.Consumer;
+
 @Environment(EnvType.CLIENT)
 public class TweedClient implements ClientModInitializer {
-	private static Runnable syncRunnable;
+	private static Consumer<ConfigFile> syncRunnable;
 
+	@Deprecated
 	public static void setSyncRunnable(Runnable syncRunnable) {
+		TweedClient.syncRunnable = file -> syncRunnable.run();
+	}
+
+	public static void setSyncRunnable(Consumer<ConfigFile> syncRunnable) {
 		TweedClient.syncRunnable = syncRunnable;
 	}
 
@@ -71,9 +78,10 @@ public class TweedClient implements ClientModInitializer {
 					configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
 
 					if (syncRunnable != null) {
-						syncRunnable.run();
+						syncRunnable.accept(configFile);
 						syncRunnable = null;
 					}
+					break;
 				}
 			}
 		});
