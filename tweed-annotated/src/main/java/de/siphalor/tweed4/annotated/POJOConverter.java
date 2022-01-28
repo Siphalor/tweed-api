@@ -36,6 +36,7 @@ import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
+import de.siphalor.tweed4.util.DirectListMultimap;
 import de.siphalor.tweed4.util.ReflectionUtil;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -43,10 +44,10 @@ import net.minecraft.util.Pair;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
 
 public class POJOConverter {
-	private static final Map<Class<?>, ConfigValueSerializer<Object>> SERIALIZER_MAP = new HashMap<>();
+	private static final DirectListMultimap<Class<?>, POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>>, LinkedList<POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>>>> SERIALIZER_FACTORIES = new DirectListMultimap<>(new HashMap<>(), LinkedList::new);
 
 	/**
 	 * Registers a custom serializer for a type.
@@ -54,7 +55,12 @@ public class POJOConverter {
 	 * @param serializer The serializer to use
 	 */
 	public static void registerSerializer(Class<?> clazz, ConfigValueSerializer<Object> serializer) {
-		SERIALIZER_MAP.put(clazz, serializer);
+		SERIALIZER_FACTORIES.put(clazz, (value, clazz1, type) -> serializer);
+	}
+
+	public static <T, Serializer extends ConfigValueSerializer<T>> void registerSerializerFactory(Class<? super T> clazz, POJOConfigValueSerializerFactory<T, Serializer> serializerFactory) {
+		//noinspection unchecked
+		SERIALIZER_FACTORIES.put(clazz, (POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>>) serializerFactory);
 	}
 
 	public static ConfigFile toConfigFile(Object pojo, String fallbackFileName) throws RuntimeException {
@@ -222,9 +228,19 @@ public class POJOConverter {
 			ConfigSerializers.SerializerResolver resolver = new ConfigSerializers.SerializerResolver() {
 				@Override
 				public <T> ConfigValueSerializer<T> resolve(T value, Class<T> clazz, Type type) {
-					ConfigValueSerializer<Object> serializer = SERIALIZER_MAP.get(clazz);
-					if (serializer != null) {
-						return (ConfigValueSerializer<T>) serializer;
+					Class<?> curClass = clazz;
+					while (true) {
+						for (POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>> serializerFactory : SERIALIZER_FACTORIES.get(curClass)) {
+							ConfigValueSerializer<Object> serializer = serializerFactory.create(value, (Class<Object>) clazz, type);
+							if (serializer != null) {
+								return (ConfigValueSerializer<T>) serializer;
+							}
+						}
+
+						if (curClass == Object.class) {
+							break;
+						}
+						curClass = curClass.getSuperclass();
 					}
 					return ConfigSerializers.deduce(value, clazz, type, this);
 				}
