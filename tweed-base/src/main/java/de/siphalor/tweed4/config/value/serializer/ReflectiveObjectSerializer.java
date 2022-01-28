@@ -110,6 +110,20 @@ public class ReflectiveObjectSerializer<T> extends ConfigValueSerializer<T> {
 	}
 
 	@Override
+	public T copy(T value) {
+		T copy = supplier.get();
+		for (Map.Entry<String, Entry> entry : entries.entrySet()) {
+			Entry entry2 = entry.getValue();
+			try {
+				entry2.field.set(copy, entry2.serializer.copy(entry2.field.get(value)));
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return copy;
+	}
+
+	@Override
 	public String asString(T value) {
 		StringBuilder stringBuilder = new StringBuilder(value.getClass().getSimpleName() + " {\n");
 		for (Map.Entry<String, Entry> entry : entries.entrySet()) {

@@ -79,6 +79,15 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
+	public T copy(T value) {
+		T newList = listSupplier.get();
+		for (E element : value) {
+			newList.add(valueSerializer.copy(element));
+		}
+		return newList;
+	}
+
+	@Override
 	public String asString(T value) {
 		StringBuilder stringBuilder = new StringBuilder("[ ");
 		for (E element : value) {

@@ -70,6 +70,11 @@ public class OptionalSerializer<T> extends ConfigValueSerializer<Optional<T>> {
 	}
 
 	@Override
+	public Optional<T> copy(Optional<T> value) {
+		return value.map(valueSerializer::copy);
+	}
+
+	@Override
 	public String asString(Optional<T> value) {
 		if (!value.isPresent()) {
 			return "null";

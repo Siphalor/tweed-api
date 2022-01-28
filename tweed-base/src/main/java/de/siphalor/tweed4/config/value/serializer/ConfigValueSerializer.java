@@ -33,6 +33,10 @@ public abstract class ConfigValueSerializer<T> {
 	public abstract T read(PacketByteBuf packetByteBuf);
 	public abstract void write(PacketByteBuf packetByteBuf, T value);
 
+	public T copy(T value) {
+		return value;
+	}
+
 	public abstract String asString(T value);
 
 	public abstract Class<T> getType();

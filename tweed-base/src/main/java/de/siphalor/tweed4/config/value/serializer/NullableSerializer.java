@@ -73,6 +73,14 @@ public class NullableSerializer<T> extends ConfigValueSerializer<T> {
 	}
 
 	@Override
+	public T copy(T value) {
+		if (value != null) {
+			return valueSerializer.copy(value);
+		}
+		return null;
+	}
+
+	@Override
 	public String asString(T value) {
 		if (value == null) {
 			return "null";

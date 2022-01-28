@@ -85,6 +85,18 @@ public class EitherSerializer<A, B> extends ConfigValueSerializer<Either<A, B>> 
 	}
 
 	@Override
+	public Either<A, B> copy(Either<A, B> value) {
+		Optional<A> leftOpt = value.left();
+		//noinspection OptionalIsPresent
+		if (leftOpt.isPresent()) {
+			return Either.left(leftSerializer.copy(leftOpt.get()));
+		} else {
+			//noinspection OptionalGetWithoutIsPresent
+			return Either.right(rightSerializer.copy(value.right().get()));
+		}
+	}
+
+	@Override
 	public String asString(Either<A, B> value) {
 		return value.map(leftSerializer::asString, rightSerializer::asString);
 	}

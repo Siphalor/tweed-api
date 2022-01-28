@@ -58,12 +58,18 @@ public class StringConvertibleSerializer<T extends StaticStringConvertible<T>> e
 	}
 
 	@Override
+	public StaticStringConvertible<T> copy(StaticStringConvertible<T> value) {
+		return fallback.valueOf(value.asString());
+	}
+
+	@Override
 	public String asString(StaticStringConvertible<T> value) {
 		return value.asString();
 	}
 
 	@Override
 	public Class<StaticStringConvertible<T>> getType() {
+		//noinspection unchecked
 		return (Class<StaticStringConvertible<T>>) fallback.getClass();
 	}
 }
