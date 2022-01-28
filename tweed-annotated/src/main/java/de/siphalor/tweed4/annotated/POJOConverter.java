@@ -17,6 +17,7 @@
 package de.siphalor.tweed4.annotated;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.collect.HashMultimap;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.ConfigCategory;
 import de.siphalor.tweed4.config.ConfigFile;
@@ -36,18 +37,15 @@ import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
-import de.siphalor.tweed4.util.DirectListMultimap;
 import de.siphalor.tweed4.util.ReflectionUtil;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
 
 public class POJOConverter {
-	private static final DirectListMultimap<Class<?>, POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>>, LinkedList<POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>>>> SERIALIZER_FACTORIES = new DirectListMultimap<>(new HashMap<>(), LinkedList::new);
+	private static final HashMultimap<Class<?>, POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>>> SERIALIZER_FACTORIES = HashMultimap.create();
 
 	/**
 	 * Registers a custom serializer for a type.
