@@ -33,7 +33,8 @@ public class DirectListMultimap<K, V, L extends List<V>> implements ListMultimap
 
 	@Override
 	public L get(K key) {
-		return delegate.get(key);
+		L list = delegate.get(key);
+		return list != null ? list : listSupplier.get();
 	}
 
 	@Override
