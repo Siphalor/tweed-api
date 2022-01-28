@@ -101,6 +101,10 @@ public class ConfigSerializers {
 		return new NullableSerializer<>(valueSerializer);
 	}
 
+	public static <T> ConfigValueSerializer<T> deduce(T value, Class<T> clazz, Type type) {
+		return deduce(value, clazz, type, ConfigSerializers::deduce);
+	}
+
 	public static <T> ConfigValueSerializer<T> deduce(T value, Class<T> clazz, Type type, SerializerResolver resolver) {
 		return deduce(value, clazz, type, resolver, true);
 	}
