@@ -23,7 +23,7 @@ import de.siphalor.tweed4.config.ConfigCategory;
 import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.TweedRegistry;
 import de.siphalor.tweed4.config.constraints.AnnotationConstraint;
-import de.siphalor.tweed4.config.entry.AbstractBasicEntry;
+import de.siphalor.tweed4.config.entry.AbstractValueConfigEntry;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.config.fixers.ConfigEntryFixer;
@@ -41,11 +41,17 @@ import de.siphalor.tweed4.util.ReflectionUtil;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
 
 public class POJOConverter {
+	private static final HashMultimap<Class<?>, POJOConfigEntryMapper> ENTRY_MAPPERS = HashMultimap.create();
 	private static final HashMultimap<Class<?>, POJOConfigValueSerializerFactory<Object, ConfigValueSerializer<Object>>> SERIALIZER_FACTORIES = HashMultimap.create();
+
+	public static void registerEntryMapper(Class<?> clazz, POJOConfigEntryMapper entryMapper) {
+		ENTRY_MAPPERS.put(clazz, entryMapper);
+	}
 
 	/**
 	 * Registers a custom serializer for a type.
@@ -222,7 +228,7 @@ public class POJOConverter {
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public static Pair<String, ConfigEntry<?>> toEntry(Object pojo, Field field, CaseFormat casing) {
 		try {
-			Object entryObject = field.get(pojo);
+			Object fieldValue = field.get(pojo);
 			ConfigSerializers.SerializerResolver resolver = new ConfigSerializers.SerializerResolver() {
 				@Override
 				public <T> ConfigValueSerializer<T> resolve(T value, Class<T> clazz, Type type) {
@@ -243,64 +249,93 @@ public class POJOConverter {
 					return ConfigSerializers.deduce(value, clazz, type, this);
 				}
 			};
-			ConfigValueSerializer<Object> valueSerializer = ConfigSerializers.deduce(
-					entryObject, (Class<Object>) field.getType(), field.getGenericType(), resolver, false
-			);
-			AbstractBasicEntry basicEntry;
 
-			if (valueSerializer != null) {
-				if (field.isAnnotationPresent(ReflectiveNullable.class)) {
-					valueSerializer = new NullableSerializer<>(valueSerializer);
+			ConfigEntry<?> entry = null;
+			for (POJOConfigEntryMapper entryMapper : ENTRY_MAPPERS.get(field.getType())) {
+				entry = entryMapper.map(field, fieldValue, resolver);
+				if (entry != null) {
+					break;
 				}
-				basicEntry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
-			} else {
-				if (entryObject == null) {
-					try {
-						Constructor<?> constructor = field.getType().getConstructor();
-						entryObject = constructor.newInstance();
-						field.set(pojo, entryObject);
-					} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
-						e.printStackTrace();
-						return null;
-					}
-				}
-				basicEntry = toCategory(entryObject, casing);
 			}
-
-			String name = CaseFormat.LOWER_CAMEL.to(casing, field.getName());
-			if (field.isAnnotationPresent(AConfigEntry.class)) {
-				AConfigEntry configData = field.getAnnotation(AConfigEntry.class);
-				if (!"".equals(configData.name())) {
-					name = configData.name();
-				}
-				basicEntry.setComment(configData.comment());
-				basicEntry.setScope(configData.scope());
-				basicEntry.setEnvironment(configData.environment());
-
-				// Add constraints
-				if (basicEntry instanceof ValueConfigEntry) {
-					Class<?> clazz;
-					for (AConfigConstraint aConstraint : configData.constraints()) {
-						clazz = aConstraint.value();
-						if (AnnotationConstraint.class.isAssignableFrom(clazz)) {
-							try {
-								Constructor<AnnotationConstraint> constructor = (Constructor<AnnotationConstraint>) clazz.getConstructor();
-								constructor.setAccessible(true);
-								AnnotationConstraint<?> constraint = constructor.newInstance();
-								constraint.fromAnnotationParam(aConstraint.param(), ((ValueConfigEntry) basicEntry).getType());
-
-								((ValueConfigEntry) basicEntry).addConstraint(constraint);
-							} catch (NoSuchMethodException | InstantiationException | InvocationTargetException ignored) {
-							}
+			if (entry == null) {
+				annotations:
+				for (Annotation annotation : field.getAnnotations()) {
+					for (POJOConfigEntryMapper entryMapper : ENTRY_MAPPERS.get(annotation.getClass())) {
+						entry = entryMapper.map(field, fieldValue, resolver);
+						if (entry != null) {
+							break annotations;
 						}
 					}
 				}
 			}
-			return new Pair<>(name, basicEntry);
+
+			if (entry == null) {
+				ConfigValueSerializer<Object> valueSerializer = ConfigSerializers.deduce(
+						fieldValue, (Class<Object>) field.getType(), field.getGenericType(), resolver, false
+				);
+
+				if (valueSerializer != null) {
+					if (field.isAnnotationPresent(ReflectiveNullable.class)) {
+						valueSerializer = new NullableSerializer<>(valueSerializer);
+					}
+					entry = new ValueConfigEntry(new ReferenceConfigValue(pojo, field), valueSerializer);
+				} else {
+					if (fieldValue == null) {
+						try {
+							Constructor<?> constructor = field.getType().getConstructor();
+							fieldValue = constructor.newInstance();
+							field.set(pojo, fieldValue);
+						} catch (NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+							e.printStackTrace();
+							return null;
+						}
+					}
+					entry = toCategory(fieldValue, casing);
+				}
+			}
+
+			String name = processConfigEntry(entry, field, casing);
+			return new Pair<>(name, entry);
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
+	private static String processConfigEntry(ConfigEntry<?> entry, Field field, CaseFormat casing) {
+		String name = CaseFormat.LOWER_CAMEL.to(casing, field.getName());
+		if (field.isAnnotationPresent(AConfigEntry.class)) {
+			AConfigEntry configData = field.getAnnotation(AConfigEntry.class);
+			if (!"".equals(configData.name())) {
+				name = configData.name();
+			}
+			entry.setComment(configData.comment());
+			entry.setScope(configData.scope());
+			entry.setEnvironment(configData.environment());
+
+			// Add constraints
+			if (entry instanceof AbstractValueConfigEntry) {
+				Class<?> clazz;
+				for (AConfigConstraint aConstraint : configData.constraints()) {
+					clazz = aConstraint.value();
+					if (AnnotationConstraint.class.isAssignableFrom(clazz)) {
+						try {
+							//noinspection rawtypes,unchecked
+							Constructor<AnnotationConstraint> constructor = (Constructor<AnnotationConstraint>) clazz.getConstructor();
+							constructor.setAccessible(true);
+							AnnotationConstraint<?> constraint = constructor.newInstance();
+							//noinspection rawtypes
+							constraint.fromAnnotationParam(aConstraint.param(), ((ValueConfigEntry) entry).getType());
+
+							//noinspection unchecked,rawtypes
+							((AbstractValueConfigEntry) entry).addConstraint(constraint);
+						} catch (ReflectiveOperationException ignored) {
+						}
+					}
+				}
+			}
+		}
+
+		return name;
+	}
 }
