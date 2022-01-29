@@ -251,20 +251,20 @@ public class POJOConverter {
 			};
 
 			ConfigEntry<?> entry = null;
-			for (POJOConfigEntryMapper entryMapper : ENTRY_MAPPERS.get(field.getType())) {
-				entry = entryMapper.map(field, fieldValue, resolver);
-				if (entry != null) {
-					break;
+			annotations:
+			for (Annotation annotation : field.getAnnotations()) {
+				for (POJOConfigEntryMapper entryMapper : ENTRY_MAPPERS.get(annotation.getClass())) {
+					entry = entryMapper.map(field, fieldValue, resolver);
+					if (entry != null) {
+						break annotations;
+					}
 				}
 			}
 			if (entry == null) {
-				annotations:
-				for (Annotation annotation : field.getAnnotations()) {
-					for (POJOConfigEntryMapper entryMapper : ENTRY_MAPPERS.get(annotation.getClass())) {
-						entry = entryMapper.map(field, fieldValue, resolver);
-						if (entry != null) {
-							break annotations;
-						}
+				for (POJOConfigEntryMapper entryMapper : ENTRY_MAPPERS.get(field.getType())) {
+					entry = entryMapper.map(field, fieldValue, resolver);
+					if (entry != null) {
+						break;
 					}
 				}
 			}
