@@ -56,6 +56,7 @@ public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
 	 * @param comment the comment to use
 	 * @return the current entry for chain calls
 	 */
+	@Override
 	public T setComment(String comment) {
 		this.comment = comment;
 		return (T) this;

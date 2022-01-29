@@ -113,6 +113,13 @@ public interface ConfigEntry<T> {
 	ConfigScope getScope();
 
 	/**
+	 * May set the comment string that describes the entry to the user.
+	 * @param comment the comment to use
+	 * @return the current entry for chain calls
+	 */
+	T setComment(String comment);
+
+	/**
 	 * Gives a description for what this config entry triggeredBy, possible constraints etc.
 	 * @return the description
 	 */
