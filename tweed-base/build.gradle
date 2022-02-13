@@ -1,6 +1,7 @@
 dependencies {
 	def fabric_deps = [
 			"fabric-api-base": project.fabric_api_base_version,
+			"fabric-registry-sync-v0": project.fabric_api_registry_sync,
 			"fabric-networking-api-v1": project.fabric_api_networking,
 			"fabric-resource-loader-v0": project.fabric_api_resource_loader,
 			"fabric-lifecycle-events-v1": project.fabric_api_lifecycle_events,
@@ -10,4 +11,8 @@ dependencies {
 	}
 
 	implementation project(path: ":tweed-data", configuration: "namedElements")
+}
+
+loom {
+	accessWidenerPath = file("src/main/resources/tweed4_base.accesswidener")
 }

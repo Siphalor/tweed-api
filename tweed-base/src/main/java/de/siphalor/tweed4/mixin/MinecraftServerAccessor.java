@@ -25,5 +25,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface MinecraftServerAccessor {
 
 	@Accessor
-	ServerResourceManager getServerResourceManager();
+	MinecraftServer.class_6897 getServerResourceManager();
 }
