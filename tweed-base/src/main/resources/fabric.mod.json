@@ -48,6 +48,7 @@
     ],
     "version": "${version}",
     "depends": {
+		"minecraft": ">=1.18.2-alpha.22.6.a",
         "fabric-api-base": "*",
 		"fabric-registry-sync-v0": "*",
         "fabric-networking-api-v1": "*",
