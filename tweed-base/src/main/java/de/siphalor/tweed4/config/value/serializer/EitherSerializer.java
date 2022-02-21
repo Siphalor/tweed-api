@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,18 @@ public class EitherSerializer<A, B> extends ConfigValueSerializer<Either<A, B>> 
 			packetByteBuf.writeBoolean(true);
 			//noinspection OptionalGetWithoutIsPresent
 			rightSerializer.write(packetByteBuf, value.right().get());
+		}
+	}
+
+	@Override
+	public Either<A, B> copy(Either<A, B> value) {
+		Optional<A> leftOpt = value.left();
+		//noinspection OptionalIsPresent
+		if (leftOpt.isPresent()) {
+			return Either.left(leftSerializer.copy(leftOpt.get()));
+		} else {
+			//noinspection OptionalGetWithoutIsPresent
+			return Either.right(rightSerializer.copy(value.right().get()));
 		}
 	}
 

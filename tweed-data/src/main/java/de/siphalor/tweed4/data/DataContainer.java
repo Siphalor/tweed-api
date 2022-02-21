@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,11 @@ import java.util.Set;
 public interface DataContainer<Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends DataValue<V, L, O> {
 	boolean has(Key key);
 	int size();
+
+	@Override
+	default boolean isEmpty() {
+		return size() > 0;
+	}
 
 	V get(Key key);
 
@@ -247,6 +252,11 @@ public interface DataContainer<Key, V extends DataValue<V, L, O>, L extends Data
 
 	@Override
 	default double asDouble() {
+		return 0;
+	}
+
+	@Override
+	default char asChar() {
 		return 0;
 	}
 

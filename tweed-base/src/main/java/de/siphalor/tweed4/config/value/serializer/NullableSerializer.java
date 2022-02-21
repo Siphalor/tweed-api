@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,14 @@ public class NullableSerializer<T> extends ConfigValueSerializer<T> {
 		} else {
 			packetByteBuf.writeBoolean(false);
 		}
+	}
+
+	@Override
+	public T copy(T value) {
+		if (value != null) {
+			return valueSerializer.copy(value);
+		}
+		return null;
 	}
 
 	@Override

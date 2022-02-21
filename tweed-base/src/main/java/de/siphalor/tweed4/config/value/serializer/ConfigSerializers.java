@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,10 @@ public class ConfigSerializers {
 
 	public static <T> NullableSerializer<T> createNullable(ConfigValueSerializer<T> valueSerializer) {
 		return new NullableSerializer<>(valueSerializer);
+	}
+
+	public static <T> ConfigValueSerializer<T> deduce(T value, Class<T> clazz, Type type) {
+		return deduce(value, clazz, type, ConfigSerializers::deduce);
 	}
 
 	public static <T> ConfigValueSerializer<T> deduce(T value, Class<T> clazz, Type type, SerializerResolver resolver) {
