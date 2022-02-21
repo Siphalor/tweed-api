@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
 	 * @param comment the comment to use
 	 * @return the current entry for chain calls
 	 */
+	@Override
 	public T setComment(String comment) {
 		this.comment = comment;
 		return (T) this;

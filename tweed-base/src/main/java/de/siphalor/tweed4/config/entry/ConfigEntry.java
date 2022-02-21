@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,6 +111,13 @@ public interface ConfigEntry<T> {
 	 * @return the scope
 	 */
 	ConfigScope getScope();
+
+	/**
+	 * May set the comment string that describes the entry to the user.
+	 * @param comment the comment to use
+	 * @return the current entry for chain calls
+	 */
+	T setComment(String comment);
 
 	/**
 	 * Gives a description for what this config entry triggeredBy, possible constraints etc.

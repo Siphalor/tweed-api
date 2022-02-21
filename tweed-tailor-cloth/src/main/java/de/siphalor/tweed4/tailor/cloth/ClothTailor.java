@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package de.siphalor.tweed4.tailor.cloth;
 
 import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.Tweed;
-import de.siphalor.tweed4.client.TweedClient;
-import de.siphalor.tweed4.config.*;
+import de.siphalor.tweed4.config.ConfigCategory;
+import de.siphalor.tweed4.config.ConfigFile;
+import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;

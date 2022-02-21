@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package de.siphalor.tweed4.config.constraints;
+package de.siphalor.tweed4.annotated;
 
-public interface AnnotationConstraint<T> extends Constraint<T> {
-	void fromAnnotationParam(String param, Class<?> valueType);
+import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
+
+import java.lang.reflect.Type;
+
+public interface POJOConfigValueSerializerFactory<V, Serializer extends ConfigValueSerializer<V>> {
+	Serializer create(V value, Class<V> clazz, Type type);
 }
