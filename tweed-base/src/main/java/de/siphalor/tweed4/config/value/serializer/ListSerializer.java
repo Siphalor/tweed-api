@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,15 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 		for (E element : value) {
 			valueSerializer.write(packetByteBuf, element);
 		}
+	}
+
+	@Override
+	public T copy(T value) {
+		T newList = listSupplier.get();
+		for (E element : value) {
+			newList.add(valueSerializer.copy(element));
+		}
+		return newList;
 	}
 
 	@Override

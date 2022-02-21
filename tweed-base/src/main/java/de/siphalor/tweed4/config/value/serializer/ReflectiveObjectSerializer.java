@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,6 +107,20 @@ public class ReflectiveObjectSerializer<T> extends ConfigValueSerializer<T> {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public T copy(T value) {
+		T copy = supplier.get();
+		for (Map.Entry<String, Entry> entry : entries.entrySet()) {
+			Entry entry2 = entry.getValue();
+			try {
+				entry2.field.set(copy, entry2.serializer.copy(entry2.field.get(value)));
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return copy;
 	}
 
 	@Override
