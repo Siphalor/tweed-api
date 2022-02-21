@@ -21,6 +21,7 @@ import de.siphalor.coat.handler.ConfigEntryHandler;
 import de.siphalor.coat.handler.Message;
 import de.siphalor.coat.input.CheckBoxConfigInput;
 import de.siphalor.coat.input.ConfigInput;
+import de.siphalor.coat.input.SliderConfigInput;
 import de.siphalor.coat.input.TextConfigInput;
 import de.siphalor.coat.list.ConfigListWidget;
 import de.siphalor.coat.list.entry.ConfigListConfigEntry;
@@ -29,6 +30,7 @@ import de.siphalor.coat.screen.ConfigScreen;
 import de.siphalor.tweed4.config.ConfigCategory;
 import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.constraints.Constraint;
+import de.siphalor.tweed4.config.constraints.RangeConstraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.DropdownMaterial;
 import de.siphalor.tweed4.tailor.coat.entry.CoatDropdownSelectInput;
@@ -235,5 +237,36 @@ public class CoatTailor extends ScreenTailor {
 		registerConverter(Long.class, new TCNumberEntryProcessor<>(Long::parseLong));
 		registerConverter(Float.class, new TCNumberEntryProcessor<>(Float::parseFloat));
 		registerConverter(Double.class, new TCNumberEntryProcessor<>(Double::parseDouble));
+
+		TweedCoatEntryProcessor<Number> numberEntryProcessor = (parentWidget, configEntry, path) -> {
+			for (Constraint<Number> constraint : configEntry.getConstraints()) {
+				if (constraint instanceof RangeConstraint) {
+					parentWidget.addEntry(convertSimpleConfigEntry(
+							configEntry,
+							path,
+							new SliderConfigInput<>(
+									configEntry.getMainConfigValue(),
+									((RangeConstraint<Number>) constraint).getMin(),
+									((RangeConstraint<Number>) constraint).getMax()
+							),
+							new SimpleConfigEntryHandler<>(configEntry)
+					));
+					return true;
+				}
+			}
+			return false;
+		};
+		//noinspection unchecked,rawtypes
+		registerConverter(Byte.class, ((TweedCoatEntryProcessor) numberEntryProcessor));
+		//noinspection unchecked,rawtypes
+		registerConverter(Short.class, ((TweedCoatEntryProcessor) numberEntryProcessor));
+		//noinspection unchecked,rawtypes
+		registerConverter(Integer.class, ((TweedCoatEntryProcessor) numberEntryProcessor));
+		//noinspection unchecked,rawtypes
+		registerConverter(Long.class, ((TweedCoatEntryProcessor) numberEntryProcessor));
+		//noinspection unchecked,rawtypes
+		registerConverter(Float.class, ((TweedCoatEntryProcessor) numberEntryProcessor));
+		//noinspection unchecked,rawtypes
+		registerConverter(Double.class, ((TweedCoatEntryProcessor) numberEntryProcessor));
 	}
 }
