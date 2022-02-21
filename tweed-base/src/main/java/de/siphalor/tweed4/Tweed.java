@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package de.siphalor.tweed4;
 
 import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import io.netty.handler.codec.DecoderException;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -70,19 +71,22 @@ public class Tweed implements ModInitializer {
 		});
 
 		ServerPlayNetworking.registerGlobalReceiver(REQUEST_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {
-			String fileName = packetByteBuf.readString(32767);
-            for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
-            	if(configFile.getName().equals(fileName)) {
-            		if(server.getPermissionLevel(player.getGameProfile()) == 4) {
-						configFile.syncToClient(player, packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class), packetByteBuf.readEnumConstant(ConfigOrigin.class));
-					} else {
-            			packetByteBuf.readEnumConstant(ConfigEnvironment.class);
-            			ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
-            			packetByteBuf.readEnumConstant(ConfigOrigin.class);
-						configFile.syncToClient(player, ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
+			configFile: while (packetByteBuf.isReadable()) {
+				String fileName = packetByteBuf.readString(32767);
+				for (ConfigFile configFile : TweedRegistry.getConfigFiles()) {
+					if (configFile.getName().equals(fileName)) {
+						if (server.getPermissionLevel(player.getGameProfile()) == 4) {
+							configFile.syncToClient(player, packetByteBuf.readEnumConstant(ConfigEnvironment.class), packetByteBuf.readEnumConstant(ConfigScope.class), packetByteBuf.readEnumConstant(ConfigOrigin.class));
+						} else {
+							packetByteBuf.readEnumConstant(ConfigEnvironment.class);
+							ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
+							packetByteBuf.readEnumConstant(ConfigOrigin.class);
+							configFile.syncToClient(player, ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
+						}
+						continue configFile;
 					}
-            		break;
 				}
+				throw new DecoderException("Requested sync for unknown config file: " + fileName);
 			}
 		});
 		ServerPlayNetworking.registerGlobalReceiver(TWEED_CLOTH_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,11 @@ public class OptionalSerializer<T> extends ConfigValueSerializer<Optional<T>> {
 	public void write(PacketByteBuf packetByteBuf, Optional<T> value) {
 		packetByteBuf.writeBoolean(value.isPresent());
 		value.ifPresent(contained -> valueSerializer.write(packetByteBuf, contained));
+	}
+
+	@Override
+	public Optional<T> copy(Optional<T> value) {
+		return value.map(valueSerializer::copy);
 	}
 
 	@Override

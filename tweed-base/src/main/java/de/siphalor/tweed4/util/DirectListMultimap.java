@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ public class DirectListMultimap<K, V, L extends List<V>> implements ListMultimap
 
 	@Override
 	public L get(K key) {
-		return delegate.get(key);
+		L list = delegate.get(key);
+		return list != null ? list : listSupplier.get();
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Siphalor
+ * Copyright 2021-2022 Siphalor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 
 package de.siphalor.tweed4.config.entry;
 
-import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.config.*;
-import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.value.ConfigValue;
 import de.siphalor.tweed4.config.value.SimpleConfigValue;
+import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataList;
@@ -28,41 +27,22 @@ import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.util.PacketByteBuf;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * An entry to register at a {@link ConfigFile} or {@link ConfigCategory}.
  * @param <T> the type which is used for maintaining the value of the entry. Use {@link ValueConfigEntry#currentValue} to access
  */
 @SuppressWarnings("unchecked")
-public class ValueConfigEntry<T> extends AbstractBasicEntry<ValueConfigEntry<T>> {
+public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEntry<T>, T> {
 	private ConfigValueSerializer<T> valueSerializer;
 
-	/**
-	 * The value of this entry. Will be renamed when backwards compatibility is dropped.
-	 */
-	ConfigValue<T> currentValue;
-
 	protected T mainConfigValue;
-
-	protected T defaultValue;
-	protected Queue<Constraint<T>> constraints;
-
-	protected Consumer<T> reloadListener;
 
 	/**
 	 * Constructs a new entry
 	 * @param defaultValue The default value to use
 	 */
 	public ValueConfigEntry(T defaultValue) {
-		this(new SimpleConfigValue<>(defaultValue), (ConfigValueSerializer<T>) ConfigValue.serializer(defaultValue, defaultValue.getClass()));
+		this(new SimpleConfigValue<>(defaultValue), ConfigSerializers.deduce(defaultValue, (Class<T>) defaultValue.getClass(), null));
 	}
 
 	public ValueConfigEntry(T defaultValue, ConfigValueSerializer<T> configValueSerializer) {
@@ -70,117 +50,34 @@ public class ValueConfigEntry<T> extends AbstractBasicEntry<ValueConfigEntry<T>>
 	}
 
 	public ValueConfigEntry(ConfigValue<T> configValue, ConfigValueSerializer<T> valueSerializer) {
+		super(configValue);
 		this.valueSerializer = valueSerializer;
-		this.currentValue = configValue;
 		this.defaultValue = currentValue.get();
 		this.mainConfigValue = defaultValue;
-		this.comment = "";
-		this.environment = ConfigEnvironment.UNIVERSAL;
-		this.constraints = new ConcurrentLinkedQueue<>();
 	}
 
 	public ConfigValueSerializer<T> getValueSerializer() {
 		return valueSerializer;
 	}
 
-	public T getValue() {
-		return currentValue.get();
-	}
-
-	public void setValue(T value) {
-		this.currentValue.set(value);
-	}
-
-	/**
-	 * Sets the default value. Use with care!
-	 * @param defaultValue the new default value ("new default" lol)
-	 */
-	public void setDefaultValue(T defaultValue) {
-		this.defaultValue = defaultValue;
-	}
-
-	public T getDefaultValue() {
-		return defaultValue;
-	}
-
+	@Override
 	public void setMainConfigValue(T mainConfigValue) {
 		this.mainConfigValue = mainConfigValue;
 	}
 
+	@Override
 	public final T getMainConfigValue() {
 		return mainConfigValue;
 	}
 
-	@Deprecated
-	public void setBothValues(T value) {
-		this.currentValue.set(value);
-		this.mainConfigValue = value;
-	}
-
+	@Override
 	public Class<T> getType() {
 		return valueSerializer.getType();
 	}
 
 	@Override
-	public void reset(ConfigEnvironment environment, ConfigScope scope) {
-		currentValue.set(defaultValue);
-		mainConfigValue = defaultValue;
-	}
-
-	/**
-	 * Register a constraint
-	 * @param constraint the new constraint
-	 * @return this entry for chain calls
-	 */
-	public final ValueConfigEntry<T> addConstraint(Constraint<T> constraint) {
-        constraints.add(constraint);
-    	return this;
-    }
-
-	public Queue<Constraint<T>> getConstraints() {
-		return constraints;
-	}
-
-	@Override
-	public final Constraint.Result<T> applyConstraints() {
-		Constraint.Result<T> result = applyConstraints(getValue());
-		if (result.ok) {
-			setValue(result.value);
-		}
-		return result;
-	}
-
-	public final Constraint.Result<T> applyConstraints(T value) {
-		List<Pair<Constraint.Severity, String>> messages = new LinkedList<>();
-		for(Constraint<T> constraint : constraints) {
-			Constraint.Result<T> result = constraint.apply(value);
-			messages.addAll(result.messages);
-			if (!result.ok) {
-				return new Constraint.Result<>(false, null, messages);
-			}
-			value = result.value;
-		}
-		return new Constraint.Result<>(true, value, messages);
-    }
-
-	@Override
-	public String getDescription() {
-		StringBuilder description = new StringBuilder();
-		if(comment.length() > 0)
-			description.append(getComment()).append(System.lineSeparator());
-		description.append("default: ").append(valueSerializer != null ? valueSerializer.asString(defaultValue) : defaultValue.toString());
-
-		String constraintDesc = constraints.stream().flatMap(constraint -> {
-			String desc = constraint.getDescription();
-			if (desc.isEmpty())
-				return Stream.empty();
-			return Arrays.stream(desc.split("\n"));
-		}).collect(Collectors.joining(System.lineSeparator() + "\t"));
-		if (!constraintDesc.isEmpty()) {
-			description.append('\n').append(constraintDesc);
-		}
-
-		return description.toString();
+	public String asString(T value) {
+		return valueSerializer != null ? valueSerializer.asString(value) : value.toString();
 	}
 
 	@Override
@@ -224,13 +121,4 @@ public class ValueConfigEntry<T> extends AbstractBasicEntry<ValueConfigEntry<T>>
 			valueSerializer.write(buf, currentValue.get());
 	}
 
-	public ValueConfigEntry<T> setReloadListener(Consumer<T> listener) {
-		this.reloadListener = listener;
-		return this;
-	}
-
-    public void onReload() {
-		if(reloadListener != null)
-			reloadListener.accept(currentValue.get());
-	}
 }
