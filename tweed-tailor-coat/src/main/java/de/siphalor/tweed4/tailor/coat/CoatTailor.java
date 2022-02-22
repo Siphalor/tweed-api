@@ -54,6 +54,7 @@ import java.util.function.Supplier;
 
 public class CoatTailor extends ScreenTailor {
 	private static final String TRANSLATION_PREFIX = "tweed4_tailor_screen.screen.";
+	private static final String ENUM_TRANSLATION_PREFIX = "tweed4_tailor_screen.enum.";
 	private static final DirectListMultimap<Class<?>, TweedCoatEntryProcessor<?>, LinkedList<TweedCoatEntryProcessor<?>>> CONVERTERS =
 			new DirectListMultimap<>(new HashMap<>(), LinkedList::new);
 
@@ -200,28 +201,52 @@ public class CoatTailor extends ScreenTailor {
 
 	static {
 		registerConverter(String.class, (parentWidget, configEntry, path) -> {
-			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue());
+			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getMainConfigValue());
 			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput));
 			return true;
 		});
 
 		registerConverter(Boolean.class, (parentWidget, configEntry, path) -> {
-			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getValue(), false)));
+			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getMainConfigValue(), false)));
 			return true;
 		});
 
 		registerConverter(StaticStringConvertible.class, (parentWidget, configEntry, path) -> {
-			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue().asString());
+			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getMainConfigValue().asString());
 			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput, new ConvertingConfigEntryHandler<>(
 					configEntry, StaticStringConvertible::asString, input -> wrapExceptions(() -> configEntry.getDefaultValue().valueOf(input))
 			)));
 			return true;
 		});
 
+
+		registerConverter(Enum.class, (parentWidget, configEntry, path) -> {
+			//noinspection rawtypes
+			Class<Enum> type = configEntry.getType();
+			String enumTranslationKey = ENUM_TRANSLATION_PREFIX + type.getPackage().getName() + "." + type.getSimpleName() + ".";
+			//noinspection rawtypes
+			CoatDropdownSelectInput<Enum> input = new CoatDropdownSelectInput<>(
+					configEntry.getMainConfigValue(),
+					type.getEnumConstants(),
+					val -> {
+						String key = enumTranslationKey + val.name();
+						if (I18n.hasTranslation(key)) {
+							return new TranslatableText(key);
+						} else {
+							return new LiteralText(val.name());
+						}
+					}
+			);
+			//noinspection rawtypes
+			ConfigListConfigEntry<Enum> entry = convertSimpleConfigEntry(configEntry, path, input);
+			input.setParent(entry);
+			parentWidget.addEntry(entry);
+			return true;
+		});
 		registerConverter(DropdownMaterial.class,(parentWidget, configEntry, path) -> {
 			//noinspection rawtypes,unchecked,SimplifyStreamApiCallChains
 			CoatDropdownSelectInput<DropdownMaterial> input = new CoatDropdownSelectInput<>(
-					configEntry.getValue(),
+					configEntry.getMainConfigValue(),
 					(DropdownMaterial[]) configEntry.getDefaultValue().values().stream().toArray(DropdownMaterial[]::new),
 					val -> new TranslatableText(val.getTranslationKey()));
 			//noinspection rawtypes
