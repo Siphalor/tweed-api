@@ -200,18 +200,18 @@ public class CoatTailor extends ScreenTailor {
 
 	static {
 		registerConverter(String.class, (parentWidget, configEntry, path) -> {
-			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue());
+			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getMainConfigValue());
 			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput));
 			return true;
 		});
 
 		registerConverter(Boolean.class, (parentWidget, configEntry, path) -> {
-			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getValue(), false)));
+			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getMainConfigValue(), false)));
 			return true;
 		});
 
 		registerConverter(StaticStringConvertible.class, (parentWidget, configEntry, path) -> {
-			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getValue().asString());
+			TextConfigInput textConfigInput = new TextConfigInput(configEntry.getMainConfigValue().asString());
 			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, textConfigInput, new ConvertingConfigEntryHandler<>(
 					configEntry, StaticStringConvertible::asString, input -> wrapExceptions(() -> configEntry.getDefaultValue().valueOf(input))
 			)));
@@ -221,7 +221,7 @@ public class CoatTailor extends ScreenTailor {
 		registerConverter(DropdownMaterial.class,(parentWidget, configEntry, path) -> {
 			//noinspection rawtypes,unchecked,SimplifyStreamApiCallChains
 			CoatDropdownSelectInput<DropdownMaterial> input = new CoatDropdownSelectInput<>(
-					configEntry.getValue(),
+					configEntry.getMainConfigValue(),
 					(DropdownMaterial[]) configEntry.getDefaultValue().values().stream().toArray(DropdownMaterial[]::new),
 					val -> new TranslatableText(val.getTranslationKey()));
 			//noinspection rawtypes
