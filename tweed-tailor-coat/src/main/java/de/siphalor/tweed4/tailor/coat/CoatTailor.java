@@ -54,6 +54,7 @@ import java.util.function.Supplier;
 
 public class CoatTailor extends ScreenTailor {
 	private static final String TRANSLATION_PREFIX = "tweed4_tailor_screen.screen.";
+	private static final String ENUM_TRANSLATION_PREFIX = "tweed4_tailor_screen.enum.";
 	private static final DirectListMultimap<Class<?>, TweedCoatEntryProcessor<?>, LinkedList<TweedCoatEntryProcessor<?>>> CONVERTERS =
 			new DirectListMultimap<>(new HashMap<>(), LinkedList::new);
 
@@ -218,6 +219,30 @@ public class CoatTailor extends ScreenTailor {
 			return true;
 		});
 
+
+		registerConverter(Enum.class, (parentWidget, configEntry, path) -> {
+			//noinspection rawtypes
+			Class<Enum> type = configEntry.getType();
+			String enumTranslationKey = ENUM_TRANSLATION_PREFIX + type.getPackage().getName() + "." + type.getSimpleName() + ".";
+			//noinspection rawtypes
+			CoatDropdownSelectInput<Enum> input = new CoatDropdownSelectInput<>(
+					configEntry.getMainConfigValue(),
+					type.getEnumConstants(),
+					val -> {
+						String key = enumTranslationKey + val.name();
+						if (I18n.hasTranslation(key)) {
+							return new TranslatableText(key);
+						} else {
+							return new LiteralText(val.name());
+						}
+					}
+			);
+			//noinspection rawtypes
+			ConfigListConfigEntry<Enum> entry = convertSimpleConfigEntry(configEntry, path, input);
+			input.setParent(entry);
+			parentWidget.addEntry(entry);
+			return true;
+		});
 		registerConverter(DropdownMaterial.class,(parentWidget, configEntry, path) -> {
 			//noinspection rawtypes,unchecked,SimplifyStreamApiCallChains
 			CoatDropdownSelectInput<DropdownMaterial> input = new CoatDropdownSelectInput<>(
