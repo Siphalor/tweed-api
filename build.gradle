@@ -169,7 +169,6 @@ subprojects {
 	// configure the maven publication
 	publishing {
 		publications.create(projectId, MavenPublication.class, {
-			version = "$project.version+mc$minecraft_version"
 			artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
 
 			from components.java
