@@ -82,6 +82,8 @@ allprojects {
 }
 
 subprojects {
+	project.version = "$project.version+mc$project.minecraft_version"
+
 	// Fix for Loom 0.10 transitive dependency mess: https://discord.com/channels/507304429255393322/842691768175951942/908391237806096444
 	configurations {
 		namedElements.extendsFrom implementation, api
