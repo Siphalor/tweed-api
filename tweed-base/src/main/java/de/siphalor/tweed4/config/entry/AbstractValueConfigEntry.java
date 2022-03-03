@@ -21,7 +21,6 @@ import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.value.ConfigValue;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -83,9 +82,8 @@ public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<
 
 	@Override
 	public void reset(ConfigEnvironment environment, ConfigScope scope) {
-		T defClone = ObjectUtils.clone(defaultValue);
-		setValue(defClone);
-		setMainConfigValue(defClone);
+		setValue(defaultValue);
+		setMainConfigValue(defaultValue);
 	}
 
 	/**
