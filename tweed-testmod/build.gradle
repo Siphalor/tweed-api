@@ -10,6 +10,7 @@ dependencies {
 	modRuntimeOnly("com.github.astei:lazydfu:master-SNAPSHOT")
 	modRuntimeOnly("de.siphalor:coat-$minecraft_major_version:$coat_version") {
 		exclude group: "net.fabricmc.fabric-api"
+		exclude module: "amecsapi-$minecraft_major_version"
 	}
 	modRuntimeOnly("com.terraformersmc:modmenu:$mod_menu_version") {
 		exclude group: "net.fabricmc.fabric-api"
