@@ -6,12 +6,6 @@
 	],
 	"commands": [
 		{
-			"title": "Cleanup",
-			"run": "rm -rf .gradle build",
-			"nt": "rmdir /S /Q .gradle & rmdir /S /Q build",
-			"ignore-errors": true
-		},
-		{
 			"title": "Build & Publish",
 			"run": "./gradlew build publish",
 			"nt": "gradlew build publish"
