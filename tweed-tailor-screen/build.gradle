@@ -1,7 +1,7 @@
 dependencies {
 	implementation project(path: ":tweed-base", configuration: "namedElements")
 
-	modImplementation "net.fabricmc.fabric-api:fabric-networking-api-v1:$project.fabric_api_networking"
+	modImplementation fabricApi.module("fabric-networking-api-v1", fabric_version)
 	modImplementation("com.terraformersmc:modmenu:$mod_menu_version") {
 		exclude group: "net.fabricmc.fabric-api"
 	}
