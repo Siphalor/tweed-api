@@ -39,14 +39,24 @@ public abstract class ScreenTailor extends Tailor {
 	}
 
 	protected Screen syncAndCreateScreen(Collection<ConfigFile> configFiles, ScreenTailorScreenFactory<?> screenFactory, Screen parentScreen) {
-		boolean inGame = MinecraftClient.getInstance().world != null;
-		List<ConfigFile> syncFiles = new ArrayList<>();
-		for (ConfigFile configFile : configFiles) {
-			if (configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
-				syncFiles.add(configFile);
+		MinecraftClient client = MinecraftClient.getInstance();
+
+		sync:
+		if (client.world != null) {
+			if (!ClientPlayNetworking.canSend(Tweed.REQUEST_SYNC_C2S_PACKET)) {
+				break sync;
 			}
-		}
-		if (inGame && !syncFiles.isEmpty()) {
+
+			List<ConfigFile> syncFiles = new ArrayList<>();
+			for (ConfigFile configFile : configFiles) {
+				if (configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
+					syncFiles.add(configFile);
+				}
+			}
+			if (syncFiles.isEmpty()) {
+				break sync;
+			}
+
 			AtomicReference<List<ConfigFile>> awaitedSyncs = new AtomicReference<>(syncFiles);
 			return new CustomNoticeScreen(
 					() -> {
@@ -68,20 +78,20 @@ public abstract class ScreenTailor extends Tailor {
 							});
 							List<ConfigFile> captured = awaitedSyncs.get();
 							if (captured != null && captured.isEmpty()) {
-								MinecraftClient.getInstance().openScreen(screenFactory.create(parentScreen));
+								client.openScreen(screenFactory.create(parentScreen));
 							}
 						});
 					},
 					() -> {
 						awaitedSyncs.set(null);
-						MinecraftClient.getInstance().openScreen(parentScreen);
+						client.openScreen(parentScreen);
 					},
 					new TranslatableText("tweed4_tailor_screen.syncFromServer"),
 					new TranslatableText("tweed4_tailor_screen.syncFromServer.note")
 			);
-		} else {
-			return screenFactory.create(parentScreen);
 		}
+
+		return screenFactory.create(parentScreen);
 	}
 
 	protected void save(ConfigFile configFile) {
