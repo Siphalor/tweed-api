@@ -28,36 +28,52 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.TranslatableText;
 
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class ScreenTailor extends Tailor {
-	protected boolean waitingForFile = false;
-
 	public abstract Map<String, ScreenTailorScreenFactory<?>> getScreenFactories();
 
-	protected Screen syncAndCreateScreen(ConfigFile configFile, ScreenTailorScreenFactory<?> screenFactory, Screen parentScreen) {
+	protected Screen syncAndCreateScreen(ConfigFile configFile, ScreenTailorScreenFactory<?> screenFactory, Screen parent) {
+		return syncAndCreateScreen(Collections.singletonList(configFile), screenFactory, parent);
+	}
+
+	protected Screen syncAndCreateScreen(Collection<ConfigFile> configFiles, ScreenTailorScreenFactory<?> screenFactory, Screen parentScreen) {
 		boolean inGame = MinecraftClient.getInstance().world != null;
-		if (inGame && configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
+		List<ConfigFile> syncFiles = new ArrayList<>();
+		for (ConfigFile configFile : configFiles) {
+			if (configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
+				syncFiles.add(configFile);
+			}
+		}
+		if (inGame && !syncFiles.isEmpty()) {
+			AtomicReference<List<ConfigFile>> awaitedSyncs = new AtomicReference<>(syncFiles);
 			return new CustomNoticeScreen(
 					() -> {
-						waitingForFile = true;
-
 						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-						buf.writeString(configFile.getName());
-						buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
-						buf.writeEnumConstant(ConfigScope.SMALLEST);
-						buf.writeEnumConstant(ConfigOrigin.MAIN);
+						for (ConfigFile syncFile : syncFiles) {
+							buf.writeString(syncFile.getName());
+							buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
+							buf.writeEnumConstant(ConfigScope.SMALLEST);
+							buf.writeEnumConstant(ConfigOrigin.MAIN);
+						}
 						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
 
-						TweedClient.setSyncRunnable(() -> {
-							if (waitingForFile) {
-								waitingForFile = false;
+						TweedClient.setSyncRunnable(file -> {
+							awaitedSyncs.getAndUpdate(files -> {
+								if (files != null) {
+									files.remove(file);
+								}
+								return files;
+							});
+							List<ConfigFile> captured = awaitedSyncs.get();
+							if (captured != null && captured.isEmpty()) {
 								MinecraftClient.getInstance().openScreen(screenFactory.create(parentScreen));
 							}
 						});
 					},
 					() -> {
-						waitingForFile = false;
+						awaitedSyncs.set(null);
 						MinecraftClient.getInstance().openScreen(parentScreen);
 					},
 					new TranslatableText("tweed4_tailor_screen.syncFromServer"),
