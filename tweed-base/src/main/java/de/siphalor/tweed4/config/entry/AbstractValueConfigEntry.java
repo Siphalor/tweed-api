@@ -43,7 +43,6 @@ public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<
 	public AbstractValueConfigEntry(ConfigValue<T> configValue) {
 		this.constraints = new ConcurrentLinkedQueue<>();
 		this.currentValue = configValue;
-		this.environment = ConfigEnvironment.UNIVERSAL;
 	}
 
 	public T getValue() {

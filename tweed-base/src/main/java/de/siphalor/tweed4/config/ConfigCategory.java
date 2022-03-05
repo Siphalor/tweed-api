@@ -28,8 +28,8 @@ import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -89,37 +89,60 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	@Override
 	public ConfigCategory setEnvironment(ConfigEnvironment environment) {
 		super.setEnvironment(environment);
-        entries.values().stream().filter(configEntry -> configEntry.getEnvironment() == ConfigEnvironment.DEFAULT).forEach(configEntry -> configEntry.setEnvironment(environment));
+		for (ConfigEntry<?> configEntry : entries.values()) {
+			if (configEntry.getEnvironment() == ConfigEnvironment.DEFAULT) {
+				configEntry.setEnvironment(environment);
+			}
+		}
 		return this;
 	}
 
 	@Override
 	public ConfigEnvironment getEnvironment() {
-		if (environment == ConfigEnvironment.DEFAULT) {
-			return ConfigEnvironment.DEFAULT;
-		}
 		if (entries.isEmpty()) return environment;
-		Iterator<ConfigEntry<?>> iterator = entries.values().iterator();
-		ConfigEnvironment environment = iterator.next().getEnvironment();
-		while (iterator.hasNext()) {
-			ConfigEnvironment itEnvironment = iterator.next().getEnvironment();
-            while (!environment.contains(itEnvironment))
-            	environment = environment.parent;
+		ConfigEnvironment environment = this.environment;
+		for (ConfigEntry<?> configEntry : entries.values()) {
+			ConfigEnvironment itEnvironment = configEntry.getEnvironment();
+			if (environment == ConfigEnvironment.DEFAULT) {
+				environment = itEnvironment;
+				continue;
+			}
+			while (!environment.contains(itEnvironment) && environment.parent != null) {
+				environment = environment.parent;
+			}
 		}
+		return environment;
+	}
+
+	@ApiStatus.Internal
+	public ConfigEnvironment getOwnEnvironment() {
 		return environment;
 	}
 
 	@Override
 	public ConfigCategory setScope(ConfigScope scope) {
 		super.setScope(scope);
-		entries.values().stream().filter(configEntry -> configEntry.getScope() == ConfigScope.DEFAULT).forEach(configEntry -> configEntry.setScope(scope));
+		for (ConfigEntry<?> configEntry : entries.values()) {
+			if (configEntry.getScope() == ConfigScope.DEFAULT) {
+				configEntry.setScope(scope);
+			}
+		}
 		return this;
 	}
 
 	@Override
 	public ConfigScope getScope() {
+		// In this context this finds the highest scope (the scope that trigger most of the other scopes).
 		if(entries.isEmpty()) return scope;
-		return entries.values().stream().map(ConfigEntry::getScope).min((o1, o2) -> o1 == o2 ? 0 : (o1.triggers(o2) ? -1 : 1)).get();
+
+		ConfigScope highest = scope;
+		for (ConfigEntry<?> entry : this.entries.values()) {
+			ConfigScope entryScope = entry.getScope();
+			if (entryScope != highest && entryScope.triggers(highest)) {
+				highest = entryScope;
+			}
+		}
+		return highest;
 	}
 
 	@Override
