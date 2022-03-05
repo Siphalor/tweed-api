@@ -21,15 +21,13 @@ import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.value.ConfigValue;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<S> {
 	protected T defaultValue;
@@ -140,18 +138,20 @@ public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<
 		StringBuilder description = new StringBuilder();
 		if(comment.length() > 0)
 			description.append(getComment()).append(System.lineSeparator());
-		description.append("default: ").append(asString(defaultValue));
+		description.append("default: ").append(asString(defaultValue)).append('\n');
 
-		String constraintDesc = constraints.stream().flatMap(constraint -> {
-			String desc = constraint.getDescription();
-			if (desc.isEmpty())
-				return Stream.empty();
-			return Arrays.stream(desc.split("\n"));
-		}).collect(Collectors.joining(System.lineSeparator() + "\t"));
-		if (!constraintDesc.isEmpty()) {
-			description.append('\n').append(constraintDesc);
+		for (Constraint<T> constraint : constraints) {
+			String constraintDesc = constraint.getDescription();
+			if (constraintDesc.isEmpty()) {
+				continue;
+			}
+			for (String line : StringUtils.split(constraintDesc, '\n')) {
+				description.append('\t');
+				description.append(line);
+				description.append('\n');
+			}
 		}
 
-		return description.toString();
+		return description.toString().trim();
 	}
 }
