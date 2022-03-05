@@ -155,10 +155,11 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
 		while(buf.readBoolean()) {
 			ConfigEntry<?> entry = entries.get(buf.readString(32767));
-			if(entry != null)
+			if (entry != null) {
 				entry.read(buf, environment, scope, origin);
-			else
+			} else {
 				throw new RuntimeException("Attempt to sync unknown entry! Aborting.");
+			}
 		}
 		onReload();
 	}
