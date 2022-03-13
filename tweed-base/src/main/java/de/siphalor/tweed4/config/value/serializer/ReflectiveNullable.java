@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * Marks a field used in reflective serialization as nullable.
  * @since 1.3.0
  */
-@Target(ElementType.FIELD)
+@Target(value = {ElementType.FIELD, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReflectiveNullable {
 }
