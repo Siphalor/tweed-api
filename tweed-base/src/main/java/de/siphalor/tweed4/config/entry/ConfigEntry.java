@@ -30,7 +30,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.PacketByteBuf;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -126,7 +127,16 @@ public interface ConfigEntry<T> {
 	String getDescription();
 
 	default Optional<Text[]> getClothyDescription() {
-		return Optional.of(Arrays.stream(getDescription().replace("\t", "    ").split("[\n\r]\r?")).map(LiteralText::new).toArray(Text[]::new));
+		List<LiteralText> list = new ArrayList<>();
+		for (String s : getDescription().replace("\t", "    ").split("[\n\r]\r?")) {
+			LiteralText literalText = new LiteralText(s);
+			list.add(literalText);
+		}
+		if (list.isEmpty()) {
+			return Optional.empty();
+		} else {
+			return Optional.of(list.toArray(new Text[0]));
+		}
 	}
 
 	/**
