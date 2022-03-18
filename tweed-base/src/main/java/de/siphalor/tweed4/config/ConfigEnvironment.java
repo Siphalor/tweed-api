@@ -43,6 +43,11 @@ public enum ConfigEnvironment {
         return false;
 	}
 
+	/**
+	 * Checks if this environment triggers updates in the other one.
+	 * @param other Another environment.
+	 * @return Whether an update would be propagated.
+	 */
 	public boolean triggers(ConfigEnvironment other) {
 		if (other == UNIVERSAL)
 			return true;
