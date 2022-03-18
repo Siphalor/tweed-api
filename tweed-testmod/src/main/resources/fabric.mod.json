@@ -10,6 +10,9 @@
     "license": "Apache-2.0",
     "environment": "*",
     "entrypoints": {
+		"tweed4:init": [
+			"de.siphalor.tweedtest.TweedTestmodInitializer"
+		],
         "tweed4:config": [
             "de.siphalor.tweedtest.Config"
         ]
