@@ -19,10 +19,8 @@ package de.siphalor.tweedtest;
 import de.siphalor.tweed4.config.ConfigCategory;
 import de.siphalor.tweed4.config.ConfigFile;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
-import de.siphalor.tweed4.config.value.SimpleConfigValue;
 import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.data.hjson.HjsonSerializer;
-import de.siphalor.tweed4.patterns.PatternListConfigEntry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,11 +35,6 @@ public class TraditionalConfig {
 	public static final ValueConfigEntry<List<Float>> RATIOS = ROOT.register("ratios", new ValueConfigEntry<>(
 			Arrays.asList(12.12f, 45.45f),
 			ConfigSerializers.createList(ConfigSerializers.getFloat(), ArrayList::new)
-	));
-	public static final PatternListConfigEntry<String> PATTERNED = ROOT.register("patterned", new PatternListConfigEntry<>(
-			new SimpleConfigValue<>(Arrays.asList("abc", "def")),
-			ConfigSerializers.getString(),
-			"tweed_testmod_traditional/patterned"
 	));
 
 	public static final ConfigFile FILE = new ConfigFile("tweed_testmod_traditional", HjsonSerializer.INSTANCE, ROOT);
