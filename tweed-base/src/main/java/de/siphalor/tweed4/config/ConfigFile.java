@@ -64,7 +64,7 @@ public class ConfigFile {
 	@ApiStatus.Internal
 	public ConfigFile(String name, ConfigDataSerializer<?, ?, ?> dataSerializer, ConfigCategory rootCategory) {
 		this.name = name;
-		this.rootCategory = rootCategory;
+		setRootCategory(rootCategory);
 		this.dataSerializer = dataSerializer;
 		configEntryFixers = new ConcurrentLinkedQueue<>();
 	}
@@ -129,6 +129,9 @@ public class ConfigFile {
 	 */
 	public void setRootCategory(ConfigCategory rootCategory) {
 		this.rootCategory = rootCategory;
+		if (rootCategory.getOwnEnvironment() == ConfigEnvironment.DEFAULT) {
+			rootCategory.setEnvironment(ConfigEnvironment.UNIVERSAL);
+		}
 	}
 
 	/**

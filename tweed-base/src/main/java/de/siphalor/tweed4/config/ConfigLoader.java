@@ -22,6 +22,7 @@ import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +34,8 @@ import java.util.List;
  * Used to reload the {@link ConfigFile}s.
  */
 public final class ConfigLoader {
+	private static ThreadLocal<ResourceManager> currentResourceManager = new ThreadLocal<>();
+
 	public static void initialReload(ConfigEnvironment configEnvironment) {
 		for (ConfigFile configFile : TweedRegistry.getConfigFiles()) {
 			configFile.load(readMainConfigFile(configFile).asObject(), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
@@ -48,6 +51,7 @@ public final class ConfigLoader {
 	 * @param scope the definition scope
 	 */
 	public static void loadConfigs(ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
+		currentResourceManager.set(resourceManager);
 		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
 		for(ConfigFile configFile : configFiles) {
 			configFile.reset(environment, scope);
@@ -64,6 +68,16 @@ public final class ConfigLoader {
 				configFile.syncToClients(ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
 			}
 		}
+		currentResourceManager.set(null);
+	}
+
+	/**
+	 * Get the resource manager that's currently in use for reloading.
+	 * @return The resource manager in use on this thread
+	 */
+	@ApiStatus.Experimental
+	public static ResourceManager getCurrentResourceManager() {
+		return currentResourceManager.get();
 	}
 
 	/**
