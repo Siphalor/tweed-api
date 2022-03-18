@@ -18,6 +18,7 @@ package de.siphalor.tweed4.config;
 
 import com.mojang.serialization.Lifecycle;
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.data.DataSerializer;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
 import net.minecraft.util.Identifier;
@@ -27,6 +28,9 @@ import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Used to register {@link ConfigFile}s.
@@ -35,6 +39,8 @@ import java.util.ArrayList;
 public class TweedRegistry {
 	private static final ArrayList<ConfigFile> CONFIG_FILES = new ArrayList<>();
 	private static ConfigDataSerializer<?, ?, ?> defaultSerializer;
+	private static int serializerByExtensionSerializersHash;
+	private static Map<String, DataSerializer<?, ?, ?>> serializersByExtension;
 
 	/**
 	 * This registry contains all of the known {@link ConfigDataSerializer}s.<br />
@@ -80,6 +86,23 @@ public class TweedRegistry {
 	 */
 	public static ArrayList<ConfigFile> getConfigFiles() {
 		return CONFIG_FILES;
+	}
+
+	public static Map<String, DataSerializer<?, ?, ?>> getSerializersByExtension() {
+		Set<Map.Entry<RegistryKey<ConfigDataSerializer<?, ?, ?>>, ConfigDataSerializer<?, ?, ?>>> entries = SERIALIZERS.getEntries();
+		int entriesHash = entries.hashCode();
+		if (serializersByExtension != null && serializerByExtensionSerializersHash == entriesHash) {
+			return serializersByExtension;
+		}
+
+		serializersByExtension = new HashMap<>();
+		for (Map.Entry<RegistryKey<ConfigDataSerializer<?, ?, ?>>, ConfigDataSerializer<?, ?, ?>> entry : entries) {
+			if (entry.getValue() instanceof DataSerializer) {
+				serializersByExtension.put(entry.getValue().getFileExtension(), ((DataSerializer<?, ?, ?>) entry.getValue()));
+			}
+		}
+		serializerByExtensionSerializersHash = entriesHash;
+		return serializersByExtension;
 	}
 
 	/**
