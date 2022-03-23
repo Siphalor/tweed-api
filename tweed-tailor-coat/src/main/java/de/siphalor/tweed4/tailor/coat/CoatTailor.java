@@ -266,17 +266,19 @@ public class CoatTailor extends ScreenTailor {
 		TweedCoatEntryProcessor<Number> numberEntryProcessor = (parentWidget, configEntry, path) -> {
 			for (Constraint<Number> constraint : configEntry.getConstraints()) {
 				if (constraint instanceof RangeConstraint) {
-					parentWidget.addEntry(convertSimpleConfigEntry(
-							configEntry,
-							path,
-							new SliderConfigInput<>(
-									configEntry.getMainConfigValue(),
-									((RangeConstraint<Number>) constraint).getMin(),
-									((RangeConstraint<Number>) constraint).getMax()
-							),
-							new SimpleConfigEntryHandler<>(configEntry)
-					));
-					return true;
+					if (((RangeConstraint<Number>) constraint).hasRealBounds()) {
+						parentWidget.addEntry(convertSimpleConfigEntry(
+								configEntry,
+								path,
+								new SliderConfigInput<>(
+										configEntry.getMainConfigValue(),
+										((RangeConstraint<Number>) constraint).getMin(),
+										((RangeConstraint<Number>) constraint).getMax()
+								),
+								new SimpleConfigEntryHandler<>(configEntry)
+						));
+						return true;
+					}
 				}
 			}
 			return false;
