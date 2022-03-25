@@ -90,7 +90,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	public ConfigCategory setEnvironment(ConfigEnvironment environment) {
 		super.setEnvironment(environment);
 		for (ConfigEntry<?> configEntry : entries.values()) {
-			if (configEntry.getEnvironment() == ConfigEnvironment.DEFAULT) {
+			if (configEntry.getOwnEnvironment() == ConfigEnvironment.DEFAULT) {
 				configEntry.setEnvironment(environment);
 			}
 		}
@@ -114,6 +114,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		return environment;
 	}
 
+	@Override
 	@ApiStatus.Internal
 	public ConfigEnvironment getOwnEnvironment() {
 		return environment;
