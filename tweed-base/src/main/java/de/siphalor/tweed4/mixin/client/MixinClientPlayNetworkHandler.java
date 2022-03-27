@@ -36,6 +36,9 @@ public class MixinClientPlayNetworkHandler {
 	@Inject(method = "onGameJoin", at = @At("RETURN"), require = 0)
 	public void onGameJoined(GameJoinS2CPacket packet, CallbackInfo callbackInfo) {
 		for (ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
+			if (!configFile.getRootCategory().matches(ConfigEnvironment.SYNCED, null)) {
+				continue;
+			}
 			Tweed.LOGGER.info("Requested config sync for " + configFile.getName());
 			PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
 			packetByteBuf.writeString(configFile.getName());
