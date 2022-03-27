@@ -48,7 +48,7 @@ public class TweedClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-        ConfigLoader.initialReload(ConfigEnvironment.UNIVERSAL);
+		ConfigLoader.initialReload(ConfigEnvironment.UNIVERSAL);
 
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
@@ -72,17 +72,32 @@ public class TweedClient implements ClientModInitializer {
 
 		ClientPlayNetworking.registerGlobalReceiver(Tweed.CONFIG_SYNC_S2C_PACKET, (client, handler, packetByteBuf, packetSender) -> {
 			ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);
-			String fileName = packetByteBuf.readString();
-            for(ConfigFile configFile : TweedRegistry.getConfigFiles()) {
-            	if(configFile.getName().equals(fileName)) {
-					configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
+			String name = packetByteBuf.readString();
 
+			if (name.charAt(0) == '!') { // file not known to server
+				name = name.substring(1);
+				ConfigFile file = TweedRegistry.getConfigFile(name);
+				if (file == null) {
+					Tweed.LOGGER.error("Received negative config sync packet for unknown file {}.\n" +
+							"Please report to " + Tweed.MOD_ISSUES_URL, name);
+				} else {
 					if (syncRunnable != null) {
-						syncRunnable.accept(configFile);
-						syncRunnable = null;
+						syncRunnable.accept(file);
 					}
-					break;
 				}
+				return;
+			}
+
+			ConfigFile configFile = TweedRegistry.getConfigFile(name);
+			if (configFile != null) {
+				configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
+
+				if (syncRunnable != null) {
+					syncRunnable.accept(configFile);
+					syncRunnable = null;
+				}
+			} else {
+				Tweed.LOGGER.info("Skipping config sync packet for unknown config file {}", name);
 			}
 		});
 	}

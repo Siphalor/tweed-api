@@ -95,12 +95,25 @@ public interface ConfigEntry<T> {
 	T setEnvironment(ConfigEnvironment environment);
 
 	/**
-	 * Gets the environment where this entry can be defined in.
+	 * Gets the environment where this entry will be loaded in.
+	 * This will be used to decide whether this entry's methods should be called or not.
+	 * If the entry is a composite entry, this is usually the combined environment of all its children.
 	 * @return the environment
+	 * @deprecated the returned environment may be inconsistent for composite entries.
+	 *             Use {@link #getOwnEnvironment()} or {@link #matches(ConfigEnvironment, ConfigScope)} instead.
 	 */
-	ConfigEnvironment getEnvironment();
+	@Deprecated
+	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
+	default ConfigEnvironment getEnvironment() {
+		return ConfigEnvironment.DEFAULT;
+	}
 
-	@ApiStatus.Internal
+	/**
+	 * Gets the actual environment of the entry itself.
+	 * For composite entries this must always deliver the internal environment of the entry,
+	 * which is usually {@link ConfigEnvironment#DEFAULT} by default.
+	 * @return the environment of the entry itself
+	 */
 	default ConfigEnvironment getOwnEnvironment() {
 		return getEnvironment();
 	}
@@ -118,6 +131,19 @@ public interface ConfigEntry<T> {
 	 * @return the scope
 	 */
 	ConfigScope getScope();
+
+	/**
+	 * Checks whether this entry is triggered by the given environment and scope.
+	 * This should be overridden by composite entries to check whether any entry is triggered by the given environment and scope.
+	 * @param environment the environment to check
+	 * @param scope the scope to check
+	 * @return whether the entry is triggered by the given environment and scope
+	 */
+	@ApiStatus.AvailableSince("1.5.0")
+	default boolean matches(ConfigEnvironment environment, ConfigScope scope) {
+		return (environment == null || environment.triggers(getOwnEnvironment()))
+				&& (scope == null || scope.triggers(getScope()));
+	}
 
 	/**
 	 * May set the comment string that describes the entry to the user.

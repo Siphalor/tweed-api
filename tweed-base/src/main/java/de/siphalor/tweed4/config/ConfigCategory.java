@@ -49,7 +49,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	 */
 	public <T extends ConfigEntry<?>> T register(String name, T configEntry) {
 		entries.put(name, configEntry);
-		if(configEntry.getEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
+		if(configEntry.getOwnEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
 		if(configEntry.getScope() == ConfigScope.DEFAULT) configEntry.setScope(scope);
 		return configEntry;
 	}
@@ -97,7 +97,12 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		return this;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
+	@Deprecated
+	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
 	public ConfigEnvironment getEnvironment() {
 		if (entries.isEmpty()) return environment;
 		ConfigEnvironment environment = this.environment;
@@ -111,12 +116,6 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 				environment = environment.parent;
 			}
 		}
-		return environment;
-	}
-
-	@Override
-	@ApiStatus.Internal
-	public ConfigEnvironment getOwnEnvironment() {
 		return environment;
 	}
 
@@ -144,6 +143,16 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 			}
 		}
 		return highest;
+	}
+
+	@Override
+	public boolean matches(ConfigEnvironment environment, ConfigScope scope) {
+		for (ConfigEntry<?> entry : entries.values()) {
+			if (entry.matches(environment, scope)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -220,7 +229,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
-		return entryStream().filter(entry -> environment.triggers(entry.getValue().getEnvironment()) && scope.triggers(entry.getValue().getScope()));
+		return entryStream().filter(entry -> entry.getValue().matches(environment, scope));
 	}
 
 	public boolean isEmpty() {
