@@ -37,6 +37,7 @@ public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
 	public static Boolean aBoolean = true;
 
+	@AConfigEntry(environment = ConfigEnvironment.SYNCED, comment = "A synced boolean")
 	public static boolean primBool = false;
 
 	@AConfigExclude
