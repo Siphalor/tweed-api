@@ -27,7 +27,6 @@ import org.jetbrains.annotations.ApiStatus;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -37,7 +36,7 @@ public final class ConfigLoader {
 	private static ThreadLocal<ResourceManager> currentResourceManager = new ThreadLocal<>();
 
 	public static void initialReload(ConfigEnvironment configEnvironment) {
-		for (ConfigFile configFile : TweedRegistry.getConfigFiles()) {
+		for (ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
 			configFile.load(readMainConfigFile(configFile).asObject(), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
 			updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
 			configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
@@ -52,8 +51,7 @@ public final class ConfigLoader {
 	 */
 	public static void loadConfigs(ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
 		currentResourceManager.set(resourceManager);
-		Collection<ConfigFile> configFiles = TweedRegistry.getConfigFiles();
-		for(ConfigFile configFile : configFiles) {
+		for(ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
 			configFile.reset(environment, scope);
 			configFile.load(readMainConfigFile(configFile).asObject(), environment, scope, ConfigOrigin.MAIN);
             updateMainConfigFile(configFile, environment, scope);

@@ -49,7 +49,7 @@ public abstract class ScreenTailor extends Tailor {
 
 			List<ConfigFile> syncFiles = new ArrayList<>();
 			for (ConfigFile configFile : configFiles) {
-				if (configFile.getRootCategory().getEnvironment() != ConfigEnvironment.CLIENT) {
+				if (configFile.getRootCategory().matches(ConfigEnvironment.SERVER, null)) {
 					syncFiles.add(configFile);
 				}
 			}
