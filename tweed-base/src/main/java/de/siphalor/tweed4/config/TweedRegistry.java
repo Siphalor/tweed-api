@@ -27,17 +27,14 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Used to register {@link ConfigFile}s.
  */
 @SuppressWarnings("deprecation")
 public class TweedRegistry {
-	private static final ArrayList<ConfigFile> CONFIG_FILES = new ArrayList<>();
+	private static final Map<String, ConfigFile> CONFIG_FILES = new HashMap<>();
 	private static ConfigDataSerializer<?, ?, ?> defaultSerializer;
 	private static int serializerByExtensionSerializersHash;
 	private static Map<String, DataSerializer<?, ?, ?>> serializersByExtension;
@@ -65,8 +62,7 @@ public class TweedRegistry {
 	 */
 	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer<?, ?, ?> dataSerializer) {
         ConfigFile configFile = new ConfigFile(fileName, dataSerializer);
-        CONFIG_FILES.add(configFile);
-        return configFile;
+		return registerConfigFile(configFile);
 	}
 
 	/**
@@ -75,7 +71,12 @@ public class TweedRegistry {
 	 * @return The registered file
 	 */
 	public static ConfigFile registerConfigFile(ConfigFile file) {
-		CONFIG_FILES.add(file);
+		String name = file.getName();
+		if (CONFIG_FILES.containsKey(name)) {
+			Tweed.LOGGER.error("Config file with id '" + name + "' already registered!");
+			return null;
+		}
+		CONFIG_FILES.put(name, file);
 		return file;
 	}
 
@@ -83,9 +84,29 @@ public class TweedRegistry {
 	 * Gets a collection of all registered {@link ConfigFile}s.
 	 * @return a collection of {@link ConfigFile}s
 	 * @see #registerConfigFile(String, ConfigDataSerializer)
+	 * @deprecated use {@link #getAllConfigFiles()} instead
 	 */
+	@Deprecated
 	public static ArrayList<ConfigFile> getConfigFiles() {
-		return CONFIG_FILES;
+		return new ArrayList<>(CONFIG_FILES.values());
+	}
+
+	/**
+	 * Gets a collection of all registered {@link ConfigFile}s.
+	 * @return a collection of {@link ConfigFile}s
+	 * @see #registerConfigFile(String, ConfigDataSerializer)
+	 */
+	public static Collection<ConfigFile> getAllConfigFiles() {
+		return CONFIG_FILES.values();
+	}
+
+	/**
+	 * Gets a {@link ConfigFile} by its name.
+	 * @param name the name of the file
+	 * @return the {@link ConfigFile} or <code>null</code> if not found
+	 */
+	public static ConfigFile getConfigFile(String name) {
+		return CONFIG_FILES.get(name);
 	}
 
 	public static Map<String, DataSerializer<?, ?, ?>> getSerializersByExtension() {
