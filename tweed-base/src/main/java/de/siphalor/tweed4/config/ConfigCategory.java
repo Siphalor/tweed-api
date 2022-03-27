@@ -28,6 +28,7 @@ import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	 */
 	public <T extends ConfigEntry<?>> T register(String name, T configEntry) {
 		entries.put(name, configEntry);
-		if(configEntry.getEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
+		if(configEntry.getOwnEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
 		if(configEntry.getScope() == ConfigScope.DEFAULT) configEntry.setScope(scope);
 		return configEntry;
 	}
@@ -96,7 +97,12 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		return this;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
+	@Deprecated
+	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
 	public ConfigEnvironment getEnvironment() {
 		if (entries.isEmpty()) return environment;
 		ConfigEnvironment environment = this.environment;

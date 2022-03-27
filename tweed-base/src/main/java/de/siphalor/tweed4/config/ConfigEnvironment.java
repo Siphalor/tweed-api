@@ -16,6 +16,8 @@
 
 package de.siphalor.tweed4.config;
 
+import org.jetbrains.annotations.ApiStatus;
+
 /**
  * An enum which defines in which environment a config should be loaded.
  *
@@ -26,14 +28,18 @@ package de.siphalor.tweed4.config;
  * DEFAULT: only to be used internally
  */
 public enum ConfigEnvironment {
-	UNIVERSAL(null), CLIENT(UNIVERSAL), SERVER(UNIVERSAL), SYNCED(SERVER), DEFAULT(null);
+	UNIVERSAL(null), CLIENT(UNIVERSAL), SERVER(UNIVERSAL), SYNCED(null), DEFAULT(null);
 
+	@Deprecated
+	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
 	public final ConfigEnvironment parent;
 
 	ConfigEnvironment(ConfigEnvironment parent) {
 		this.parent = parent;
 	}
 
+	@Deprecated
+	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
 	public boolean contains(ConfigEnvironment other) {
         while(other != null) {
         	if(this == other)
@@ -49,8 +55,17 @@ public enum ConfigEnvironment {
 	 * @return Whether an update would be propagated.
 	 */
 	public boolean triggers(ConfigEnvironment other) {
-		if (other == UNIVERSAL)
+		if (this == other) {
 			return true;
-		return contains(other);
+		}
+		switch (this) {
+			case UNIVERSAL:
+				return true;
+			case CLIENT:
+			case SERVER:
+				return other == UNIVERSAL;
+		}
+
+		return false;
 	}
 }

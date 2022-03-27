@@ -61,15 +61,13 @@ public class ConfigCategoryTests {
 	}
 
 	@Test
+	@Deprecated
 	public void testGetEnvironment() {
 		ConfigCategory category = new ConfigCategory();
 
 		Assertions.assertEquals(ConfigEnvironment.DEFAULT, category.getEnvironment());
 
 		category.setEnvironment(ConfigEnvironment.SERVER);
-		Assertions.assertEquals(ConfigEnvironment.SERVER, category.getEnvironment());
-
-		category.register("b", new ValueConfigEntry<>(10).setEnvironment(ConfigEnvironment.SYNCED));
 		Assertions.assertEquals(ConfigEnvironment.SERVER, category.getEnvironment());
 
 		ValueConfigEntry<Integer> entry = category.register("a", new ValueConfigEntry<>(10).setEnvironment(ConfigEnvironment.CLIENT));
@@ -87,15 +85,15 @@ public class ConfigCategoryTests {
 		ConfigCategory category = new ConfigCategory();
 		ValueConfigEntry<Integer> entry = category.register("a", new ValueConfigEntry<>(10));
 
-		Assertions.assertEquals(ConfigEnvironment.DEFAULT, category.getEnvironment());
-		Assertions.assertEquals(ConfigEnvironment.DEFAULT, entry.getEnvironment());
+		Assertions.assertEquals(ConfigEnvironment.DEFAULT, category.getOwnEnvironment());
+		Assertions.assertEquals(ConfigEnvironment.DEFAULT, entry.getOwnEnvironment());
 
 		entry.setEnvironment(ConfigEnvironment.SYNCED);
 		category.setEnvironment(ConfigEnvironment.SERVER);
-		Assertions.assertEquals(ConfigEnvironment.SERVER, category.getEnvironment());
-		Assertions.assertEquals(ConfigEnvironment.SYNCED, entry.getEnvironment());
+		Assertions.assertEquals(ConfigEnvironment.SERVER, category.getOwnEnvironment());
+		Assertions.assertEquals(ConfigEnvironment.SYNCED, entry.getOwnEnvironment());
 
 		ValueConfigEntry<Integer> entry2 = category.register("b", new ValueConfigEntry<>(10));
-		Assertions.assertEquals(ConfigEnvironment.SERVER, entry2.getEnvironment());
+		Assertions.assertEquals(ConfigEnvironment.SERVER, entry2.getOwnEnvironment());
 	}
 }

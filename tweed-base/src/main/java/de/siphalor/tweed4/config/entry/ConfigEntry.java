@@ -99,8 +99,14 @@ public interface ConfigEntry<T> {
 	 * This will be used to decide whether this entry's methods should be called or not.
 	 * If the entry is a composite entry, this is usually the combined environment of all its children.
 	 * @return the environment
+	 * @deprecated the returned environment may be inconsistent for composite entries.
+	 *             Use {@link #getOwnEnvironment()} or {@link #matches(ConfigEnvironment, ConfigScope)} instead.
 	 */
-	ConfigEnvironment getEnvironment();
+	@Deprecated
+	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
+	default ConfigEnvironment getEnvironment() {
+		return ConfigEnvironment.DEFAULT;
+	}
 
 	/**
 	 * Gets the actual environment of the entry itself.
@@ -108,8 +114,6 @@ public interface ConfigEntry<T> {
 	 * which is usually {@link ConfigEnvironment#DEFAULT} by default.
 	 * @return the environment of the entry itself
 	 */
-	@ApiStatus.Internal
-	@ApiStatus.OverrideOnly
 	default ConfigEnvironment getOwnEnvironment() {
 		return getEnvironment();
 	}
@@ -135,8 +139,9 @@ public interface ConfigEntry<T> {
 	 * @param scope the scope to check
 	 * @return whether the entry is triggered by the given environment and scope
 	 */
+	@ApiStatus.AvailableSince("1.5.0")
 	default boolean matches(ConfigEnvironment environment, ConfigScope scope) {
-		return (environment == null || environment.triggers(getEnvironment()))
+		return (environment == null || environment.triggers(getOwnEnvironment()))
 				&& (scope == null || scope.triggers(getScope()));
 	}
 

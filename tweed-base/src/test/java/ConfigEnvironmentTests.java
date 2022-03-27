@@ -21,29 +21,33 @@ import org.junit.jupiter.api.Test;
 public class ConfigEnvironmentTests {
 	@Test
 	public void testTriggers() {
-		boolean[] expected = new boolean[] {
-				true,  true,  true,  true,  false,
-				true,  true,  false, false, false,
-				true,  false, true,  true,  false,
-				true,  false, false, true,  false,
-				true,  false, false, false, true,
+		Boolean[] expected = new Boolean[] {
+				true,  true,  true,  true,  true, // UNIVERSAL
+				true,  true,  false, false, null, // CLIENT
+				true,  false, true,  false, null, // SERVER
+				false, false, false, true,  null, // SYNCED
+				null,  null,  null,  null,  null, // DEFAULT
 		};
 		int i = 0;
 		for (ConfigEnvironment environment : ConfigEnvironment.values()) {
 			for (ConfigEnvironment other : ConfigEnvironment.values()) {
-				Assertions.assertEquals(expected[i++], environment.triggers(other), environment + " triggers " + other);
+				if (expected[i] != null) {
+					Assertions.assertEquals(expected[i], environment.triggers(other), environment + " triggers " + other);
+				}
+				i++;
 			}
 		}
 	}
 
 	@Test
+	@Deprecated
 	public void testContains() {
 		boolean[] expected = new boolean[] {
-				true,  true,  true,  true,  false,
-				false, true,  false, false, false,
-				false, false, true,  true,  false,
-				false, false, false, true,  false,
-				false, false, false, false, true,
+				true,  true,  true,  false, false, // UNIVERSAL
+				false, true,  false, false, false, // CLIENT
+				false, false, true,  false, false, // SERVER
+				false, false, false, true,  false, // SYNCED
+				false, false, false, false, true,  // DEFAULT
 		};
 		int i = 0;
 		for (ConfigEnvironment environment : ConfigEnvironment.values()) {

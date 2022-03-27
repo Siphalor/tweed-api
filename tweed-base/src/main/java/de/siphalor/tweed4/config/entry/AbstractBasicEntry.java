@@ -18,6 +18,7 @@ package de.siphalor.tweed4.config.entry;
 
 import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * An basic entry.
@@ -35,7 +36,12 @@ public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
 		return (T) this;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
+	@Deprecated
+	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
 	public ConfigEnvironment getEnvironment() {
 		return environment;
 	}
