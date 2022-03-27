@@ -16,6 +16,7 @@
 
 package de.siphalor.tweed4.config;
 
+import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.data.DataSerializer;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
@@ -24,10 +25,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,36 +33,41 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("deprecation")
 public class TweedRegistry {
-	private static final ArrayList<ConfigFile> CONFIG_FILES = new ArrayList<>();
+	private static final Map<String, ConfigFile> CONFIG_FILES = new HashMap<>();
 	private static ConfigDataSerializer<?, ?, ?> defaultSerializer;
 	private static int serializerByExtensionSerializersHash;
 	private static Map<String, DataSerializer<?, ?, ?>> serializersByExtension;
 
 	/**
-	 * This registry contains all of the known {@link ConfigDataSerializer}s.<br />
-	 * By default available serializers are <code>gson</code>, <code>hjson</code> and <code>jankson</code>.
+	 * This registry contains all the known {@link ConfigDataSerializer}s.<br />
 	 */
 	public static final Registry<ConfigDataSerializer<?, ?, ?>> SERIALIZERS = new SimpleRegistry<>();
 	/**
-	 * This registry contains all of the known {@link Tailor}s.<br />
-	 * By default only a serializer for the Cloth config UI is available as <code>tweed4:cloth</code>.
+	 * This registry contains all the known {@link Tailor}s.<br />
 	 */
 	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>();
 
+	/**
+	 * Registers a new {@link ConfigFile}.
+	 * The default serializer will be used (usually the HJSON serializer, if around).
+	 * @param fileName the file id which is used (without extension)
+	 * @return the new {@link ConfigFile}
+	 * @deprecated it is highly recommended to explicitly set the serializer with {@link #registerConfigFile(String, ConfigDataSerializer)}.
+	 */
+	@Deprecated
 	public static ConfigFile registerConfigFile(String fileName) {
 		return registerConfigFile(fileName, defaultSerializer);
 	}
 
 	/**
 	 * Registers a new {@link ConfigFile}.
-	 * @param fileName the file id which is used (no extension; no subdirectories for now)
+	 * @param fileName the file id which is used (without extension)
 	 * @param dataSerializer a serializer for this config file
 	 * @return the new {@link ConfigFile}
 	 */
 	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer<?, ?, ?> dataSerializer) {
         ConfigFile configFile = new ConfigFile(fileName, dataSerializer);
-        CONFIG_FILES.add(configFile);
-        return configFile;
+		return registerConfigFile(configFile);
 	}
 
 	/**
@@ -73,7 +76,12 @@ public class TweedRegistry {
 	 * @return The registered file
 	 */
 	public static ConfigFile registerConfigFile(ConfigFile file) {
-		CONFIG_FILES.add(file);
+		String name = file.getName();
+		if (CONFIG_FILES.containsKey(name)) {
+			Tweed.LOGGER.error("Config file with id '" + name + "' already registered!");
+			return null;
+		}
+		CONFIG_FILES.put(name, file);
 		return file;
 	}
 
@@ -81,11 +89,36 @@ public class TweedRegistry {
 	 * Gets a collection of all registered {@link ConfigFile}s.
 	 * @return a collection of {@link ConfigFile}s
 	 * @see #registerConfigFile(String, ConfigDataSerializer)
+	 * @deprecated use {@link #getAllConfigFiles()} instead
 	 */
+	@Deprecated
 	public static ArrayList<ConfigFile> getConfigFiles() {
-		return CONFIG_FILES;
+		return new ArrayList<>(CONFIG_FILES.values());
 	}
 
+	/**
+	 * Gets a collection of all registered {@link ConfigFile}s.
+	 * @return a collection of {@link ConfigFile}s
+	 * @see #registerConfigFile(String, ConfigDataSerializer)
+	 */
+	public static Collection<ConfigFile> getAllConfigFiles() {
+		return CONFIG_FILES.values();
+	}
+
+	/**
+	 * Gets a {@link ConfigFile} by its name.
+	 * @param name the name of the file
+	 * @return the {@link ConfigFile} or <code>null</code> if not found
+	 */
+	public static ConfigFile getConfigFile(String name) {
+		return CONFIG_FILES.get(name);
+	}
+
+	/**
+	 * Gets a map of all {@link DataSerializer}s by their file extension.
+	 * This is cached and will be updated if a new {@link DataSerializer} is registered.
+	 * @return a map of {@link DataSerializer}s by their file extension
+	 */
 	public static Map<String, DataSerializer<?, ?, ?>> getSerializersByExtension() {
 		Set<ConfigDataSerializer<?, ?, ?>> entries = SERIALIZERS.stream().collect(Collectors.toSet());
 		Set<Identifier> ids = SERIALIZERS.getIds();

@@ -39,7 +39,7 @@
         ]
     },
     "depends": {
-        "tweed4_base": "^1",
+        "tweed4_base": ">=1.5.0",
         "fabric-networking-api-v1": "*"
     }
 }
