@@ -41,6 +41,11 @@ public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
 	}
 
 	@Override
+	public final ConfigEnvironment getOwnEnvironment() {
+		return environment;
+	}
+
+	@Override
 	public T setScope(ConfigScope scope) {
 		this.scope = scope;
 		return (T) this;

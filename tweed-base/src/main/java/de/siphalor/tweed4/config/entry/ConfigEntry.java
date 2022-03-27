@@ -95,12 +95,21 @@ public interface ConfigEntry<T> {
 	T setEnvironment(ConfigEnvironment environment);
 
 	/**
-	 * Gets the environment where this entry can be defined in.
+	 * Gets the environment where this entry will be loaded in.
+	 * This will be used to decide whether this entry's methods should be called or not.
+	 * If the entry is a composite entry, this is usually the combined environment of all its children.
 	 * @return the environment
 	 */
 	ConfigEnvironment getEnvironment();
 
+	/**
+	 * Gets the actual environment of the entry itself.
+	 * For composite entries this must always deliver the internal environment of the entry,
+	 * which is usually {@link ConfigEnvironment#DEFAULT} by default.
+	 * @return the environment of the entry itself
+	 */
 	@ApiStatus.Internal
+	@ApiStatus.OverrideOnly
 	default ConfigEnvironment getOwnEnvironment() {
 		return getEnvironment();
 	}

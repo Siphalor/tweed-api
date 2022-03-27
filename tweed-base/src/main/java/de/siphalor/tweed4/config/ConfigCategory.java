@@ -28,7 +28,6 @@ import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -111,12 +110,6 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 				environment = environment.parent;
 			}
 		}
-		return environment;
-	}
-
-	@Override
-	@ApiStatus.Internal
-	public ConfigEnvironment getOwnEnvironment() {
 		return environment;
 	}
 
