@@ -129,6 +129,18 @@ public interface ConfigEntry<T> {
 	ConfigScope getScope();
 
 	/**
+	 * Checks whether this entry is triggered by the given environment and scope.
+	 * This should be overridden by composite entries to check whether any entry is triggered by the given environment and scope.
+	 * @param environment the environment to check
+	 * @param scope the scope to check
+	 * @return whether the entry is triggered by the given environment and scope
+	 */
+	default boolean matches(ConfigEnvironment environment, ConfigScope scope) {
+		return (environment == null || environment.triggers(getEnvironment()))
+				&& (scope == null || scope.triggers(getScope()));
+	}
+
+	/**
 	 * May set the comment string that describes the entry to the user.
 	 * @param comment the comment to use
 	 * @return the current entry for chain calls

@@ -140,6 +140,16 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
+	public boolean matches(ConfigEnvironment environment, ConfigScope scope) {
+		for (ConfigEntry<?> entry : entries.values()) {
+			if (entry.matches(environment, scope)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
 	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
 		if(!dataValue.isObject()) {
@@ -213,7 +223,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
-		return entryStream().filter(entry -> environment.triggers(entry.getValue().getEnvironment()) && scope.triggers(entry.getValue().getScope()));
+		return entryStream().filter(entry -> entry.getValue().matches(environment, scope));
 	}
 
 	public boolean isEmpty() {
