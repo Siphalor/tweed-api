@@ -40,23 +40,29 @@ public class TweedRegistry {
 	private static Map<String, DataSerializer<?, ?, ?>> serializersByExtension;
 
 	/**
-	 * This registry contains all of the known {@link ConfigDataSerializer}s.<br />
-	 * By default available serializers are <code>gson</code>, <code>hjson</code> and <code>jankson</code>.
+	 * This registry contains all the known {@link ConfigDataSerializer}s.<br />
 	 */
 	public static final Registry<ConfigDataSerializer<?, ?, ?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
 	/**
-	 * This registry contains all of the known {@link Tailor}s.<br />
-	 * By default only a serializer for the Cloth config UI is available as <code>tweed4:cloth</code>.
+	 * This registry contains all the known {@link Tailor}s.<br />
 	 */
 	public static final Registry<Tailor> TAILORS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "tailors")), Lifecycle.experimental());
 
+	/**
+	 * Registers a new {@link ConfigFile}.
+	 * The default serializer will be used (usually the HJSON serializer, if around).
+	 * @param fileName the file id which is used (without extension)
+	 * @return the new {@link ConfigFile}
+	 * @deprecated it is highly recommended to explicitly set the serializer with {@link #registerConfigFile(String, ConfigDataSerializer)}.
+	 */
+	@Deprecated
 	public static ConfigFile registerConfigFile(String fileName) {
 		return registerConfigFile(fileName, defaultSerializer);
 	}
 
 	/**
 	 * Registers a new {@link ConfigFile}.
-	 * @param fileName the file id which is used (no extension; no subdirectories for now)
+	 * @param fileName the file id which is used (without extension)
 	 * @param dataSerializer a serializer for this config file
 	 * @return the new {@link ConfigFile}
 	 */
@@ -109,6 +115,11 @@ public class TweedRegistry {
 		return CONFIG_FILES.get(name);
 	}
 
+	/**
+	 * Gets a map of all {@link DataSerializer}s by their file extension.
+	 * This is cached and will be updated if a new {@link DataSerializer} is registered.
+	 * @return a map of {@link DataSerializer}s by their file extension
+	 */
 	public static Map<String, DataSerializer<?, ?, ?>> getSerializersByExtension() {
 		Set<Map.Entry<RegistryKey<ConfigDataSerializer<?, ?, ?>>, ConfigDataSerializer<?, ?, ?>>> entries = SERIALIZERS.getEntries();
 		int entriesHash = entries.hashCode();
