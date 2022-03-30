@@ -81,6 +81,22 @@ public class ConfigSerializers {
 		return new ListSerializer<>(elementSerializer, listSupplier);
 	}
 
+	public static <MV> StringMapSerializer<MV, HashMap<String, MV>> createStringMap(ConfigValueSerializer<MV> valueSerializer) {
+		return new StringMapSerializer<>(valueSerializer, HashMap::new);
+	}
+
+	public static <MV, M extends Map<String, MV>> StringMapSerializer<MV, M> createStringMap(ConfigValueSerializer<MV> valueSerializer, Supplier<M> mapSupplier) {
+		return new StringMapSerializer<>(valueSerializer, mapSupplier);
+	}
+
+	public static <MK, MV> MapSerializer<MK, MV, HashMap<MK, MV>> createMap(ConfigValueSerializer<MK> keySerializer, ConfigValueSerializer<MV> valueSerializer) {
+		return new MapSerializer<>(keySerializer, valueSerializer, HashMap::new);
+	}
+
+	public static <MK, MV, M extends Map<MK, MV>> MapSerializer<MK, MV, M> createMap(ConfigValueSerializer<MK> keySerializer, ConfigValueSerializer<MV> valueSerializer, Supplier<M> mapSupplier) {
+		return new MapSerializer<>(keySerializer, valueSerializer, mapSupplier);
+	}
+
 	public static <E extends Enum<?>> EnumSerializer<E> createEnum(E fallback) {
 		return new EnumSerializer<>(fallback);
 	}
@@ -181,29 +197,7 @@ public class ConfigSerializers {
 				Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
 				if (typeArguments.length == 1) {
 					List<?> list = ((List<?>) value);
-					Supplier<List<Object>> listSupplier;
-
-					try {
-						Constructor<T> constructor = clazz.getDeclaredConstructor();
-						listSupplier = () -> {
-							try {
-								return (List<Object>) constructor.newInstance();
-							} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-								Tweed.LOGGER.warn(
-										"Couldn't construct new "
-												+ constructor.getDeclaringClass().getSimpleName()
-												+ ". Defaulting to ArrayList."
-								);
-								e.printStackTrace();
-							}
-							return new ArrayList<>();
-						};
-					} catch (NoSuchMethodException e) {
-						Tweed.LOGGER.warn(
-								"Couldn't get constructor for " + clazz.getSimpleName() + ". Defaulting to ArrayList."
-						);
-						listSupplier = ArrayList::new;
-					}
+					Supplier<List<Object>> listSupplier = getConstructorOr((Class<List<Object>>) clazz, ArrayList::new, "list");
 
 					return (ConfigValueSerializer<T>) createList(
 							resolver.resolve(
@@ -213,6 +207,47 @@ public class ConfigSerializers {
 							),
 							listSupplier
 					);
+				}
+			}
+		}
+
+		if (Map.class.isAssignableFrom(clazz)) {
+			if (type instanceof ParameterizedType) {
+				if (clazz.isInterface()) {
+					clazz = (Class<T>) value.getClass();
+				}
+
+				Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
+				if (typeArguments.length == 2) {
+					Map<?, ?> map = ((Map<?, ?>) value);
+					if (typeArguments[0] == String.class) {
+						Supplier<Map<String, Object>> mapSupplier = getConstructorOr((Class<Map<String, Object>>) clazz, HashMap::new, "map");
+
+						return (ConfigValueSerializer<T>) createStringMap(
+								resolver.resolve(
+										map.isEmpty() ? null : map.entrySet().iterator().next().getValue(),
+										((Class<Object>) typeArguments[1]),
+										typeArguments[1]
+								),
+								mapSupplier
+						);
+					} else {
+						Supplier<Map<Object, Object>> mapSupplier = getConstructorOr((Class<Map<Object, Object>>) clazz, HashMap::new, "map");
+
+						return (ConfigValueSerializer<T>) createMap(
+								resolver.resolve(
+										map.isEmpty() ? null : map.entrySet().iterator().next().getKey(),
+										((Class<Object>) typeArguments[0]),
+										typeArguments[0]
+								),
+								resolver.resolve(
+										map.isEmpty() ? null : map.entrySet().iterator().next().getValue(),
+										((Class<Object>) typeArguments[1]),
+										typeArguments[1]
+								),
+								mapSupplier
+						);
+					}
 				}
 			}
 		}
@@ -276,5 +311,28 @@ public class ConfigSerializers {
 	@FunctionalInterface
 	public interface SerializerResolver {
 		<T> ConfigValueSerializer<T> resolve(T value, Class<T> clazz, Type type);
+	}
+
+	private static <T> Supplier<T> getConstructorOr(Class<T> clazz, Supplier<T> supplier, String serializer) {
+		try {
+			Constructor<T> constructor = clazz.getDeclaredConstructor();
+			return () -> {
+				try {
+					return constructor.newInstance();
+				} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+					T def = supplier.get();
+					Tweed.LOGGER.error(
+							"Failed to instantiate class " + clazz.getSimpleName() + " in " + serializer + " serializer!" +
+									"Defaulting to " + def.getClass().getSimpleName() + "."
+					);
+					return def;
+				}
+			};
+		} catch (NoSuchMethodException e) {
+			Tweed.LOGGER.warn(
+					"Couldn't get constructor for " + clazz.getSimpleName() + ". Defaulting to ArrayList."
+			);
+			return supplier;
+		}
 	}
 }
