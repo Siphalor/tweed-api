@@ -241,10 +241,11 @@ public class POJOConverter {
 							}
 						}
 
-						if (curClass == Object.class) {
+						Class<?> superclass = curClass.getSuperclass();
+						if (superclass == null) {
 							break;
 						}
-						curClass = curClass.getSuperclass();
+						curClass = superclass;
 					}
 					return ConfigSerializers.deduce(value, clazz, type, this);
 				}
