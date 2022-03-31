@@ -16,7 +16,6 @@
 
 package de.siphalor.tweed4.config.value.serializer;
 
-import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed4.config.ConfigReadException;
 import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataList;
@@ -44,8 +43,9 @@ public class StringMapSerializer<MV, M extends Map<String, MV>> extends ConfigVa
 		}
 
 		M map = mapSupplier.get();
-		for (Pair<String, V> pair : data.asObject()) {
-			map.put(pair.getFirst(), valueSerializer.read(pair.getSecond()));
+		O object = data.asObject();
+		for (String key : object.keys()) {
+			map.put(key, valueSerializer.read(object.get(key)));
 		}
 		return map;
 	}
