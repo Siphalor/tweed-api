@@ -60,11 +60,6 @@ public enum ConfigScope {
 		this.value = value;
 	}
 
-	@Deprecated
-	public boolean triggeredBy(ConfigScope other) {
-		return this.value <= other.value;
-	}
-
 	/**
 	 * Gets whether this scope triggers the other one.
 	 * Since higher scopes always trigger smaller scopes, this effectively returns whether this scope is greater than the other.
