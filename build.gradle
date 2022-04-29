@@ -118,6 +118,7 @@ subprojects {
 
 			remapJar {
 				dependsOn(shadowJar)
+				inputFile = tasks.shadowJar.archiveFile
 			}
 		}
 
