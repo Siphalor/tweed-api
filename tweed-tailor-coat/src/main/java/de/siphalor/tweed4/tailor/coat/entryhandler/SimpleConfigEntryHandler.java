@@ -21,7 +21,6 @@ import de.siphalor.coat.handler.Message;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.coat.CoatTailor;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,6 +52,6 @@ public class SimpleConfigEntryHandler<V> implements ConfigEntryHandler<V> {
 
 	@Override
 	public Text asText(V value) {
-		return new LiteralText(configEntry.getValueSerializer().asString(value));
+		return Text.literal(configEntry.getValueSerializer().asString(value));
 	}
 }

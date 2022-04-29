@@ -25,7 +25,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,7 +71,7 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 	public void setValue(V value) {
 		this.value = value;
 		if (value == null) {
-			mainButton.setMessage(new TranslatableText("tweed4.cloth.dropdown.empty"));
+			mainButton.setMessage(Text.translatable("tweed4.cloth.dropdown.empty"));
 		} else {
 			mainButton.setMessage(valueConverter.apply(value));
 		}

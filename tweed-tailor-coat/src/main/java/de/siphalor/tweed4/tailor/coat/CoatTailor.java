@@ -43,10 +43,8 @@ import de.siphalor.tweed4.util.StaticStringConvertible;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.BaseText;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 import java.util.*;
@@ -76,7 +74,7 @@ public class CoatTailor extends ScreenTailor {
 		screenFactories.put(configFile.getName(), parent ->
 			syncAndCreateScreen(configFile, parent_ -> {
 				ConfigScreen configScreen = new ConfigScreen(
-						parent_, new TranslatableText(TRANSLATION_PREFIX + modId),
+						parent_, Text.translatable(TRANSLATION_PREFIX + modId),
 						Collections.singletonList(convert(configFile.getRootCategory(), TRANSLATION_PREFIX + modId))
 				);
 				configScreen.setOnSave(() -> save(configFile));
@@ -86,7 +84,7 @@ public class CoatTailor extends ScreenTailor {
 	}
 
 	public ConfigListWidget convert(ConfigCategory category, String path) {
-		Text name = new TranslatableText(path);
+		Text name = Text.translatable(path);
 		ConfigListWidget listWidget = new ConfigListWidget(
 				MinecraftClient.getInstance(), name, Collections.emptyList(),
 				category.getBackgroundTexture() != null
@@ -155,24 +153,24 @@ public class CoatTailor extends ScreenTailor {
 		switch (constraintMessage.getFirst()) {
 			default:
 			case INFO:
-				return new Message(Message.Level.INFO, new LiteralText(constraintMessage.getSecond()));
+				return new Message(Message.Level.INFO, Text.literal(constraintMessage.getSecond()));
 			case WARN:
-				return new Message(Message.Level.WARNING, new LiteralText(constraintMessage.getSecond()));
+				return new Message(Message.Level.WARNING, Text.literal(constraintMessage.getSecond()));
 			case ERROR:
-				return new Message(Message.Level.ERROR, new LiteralText(constraintMessage.getSecond()));
+				return new Message(Message.Level.ERROR, Text.literal(constraintMessage.getSecond()));
 		}
 	}
 
-	public static BaseText getTranslation(String key, String fallback) {
+	public static MutableText getTranslation(String key, String fallback) {
 		if (I18n.hasTranslation(key)) {
-			return new TranslatableText(key);
+			return Text.translatable(key);
 		}
-		return new LiteralText(fallback == null ? key : fallback.replace("\t", "    "));
+		return Text.literal(fallback == null ? key : fallback.replace("\t", "    "));
 	}
 
 	public static <V> ConfigListConfigEntry<V> convertSimpleConfigEntry(ValueConfigEntry<V> configEntry, String path, ConfigInput<V> configInput) {
 		return new ConfigListConfigEntry<>(
-				new TranslatableText(path),
+				Text.translatable(path),
 				getTranslation(path + ".description", configEntry.getComment()),
 				new SimpleConfigEntryHandler<>(configEntry),
 				configInput
@@ -181,7 +179,7 @@ public class CoatTailor extends ScreenTailor {
 
 	public static <V> ConfigListConfigEntry<V> convertSimpleConfigEntry(ValueConfigEntry<?> configEntry, String path, ConfigInput<V> configInput, ConfigEntryHandler<V> entryHandler) {
 		return new ConfigListConfigEntry<>(
-				new TranslatableText(path),
+				Text.translatable(path),
 				getTranslation(path + ".description", configEntry.getComment()),
 				entryHandler,
 				configInput
@@ -207,7 +205,7 @@ public class CoatTailor extends ScreenTailor {
 		});
 
 		registerConverter(Boolean.class, (parentWidget, configEntry, path) -> {
-			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(LiteralText.EMPTY, configEntry.getMainConfigValue(), false)));
+			parentWidget.addEntry(convertSimpleConfigEntry(configEntry, path, new CheckBoxConfigInput(Text.empty(), configEntry.getMainConfigValue(), false)));
 			return true;
 		});
 
@@ -231,9 +229,9 @@ public class CoatTailor extends ScreenTailor {
 					val -> {
 						String key = enumTranslationKey + val.name();
 						if (I18n.hasTranslation(key)) {
-							return new TranslatableText(key);
+							return Text.translatable(key);
 						} else {
-							return new LiteralText(val.name());
+							return Text.literal(val.name());
 						}
 					}
 			);
@@ -248,7 +246,7 @@ public class CoatTailor extends ScreenTailor {
 			CoatDropdownSelectInput<DropdownMaterial> input = new CoatDropdownSelectInput<>(
 					configEntry.getMainConfigValue(),
 					(DropdownMaterial[]) configEntry.getDefaultValue().values().stream().toArray(DropdownMaterial[]::new),
-					val -> new TranslatableText(val.getTranslationKey()));
+					val -> Text.translatable(val.getTranslationKey()));
 			//noinspection rawtypes
 			ConfigListConfigEntry<DropdownMaterial> entry = convertSimpleConfigEntry(configEntry, path, input);
 			input.setParent(entry);

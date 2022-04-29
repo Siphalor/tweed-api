@@ -22,7 +22,6 @@ import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.tailor.coat.CoatTailor;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
@@ -76,8 +75,8 @@ public class ConvertingConfigEntryHandler<V, C> implements ConfigEntryHandler<C>
 	public Text asText(C value) {
 		Constraint.Result<V> conversionResult = converterFrom.apply(value);
 		if (conversionResult.ok) {
-			return new LiteralText(configEntry.getValueSerializer().asString(conversionResult.value));
+			return Text.literal(configEntry.getValueSerializer().asString(conversionResult.value));
 		}
-		return new LiteralText("I am Error.").formatted(Formatting.RED);
+		return Text.literal("I am Error.").formatted(Formatting.RED);
 	}
 }

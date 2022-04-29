@@ -24,9 +24,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.function.Function;
@@ -48,7 +46,7 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	public CoatDropdownSelectInput(V value, V[] options, Function<V, Text> valueConverter) {
 		this.options = options;
 		this.valueConverter = valueConverter;
-		button = new ButtonWidget(0,0, 20, 20, LiteralText.EMPTY, button_ -> {
+		button = new ButtonWidget(0,0, 20, 20, Text.empty(), button_ -> {
 			expanded = !expanded;
 			scroll = 0;
 			if (parent != null) {
@@ -76,7 +74,7 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	public void setValue(V value) {
 		this.value = value;
 		if (value == null) {
-			button.setMessage(new TranslatableText("tweed4.cloth.dropdown.empty"));
+			button.setMessage(Text.translatable("tweed4.cloth.dropdown.empty"));
 		} else {
 			button.setMessage(valueConverter.apply(value));
 		}

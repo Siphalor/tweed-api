@@ -26,7 +26,6 @@ import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -159,10 +158,9 @@ public interface ConfigEntry<T> {
 	String getDescription();
 
 	default Optional<Text[]> getClothyDescription() {
-		List<LiteralText> list = new ArrayList<>();
+		List<Text> list = new ArrayList<>();
 		for (String s : getDescription().replace("\t", "    ").split("[\n\r]\r?")) {
-			LiteralText literalText = new LiteralText(s);
-			list.add(literalText);
+			list.add(Text.literal(s));
 		}
 		if (list.isEmpty()) {
 			return Optional.empty();

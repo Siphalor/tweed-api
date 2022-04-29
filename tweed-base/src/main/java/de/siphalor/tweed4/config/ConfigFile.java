@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -216,15 +217,14 @@ public class ConfigFile {
 
 	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
 	void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		O dataObject = this.<V, L, O>getDataSerializer().read(resource.getInputStream());
-		try {
-			resource.close();
+		try (InputStream is = resource.getInputStream()) {
+			O dataObject = this.<V, L, O>getDataSerializer().read(is);
+			if (dataObject != null) {
+				load(dataObject, environment, scope, origin);
+			}
 		} catch (IOException e) {
 			Tweed.LOGGER.error("Failed to close config resource after reading it in resource pack: " + resource.getResourcePackName());
 			e.printStackTrace();
-		}
-		if(dataObject != null) {
-			load(dataObject, environment, scope, origin);
 		}
 	}
 

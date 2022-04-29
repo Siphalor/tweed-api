@@ -26,7 +26,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -88,8 +88,8 @@ public abstract class ScreenTailor extends Tailor {
 						awaitedSyncs.set(null);
 						client.setScreen(parentScreen);
 					},
-					new TranslatableText("tweed4_tailor_screen.syncFromServer"),
-					new TranslatableText("tweed4_tailor_screen.syncFromServer.note")
+					Text.translatable("tweed4_tailor_screen.syncFromServer"),
+					Text.translatable("tweed4_tailor_screen.syncFromServer.note")
 			);
 		}
 
