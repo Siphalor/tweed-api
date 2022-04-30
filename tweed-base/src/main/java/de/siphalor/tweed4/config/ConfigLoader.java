@@ -33,7 +33,7 @@ import java.util.List;
  * Used to reload the {@link ConfigFile}s.
  */
 public final class ConfigLoader {
-	private static ThreadLocal<ResourceManager> currentResourceManager = new ThreadLocal<>();
+	private static final ThreadLocal<ResourceManager> currentResourceManager = new ThreadLocal<>();
 
 	public static void initialReload(ConfigEnvironment configEnvironment) {
 		for (ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
@@ -48,25 +48,59 @@ public final class ConfigLoader {
 	 * @param resourceManager the current {@link ResourceManager}
 	 * @param environment the current environment
 	 * @param scope the definition scope
+	 * @deprecated Use {@link #reloadAll(ResourceManager, ConfigEnvironment, ConfigScope)} instead
 	 */
+	@Deprecated
 	public static void loadConfigs(ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
+		reloadAll(resourceManager, environment, scope);
+	}
+
+	/**
+	 * Reloads all matching {@link ConfigFile}s.
+	 * @param resourceManager the {@link ResourceManager} to use
+	 * @param environment the current environment
+	 * @param scope the current scope
+	 */
+	public static void reloadAll(ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
 		currentResourceManager.set(resourceManager);
 		for(ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
-			configFile.reset(environment, scope);
-			configFile.load(readMainConfigFile(configFile).asObject(), environment, scope, ConfigOrigin.MAIN);
-            updateMainConfigFile(configFile, environment, scope);
-			try {
-				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
-				for(Resource resource : resources) {
-					configFile.load(resource, environment, scope, ConfigOrigin.DATAPACK);
-				}
-			} catch (Exception ignored) {}
-			configFile.finishReload(environment, scope);
-			if(environment.triggers(ConfigEnvironment.SERVER)) {
-				configFile.syncToClients(ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
-			}
+			reloadSimple(configFile, resourceManager, environment, scope);
 		}
 		currentResourceManager.set(null);
+	}
+
+	/**
+	 * Reloads a single {@link ConfigFile}.
+	 * @param configFile The config to reload
+	 * @param resourceManager the {@link ResourceManager} to use
+	 * @param environment the current environment
+	 * @param scope the current scope
+	 */
+	public static void reload(ConfigFile configFile, ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
+		currentResourceManager.set(resourceManager);
+		reloadSimple(configFile, resourceManager, environment, scope);
+		currentResourceManager.set(null);
+	}
+
+	private static void reloadSimple(ConfigFile configFile, ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
+		try {
+			configFile.reset(environment, scope);
+			configFile.load(readMainConfigFile(configFile).asObject(), environment, scope, ConfigOrigin.MAIN);
+			updateMainConfigFile(configFile, environment, scope);
+			try {
+				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
+				for (Resource resource : resources) {
+					configFile.load(resource, environment, scope, ConfigOrigin.DATAPACK);
+				}
+			} catch (Exception ignored) {
+			}
+			configFile.finishReload(environment, scope);
+			if (environment.triggers(ConfigEnvironment.SERVER)) {
+				configFile.syncToClients(ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to load config file " + configFile.getFileIdentifier(), e);
+		}
 	}
 
 	/**

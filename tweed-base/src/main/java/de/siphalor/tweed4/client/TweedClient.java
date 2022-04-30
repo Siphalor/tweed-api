@@ -59,7 +59,7 @@ public class TweedClient implements ClientModInitializer {
 			@Override
 			public void apply(ResourceManager resourceManager) {
 				try {
-					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
+					ConfigLoader.reloadAll(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
 				} catch (Throwable e) {
 					Tweed.LOGGER.error("Tweed failed to load config files");
 					e.printStackTrace();
@@ -67,7 +67,7 @@ public class TweedClient implements ClientModInitializer {
 			}
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer ->
-				ConfigLoader.loadConfigs(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD)
+				ConfigLoader.reloadAll(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD)
 		);
 
 		ClientPlayNetworking.registerGlobalReceiver(Tweed.CONFIG_SYNC_S2C_PACKET, (client, handler, packetByteBuf, packetSender) -> {
@@ -104,6 +104,6 @@ public class TweedClient implements ClientModInitializer {
 
 	public static boolean isOnRemoteServer() {
 		MinecraftClient client = MinecraftClient.getInstance();
-		return client.world != null && !client.isIntegratedServerRunning() || client.getServer() != null && client.getServer().isRemote();
+		return ((client.world != null) && !client.isIntegratedServerRunning()) || ((client.getServer() != null) && client.getServer().isRemote());
 	}
 }

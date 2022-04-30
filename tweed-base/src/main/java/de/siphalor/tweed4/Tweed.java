@@ -64,7 +64,7 @@ public class Tweed implements ModInitializer {
 			@Override
 			public void apply(ResourceManager resourceManager) {
 				try {
-					ConfigLoader.loadConfigs(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
+					ConfigLoader.reloadAll(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
 				} catch (Throwable e) {
 					Tweed.LOGGER.error("Tweed failed to load config files:");
 					e.printStackTrace();
