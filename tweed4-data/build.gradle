@@ -1,0 +1,8 @@
+dependencies {
+	testImplementation project(path: getSubProjectPath("data-gson"), configuration: "namedElements")
+	testImplementation project(path: getSubProjectPath("data-hjson"), configuration: "namedElements")
+	testImplementation project(path: getSubProjectPath("data-jankson"), configuration: "namedElements")
+
+	testImplementation('com.github.Siphalor:hjson-java:master-SNAPSHOT')
+	testImplementation('blue.endless:jankson:1.2.1')
+}

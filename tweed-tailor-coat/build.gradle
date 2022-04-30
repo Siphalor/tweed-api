@@ -1,5 +1,0 @@
-dependencies {
-	implementation project(path: ":tweed-tailor-screen", configuration: "namedElements")
-
-	modImplementation "de.siphalor:coat-$minecraft_major_version:$coat_version"
-}
