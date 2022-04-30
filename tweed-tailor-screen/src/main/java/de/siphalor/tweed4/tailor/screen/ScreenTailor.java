@@ -31,12 +31,25 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class ScreenTailor extends Tailor {
+	/**
+	 * Returns the screen factories for display with Mod Menu.
+	 * @return A map from mod id to screen factory
+	 */
 	public abstract Map<String, ScreenTailorScreenFactory<?>> getScreenFactories();
 
 	protected Screen syncAndCreateScreen(ConfigFile configFile, ScreenTailorScreenFactory<?> screenFactory, Screen parent) {
 		return syncAndCreateScreen(Collections.singletonList(configFile), screenFactory, parent);
 	}
 
+	/**
+	 * Syncs the config data from the server and creates a screen. <br />
+	 * If necessary, a sync will be performed as soon as the returned screen is opened.
+	 *
+	 * @param configFiles The config files to sync
+	 * @param screenFactory The screen factory to use
+	 * @param parentScreen The parent screen to return to
+	 * @return The created screen to open
+	 */
 	protected Screen syncAndCreateScreen(Collection<ConfigFile> configFiles, ScreenTailorScreenFactory<?> screenFactory, Screen parentScreen) {
 		MinecraftClient client = MinecraftClient.getInstance();
 
@@ -48,7 +61,7 @@ public abstract class ScreenTailor extends Tailor {
 
 			List<ConfigFile> syncFiles = new ArrayList<>();
 			for (ConfigFile configFile : configFiles) {
-				if (configFile.getRootCategory().matches(ConfigEnvironment.SERVER, null)) {
+				if (isSyncFromServerRequired(configFile)) {
 					syncFiles.add(configFile);
 				}
 			}
@@ -93,14 +106,58 @@ public abstract class ScreenTailor extends Tailor {
 		return screenFactory.create(parentScreen);
 	}
 
+	/**
+	 * Checks whether the config file requires to be synced before being opened.
+	 * @param configFile The config file to check
+	 * @return Whether the config file requires to be synced before being opened
+	 */
+	protected boolean isSyncFromServerRequired(ConfigFile configFile) {
+		return configFile.getRootCategory().matches(ConfigEnvironment.SERVER, null);
+	}
+
+	/**
+	 * Saves the config data and performs a sync to the server, if applicable.
+	 * @param configFile The config file to save
+	 * @see ScreenTailor#saveLocally(ConfigFile)
+	 * @see ScreenTailor#isSyncToServerApplicable(ConfigFile)
+	 */
 	protected void save(ConfigFile configFile) {
-		if (TweedClient.isOnRemoteServer()) {
+		if (isSyncToServerApplicable(configFile)) {
 			configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
-			ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
-			ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
-		} else {
-			ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
-			ConfigLoader.loadConfigs(MinecraftClient.getInstance().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
 		}
+		saveLocally(configFile);
+	}
+
+	/**
+	 * Saves the config data, without performing a sync, even if applicable.
+	 * @param configFile The config file to save
+	 * @see ScreenTailor#isSyncToServerApplicable(ConfigFile)
+	 * @see ScreenTailor#save(ConfigFile)
+	 */
+	protected void saveLocally(ConfigFile configFile) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+		if (client.world == null) {
+			// Player is in main menu, reload in world scope
+			ConfigLoader.reload(configFile, client.getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
+		} else {
+			// Player is somewhere in game, reload in the smallest scope
+			ConfigLoader.reload(configFile, client.getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
+		}
+	}
+
+	/**
+	 * Checks whether the config file is applicable for syncing in the current world. <br />
+	 * This considers whether the sync is necessary and if the player is allowed to perform a sync in the current world.
+	 * @param configFile The config file to check
+	 * @return Whether the config file is applicable for syncing in the current world
+	 */
+	protected boolean isSyncToServerApplicable(ConfigFile configFile) {
+		if (TweedClient.isOnRemoteServer()) {
+			assert MinecraftClient.getInstance().player != null;
+			return configFile.getRootCategory().matches(ConfigEnvironment.SERVER, null)
+					&& MinecraftClient.getInstance().player.hasPermissionLevel(3);
+		}
+		return false;
 	}
 }
