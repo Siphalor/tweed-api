@@ -22,6 +22,7 @@ import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.value.ConfigValue;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -100,6 +101,7 @@ public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<
 	}
 
 	@Override
+	@NotNull
 	public final Constraint.Result<T> applyConstraints() {
 		Constraint.Result<T> result = applyConstraints(getValue());
 		if (result.ok) {

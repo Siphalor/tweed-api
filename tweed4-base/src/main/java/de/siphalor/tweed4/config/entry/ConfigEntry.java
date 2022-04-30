@@ -29,7 +29,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,7 +174,7 @@ public interface ConfigEntry<T> {
 	/**
 	 * Method for handling possible constraints after reading in the value.
 	 */
-	@Nullable
+	@NotNull
 	default Constraint.Result<?> applyConstraints() {
 		return Constraint.Result.OK;
 	}
