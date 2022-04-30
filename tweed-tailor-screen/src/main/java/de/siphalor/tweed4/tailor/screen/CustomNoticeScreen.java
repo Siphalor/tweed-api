@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package de.siphalor.tweed4.client;
+package de.siphalor.tweed4.tailor.screen;
 
 import net.minecraft.client.gui.screen.NoticeScreen;
 import net.minecraft.text.Text;
 
 /**
- * @deprecated Use <code>CustomNoticeScreen</code> from <code>tweed4-tailor-code</code>
+ * A notice screen that additionally executes a callback when it's opened.
  */
-@Deprecated
 public class CustomNoticeScreen extends NoticeScreen {
 	private final Runnable openHandler;
 

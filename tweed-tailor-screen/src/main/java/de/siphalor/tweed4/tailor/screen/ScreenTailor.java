@@ -17,7 +17,6 @@
 package de.siphalor.tweed4.tailor.screen;
 
 import de.siphalor.tweed4.Tweed;
-import de.siphalor.tweed4.client.CustomNoticeScreen;
 import de.siphalor.tweed4.client.TweedClient;
 import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.tailor.Tailor;
