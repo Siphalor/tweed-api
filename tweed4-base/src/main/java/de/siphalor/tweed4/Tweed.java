@@ -21,6 +21,7 @@ import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -29,6 +30,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
@@ -44,7 +47,10 @@ public class Tweed implements ModInitializer {
 	public static final String MOD_ISSUES_URL = "https://github.com/Siphalor/tweed-api/issues";
 	public static final Identifier CONFIG_SYNC_S2C_PACKET = new Identifier(MOD_ID, "sync_config");
 	public static final Identifier REQUEST_SYNC_C2S_PACKET = new Identifier(MOD_ID, "request_sync");
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	@Deprecated
 	public static final Identifier TWEED_CLOTH_SYNC_C2S_PACKET = new Identifier(MOD_ID, "sync_from_cloth_client");
+	public static final Identifier CONFIG_SYNC_C2S_PACKET = new Identifier(MOD_ID, "sync_config_from_client");
 
 	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
@@ -94,23 +100,26 @@ public class Tweed implements ModInitializer {
 				}
 			}
 		});
-		ServerPlayNetworking.registerGlobalReceiver(TWEED_CLOTH_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {
-			String name = packetByteBuf.readString(32767);
-			ConfigFile configFile = TweedRegistry.getConfigFile(name);
-			if (configFile != null) {
-				if (server.getPermissionLevel(player.getGameProfile()) == 4) {
-					ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
-					ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
-					configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
-					ConfigLoader.updateMainConfigFile(configFile, environment, scope);
-				} else {
-					packetByteBuf.clear();
-				}
-			}
-			LOGGER.warn("Received request to sync config file " + name + " but it was not found.");
-		});
+		ServerPlayNetworking.registerGlobalReceiver(CONFIG_SYNC_C2S_PACKET, Tweed::receiveSyncC2SPacket);
+		ServerPlayNetworking.registerGlobalReceiver(TWEED_CLOTH_SYNC_C2S_PACKET, Tweed::receiveSyncC2SPacket);
 
 		Tweed.runEntryPoints();
+	}
+
+	private static void receiveSyncC2SPacket(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
+		String name = packetByteBuf.readString(32767);
+		ConfigFile configFile = TweedRegistry.getConfigFile(name);
+		if (configFile != null) {
+			if (server.getPermissionLevel(player.getGameProfile()) == 4) {
+				ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
+				ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
+				configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
+				ConfigLoader.updateMainConfigFile(configFile, environment, scope);
+			} else {
+				packetByteBuf.clear();
+			}
+		}
+		LOGGER.warn("Received request to sync config file " + name + " but it was not found.");
 	}
 
 	public static void runEntryPoints() {

@@ -269,7 +269,7 @@ public class ConfigFile {
 		packetByteBuf.writeEnumConstant(scope);
 		write(packetByteBuf, environment, scope, ConfigOrigin.MAIN);
 
-		ClientPlayNetworking.send(Tweed.TWEED_CLOTH_SYNC_C2S_PACKET, packetByteBuf);
+		ClientPlayNetworking.send(Tweed.CONFIG_SYNC_C2S_PACKET, packetByteBuf);
 	}
 
 	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
