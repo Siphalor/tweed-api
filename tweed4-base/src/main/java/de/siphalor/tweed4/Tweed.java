@@ -59,6 +59,8 @@ public class Tweed implements ModInitializer {
 
 	public static final List<MinecraftServer> MINECRAFT_SERVERS = new LinkedList<>();
 
+	private static boolean entrypointsRun = false;
+
 	@Override
 	public void onInitialize() {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
@@ -122,7 +124,16 @@ public class Tweed implements ModInitializer {
 		LOGGER.warn("Received request to sync config file " + name + " but it was not found.");
 	}
 
+	/**
+	 * Runs the entry points of Tweed. <br />
+	 * This will always only be called once, but is not thread-safe and therefore should only be called from the main thread.
+	 */
 	public static void runEntryPoints() {
+		if (entrypointsRun) {
+			return;
+		}
+		entrypointsRun = true;
+
 		FabricLoader loaderAPI = FabricLoader.getInstance();
 
 		{
