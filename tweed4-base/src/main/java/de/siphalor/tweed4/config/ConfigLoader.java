@@ -20,6 +20,8 @@ import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
+import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import org.jetbrains.annotations.ApiStatus;
@@ -34,13 +36,25 @@ import java.util.List;
  */
 public final class ConfigLoader {
 	private static final ThreadLocal<ResourceManager> currentResourceManager = new ThreadLocal<>();
+	private static final ObjectArraySet<ConfigFile> initiallyReloadedFiles = new ObjectArraySet<>();
 
 	public static void initialReload(ConfigEnvironment configEnvironment) {
 		for (ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
-			configFile.load(readMainConfigFile(configFile).asObject(), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
-			updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
-			configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
+			initialReload(configFile, configEnvironment);
 		}
+	}
+
+	public static void initialReload(ConfigFile configFile, ConfigEnvironment configEnvironment) {
+		if (initiallyReloadedFiles.contains(configFile)) {
+			return;
+		}
+		initiallyReloadedFiles.add(configFile);
+
+		Tweed.runEntryPoints();
+
+		configFile.load(readMainConfigFile(configFile).asObject(), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
+		updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
+		configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
 	}
 
 	/**
