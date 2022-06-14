@@ -35,15 +35,34 @@ import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
 public class TweedClient implements ClientModInitializer {
-	private static Consumer<ConfigFile> syncRunnable;
+	private static ConfigSyncListener configSyncListener;
 
 	@Deprecated
 	public static void setSyncRunnable(Runnable syncRunnable) {
-		TweedClient.syncRunnable = file -> syncRunnable.run();
+		setSyncRunnable(file -> syncRunnable.run());
 	}
 
+	@Deprecated
 	public static void setSyncRunnable(Consumer<ConfigFile> syncRunnable) {
-		TweedClient.syncRunnable = syncRunnable;
+		setSyncListener(new ConfigSyncListener() {
+			@Override
+			public boolean onSync(ConfigFile configFile) {
+				syncRunnable.accept(configFile);
+				return true;
+			}
+
+			@Override
+			public boolean onFail(ConfigFile configFile) {
+				return onSync(configFile);
+			}
+		});
+	}
+
+	public static void setSyncListener(ConfigSyncListener configSyncListener) {
+		if (TweedClient.configSyncListener != null) {
+			TweedClient.configSyncListener.onRemoved();
+		}
+		TweedClient.configSyncListener = configSyncListener;
 	}
 
 	@Override
@@ -81,8 +100,11 @@ public class TweedClient implements ClientModInitializer {
 					Tweed.LOGGER.error("Received negative config sync packet for unknown file {}.\n" +
 							"Please report to " + Tweed.MOD_ISSUES_URL, name);
 				} else {
-					if (syncRunnable != null) {
-						syncRunnable.accept(file);
+					if (configSyncListener != null) {
+						if (configSyncListener.onFail(file)) {
+							configSyncListener.onRemoved();
+							configSyncListener = null;
+						}
 					}
 				}
 				return;
@@ -92,9 +114,11 @@ public class TweedClient implements ClientModInitializer {
 			if (configFile != null) {
 				configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
 
-				if (syncRunnable != null) {
-					syncRunnable.accept(configFile);
-					syncRunnable = null;
+				if (configSyncListener != null) {
+					if (configSyncListener.onSync(configFile)) {
+						configSyncListener.onRemoved();
+						configSyncListener = null;
+					}
 				}
 			} else {
 				Tweed.LOGGER.info("Skipping config sync packet for unknown config file {}", name);

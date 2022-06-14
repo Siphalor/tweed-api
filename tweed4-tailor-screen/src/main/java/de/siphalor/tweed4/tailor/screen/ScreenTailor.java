@@ -17,6 +17,7 @@
 package de.siphalor.tweed4.tailor.screen;
 
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.client.ConfigSyncListener;
 import de.siphalor.tweed4.client.TweedClient;
 import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.tailor.Tailor;
@@ -81,16 +82,26 @@ public abstract class ScreenTailor extends Tailor {
 						}
 						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
 
-						TweedClient.setSyncRunnable(file -> {
-							awaitedSyncs.getAndUpdate(files -> {
-								if (files != null) {
-									files.remove(file);
+						TweedClient.setSyncListener(new ConfigSyncListener() {
+							@Override
+							public boolean onSync(ConfigFile configFile) {
+								awaitedSyncs.getAndUpdate(files -> {
+									if (files != null) {
+										files.remove(configFile);
+									}
+									return files;
+								});
+								List<ConfigFile> captured = awaitedSyncs.get();
+								if (captured != null && captured.isEmpty()) {
+									client.openScreen(screenFactory.create(parentScreen));
+									return true;
 								}
-								return files;
-							});
-							List<ConfigFile> captured = awaitedSyncs.get();
-							if (captured != null && captured.isEmpty()) {
-								client.openScreen(screenFactory.create(parentScreen));
+								return false;
+							}
+
+							@Override
+							public boolean onFail(ConfigFile configFile) {
+								return onSync(configFile);
 							}
 						});
 					},
