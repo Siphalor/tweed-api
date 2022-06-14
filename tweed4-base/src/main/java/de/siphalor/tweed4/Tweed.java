@@ -176,4 +176,12 @@ public class Tweed implements ModInitializer {
 		}
 	}
 
+	public static ConfigEnvironment getCurrentEnvironment() {
+		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+			return ConfigEnvironment.SERVER;
+		} else {
+			return ConfigEnvironment.CLIENT;
+		}
+	}
+
 }
