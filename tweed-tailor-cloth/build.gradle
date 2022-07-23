@@ -1,7 +1,0 @@
-dependencies {
-	implementation project(path: ":tweed-tailor-screen", configuration: "namedElements")
-
-	modApi("me.shedaniel.cloth:cloth-config-fabric:$cloth_config_version") {
-		exclude module: "modmenu"
-	}
-}

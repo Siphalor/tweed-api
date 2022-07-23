@@ -1,0 +1,5 @@
+dependencies {
+	implementation project(path: getSubProjectPath("tailor-screen"), configuration: "namedElements")
+
+	modImplementation "de.siphalor:coat-$minecraft_major_version:$coat_version"
+}
