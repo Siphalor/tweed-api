@@ -63,7 +63,7 @@ public enum ConfigEnvironment {
 				return true;
 			case CLIENT:
 			case SERVER:
-				return other == UNIVERSAL;
+				return other == UNIVERSAL || other == SYNCED;
 		}
 
 		return false;

@@ -23,8 +23,8 @@ public class ConfigEnvironmentTests {
 	public void testTriggers() {
 		Boolean[] expected = new Boolean[] {
 				true,  true,  true,  true,  true, // UNIVERSAL
-				true,  true,  false, false, null, // CLIENT
-				true,  false, true,  false, null, // SERVER
+				true,  true,  false, true,  null, // CLIENT
+				true,  false, true,  true,  null, // SERVER
 				false, false, false, true,  null, // SYNCED
 				null,  null,  null,  null,  null, // DEFAULT
 		};
