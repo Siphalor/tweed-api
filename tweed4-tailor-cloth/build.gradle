@@ -1,0 +1,11 @@
+repositories {
+	maven { url "https://minecraft.curseforge.com/api/maven"}
+}
+
+dependencies {
+	implementation project(path: getSubProjectPath("tailor-screen"), configuration: "namedElements")
+
+	modApi("me.shedaniel.cloth:config-2:$cloth_config_version") {
+		exclude module: "modmenu"
+	}
+}

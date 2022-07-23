@@ -11,7 +11,9 @@ pluginManagement {
 rootProject.name = "tweed"
 
 rootDir.eachDir {
-    if (it.name.startsWith("tweed-") && it.toPath().resolve("gradle.properties").toFile().exists()) {
-		include(rootDir.relativePath(it).replace('/', ':'))
+    if (it.name.startsWith("tweed4-") && it.toPath().resolve("gradle.properties").toFile().exists()) {
+		var dir = rootDir.relativePath(it)
+		include(dir)
+		project(":$dir").name = it.name + "-" + properties.get("minecraft_major_version")
     }
 }

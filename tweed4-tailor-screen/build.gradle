@@ -1,0 +1,10 @@
+repositories {
+	maven { url "https://minecraft.curseforge.com/api/maven"}
+}
+
+dependencies {
+	implementation project(path: getSubProjectPath("base"), configuration: "namedElements")
+
+	modImplementation fabricApi.module("fabric-networking-api-v1", fabric_version)
+	modImplementation "curse.maven:modmenu-308702:$mod_menu_version"
+}
