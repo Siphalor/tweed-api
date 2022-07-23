@@ -1,8 +1,0 @@
-dependencies {
-	testImplementation project(path: ":tweed-data-gson", configuration: "namedElements")
-	testImplementation project(path: ":tweed-data-hjson", configuration: "namedElements")
-	testImplementation project(path: ":tweed-data-jankson", configuration: "namedElements")
-
-	testImplementation('com.github.Siphalor:hjson-java:master-SNAPSHOT')
-	testImplementation('blue.endless:jankson:1.2.1')
-}
