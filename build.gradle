@@ -1,6 +1,11 @@
+buildscript {
+	dependencies {
+		classpath 'org.codehaus.groovy:groovy-json:3.0.9'
+	}
+}
+
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
-import org.w3c.dom.Element
 
 plugins {
 	id 'maven-publish'
@@ -10,25 +15,16 @@ plugins {
 	id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
 
-// This POM processor adjusts the dependencies on the Tweed subprojects to match the published artifact ids
-def pomFixer = {
-	def deps = it.asElement().getElementsByTagName("dependencies").item(0) as Element
-	deps = deps.getElementsByTagName("dependency")
-	for (i in 0..<deps.length) {
-		def dep = deps.item(i) as Element
-		if (dep.getElementsByTagName("groupId").item(0).getTextContent() == "de.siphalor.tweed4") {
-			def depArtifactId = dep.getElementsByTagName("artifactId").item(0) as Element
-			depArtifactId.setTextContent(depArtifactId.getTextContent().replace("tweed-", "tweed4-") + "-$minecraft_major_version")
-		}
-	}
-} as Action<? super XmlProvider>
+String getSubProjectPath(name) {
+	return ":tweed4-$name-$rootProject.minecraft_major_version"
+}
 
 allprojects {
 	apply plugin: 'fabric-loom'
 	apply plugin: 'java-library'
 	apply plugin: 'org.cadixdev.licenser'
 
-	group = project.maven_group
+	group = rootProject.maven_group
 
 	repositories {
 		mavenCentral()
@@ -71,15 +67,11 @@ allprojects {
 	test {
 		useJUnitPlatform()
 	}
-
-	// Disable Gradle module format because subproject artifact ids currently don't seem to be changable easily
-	tasks.withType(GenerateModuleMetadata) {
-		enabled = false
-	}
 }
 
 subprojects {
 	project.version = "$project.version+mc$project.minecraft_version"
+	project.archivesBaseName = "$project.archives_base_name+mc$project.minecraft_major_version"
 
 	// Fix for Loom 0.10 transitive dependency mess: https://discord.com/channels/507304429255393322/842691768175951942/908391237806096444
 	configurations {
@@ -87,7 +79,6 @@ subprojects {
 	}
 
 	jar {
-		archiveBaseName.set(archivesBaseName)
 		archiveClassifier.set("dev")
 	}
 
@@ -97,7 +88,7 @@ subprojects {
 				relocators = shadowJar.relocators
 				from sourceSets.main.output
 				configurations = [project.configurations.shadow]
-				archiveBaseName.set(archivesBaseName)
+				archiveBaseName.set(archives_base_name)
 				archiveClassifier.set("sources")
 			}
 			remapSourcesJar.dependsOn(shadowSourcesJar)
@@ -112,18 +103,18 @@ subprojects {
 
 			shadowJar {
 				configurations = [project.configurations.shadow]
-				archiveBaseName.set(archivesBaseName)
+				archiveBaseName.set(archives_base_name)
 				archiveClassifier.set("dev")
 			}
 
 			remapJar {
 				dependsOn(shadowJar)
-				inputFile = tasks.shadowJar.archiveFile
+				inputFile = project.tasks.shadowJar.archiveFile
 			}
 		}
 
 		remapJar {
-			archiveFileName = "${project.archivesBaseName}-${project.version}.jar"
+			archiveFileName = "${project.archives_base_name}-${project.version}.jar"
 		}
 
 		processResources {
@@ -143,13 +134,13 @@ subprojects {
 	// if it is present.
 	// If you remove this task, sources will not be generated.
 	task sourcesJar(type: Jar, dependsOn: classes) {
-		archiveBaseName.set(archivesBaseName)
+		archiveBaseName.set(project.archives_base_name)
 		archiveClassifier.set("sources")
 		from sourceSets.main.allSource
 	}
 
 	task updateModMetaFiles(type: Copy) {
-		def projectId = project.archivesBaseName.replace('-', '_')
+		def projectId = project.archives_base_name.replace('-', '_')
 		from rootProject.file(".template/icon.png")
 		into "src/main/resources/assets/${projectId}"
 		include "*.png"
@@ -165,18 +156,16 @@ subprojects {
 		}
 	}
 
-	def projectId = archivesBaseName.replaceAll(/-(\w)/, {it[1].toUpperCase()})
+	def projectId = archives_base_name.replaceAll(/-(\w)/, {it[1].toUpperCase()})
 
 	// configure the maven publication
 	publishing {
 		publications.create(projectId, MavenPublication.class, {
 			version = project.version
-			artifactId = "${project.archivesBaseName}-${project.minecraft_major_version}"
+			artifactId = "${project.archives_base_name}-${project.minecraft_major_version}"
 
 			from components.java
 			java.withSourcesJar()
-
-			pom.withXml(pomFixer)
 		})
 	}
 }
@@ -210,10 +199,8 @@ publishing {
 
 	publications.create("tweed4", MavenPublication.class, {
 		version = project.version
-		artifactId = archivesBaseName + "-" + minecraft_major_version
+		artifactId = archives_base_name + "-" + minecraft_major_version
 
 		from components.java
-
-		pom.withXml(pomFixer)
 	})
 }

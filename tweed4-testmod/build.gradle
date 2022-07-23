@@ -1,0 +1,19 @@
+dependencies {
+	implementation project(path: getSubProjectPath("base"), configuration: "namedElements")
+	implementation project(path: getSubProjectPath("annotated"), configuration: "namedElements")
+	implementation project(path: getSubProjectPath("tailor-cloth"), configuration: "namedElements")
+	implementation project(path: getSubProjectPath("tailor-coat"), configuration: "namedElements")
+	implementation project(path: getSubProjectPath("tailor-json-schema"), configuration: "namedElements")
+	implementation project(path: getSubProjectPath("data-hjson"), configuration: "namedElements")
+	implementation project(path: getSubProjectPath("data-gson"), configuration: "namedElements")
+
+	modRuntimeOnly("com.github.astei:lazydfu:master-SNAPSHOT")
+	modRuntimeOnly("de.siphalor:coat-$minecraft_major_version:$coat_version") {
+		exclude group: "net.fabricmc.fabric-api"
+		exclude module: "amecsapi-$minecraft_major_version"
+	}
+	modRuntimeOnly("com.terraformersmc:modmenu:$mod_menu_version") {
+		exclude group: "net.fabricmc.fabric-api"
+	}
+	modRuntimeOnly("net.fabricmc.fabric-api:fabric-api:$fabric_version")
+}
