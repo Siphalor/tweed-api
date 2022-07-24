@@ -83,8 +83,16 @@ public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEnt
 	@Override
 	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
 	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
-		currentValue.set(valueSerializer.read(dataValue));
-		if(origin == ConfigOrigin.MAIN) {
+		try {
+			currentValue.set(valueSerializer.read(dataValue));
+		} catch (ConfigReadException e) {
+			currentValue.set(defaultValue);
+			if (origin == ConfigOrigin.MAIN) {
+				mainConfigValue = currentValue.get();
+			}
+			throw e;
+		}
+		if (origin == ConfigOrigin.MAIN) {
 			mainConfigValue = currentValue.get();
 		}
 		onReload();
