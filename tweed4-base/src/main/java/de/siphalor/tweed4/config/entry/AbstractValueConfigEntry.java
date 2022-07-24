@@ -106,6 +106,8 @@ public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<
 		Constraint.Result<T> result = applyConstraints(getValue());
 		if (result.ok) {
 			setValue(result.value);
+		} else {
+			setValue(defaultValue);
 		}
 		return result;
 	}
