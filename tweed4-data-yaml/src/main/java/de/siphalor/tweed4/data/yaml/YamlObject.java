@@ -16,24 +16,26 @@
 
 package de.siphalor.tweed4.data.yaml;
 
-import com.mojang.datafixers.util.Pair;
+import de.siphalor.tweed4.data.CollectionUtils;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.snakeyaml.engine.v2.common.FlowStyle;
+import org.jetbrains.annotations.Nullable;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.nodes.*;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
-public class YamlObject extends YamlValue<MappingNode> implements DataObject<YamlValue<Node>, YamlList, YamlObject> {
+public class YamlObject implements DataObject<Node, YamlList, YamlObject> {
+	private final MappingNode yamlNode;
 	private final Map<String, NodeTuple> nodes;
 
 	public YamlObject(MappingNode yamlNode) {
-		super(yamlNode);
+		this.yamlNode = yamlNode;
 		nodes = new HashMap<>();
 		for (NodeTuple nodeTuple : yamlNode.getValue()) {
 			nodes.put(((ScalarNode) nodeTuple.getKeyNode()).getValue(), nodeTuple);
@@ -41,8 +43,18 @@ public class YamlObject extends YamlValue<MappingNode> implements DataObject<Yam
 	}
 
 	@Override
-	public int size() {
-		return nodes.size();
+	public @NotNull Node getValue() {
+		return yamlNode;
+	}
+
+	@Override
+	public String getComment(String key) {
+		return YamlSerializer.getComment(nodes.get(key).getKeyNode());
+	}
+
+	@Override
+	public void setComment(String key, String comment) {
+		YamlSerializer.setComment(nodes.get(key).getKeyNode(), comment);
 	}
 
 	@Override
@@ -51,110 +63,101 @@ public class YamlObject extends YamlValue<MappingNode> implements DataObject<Yam
 	}
 
 	@Override
-	public void remove(String key) {
-		NodeTuple nodeTuple = nodes.get(key);
-		if (nodeTuple != null) {
-			getNode().getValue().remove(nodeTuple);
-		}
-		nodes.remove(key);
+	public DataSerializer<Node, YamlList, YamlObject> getSerializer() {
+		return YamlSerializer.INSTANCE;
 	}
 
 	@Override
-	public YamlValue<Node> set(String key, YamlValue<Node> value) {
-		setInternal(key, value);
-		return value;
+	public int size() {
+		return nodes.size();
 	}
 
-	protected void setInternal(String key, YamlValue<? extends Node> yamlValue) {
+	@Override
+	public boolean isEmpty() {
+		return nodes.isEmpty();
+	}
+
+	@Override
+	public boolean containsValue(Object value) {
+		return nodes.containsValue(value);
+	}
+
+	@Override
+	public Node get(Object key) {
+		return nodes.get(key).getValueNode();
+	}
+
+	@Nullable
+	@Override
+	public Node put(String key, Node value) {
 		remove(key);
 		ScalarNode keyNode = new ScalarNode(Tag.STR, key, StringUtils.isAlphanumeric(key) ? ScalarStyle.PLAIN : ScalarStyle.DOUBLE_QUOTED);
-		yamlValue.setKeyNode(keyNode);
-		NodeTuple nodeTuple = new NodeTuple(
-				keyNode,
-				yamlValue.getNode()
-		);
-		getNode().getValue().add(nodeTuple);
-		nodes.put(key, nodeTuple);
-	}
-
-	protected YamlValue<Node> create(String key, Tag tag, String value, ScalarStyle scalarStyle) {
-		YamlValue<Node> yamlValue = new YamlValue<>(new ScalarNode(tag, value, scalarStyle));
-		set(key, yamlValue);
-		return yamlValue;
+		NodeTuple nodeTuple = new NodeTuple(keyNode, value);
+		yamlNode.getValue().add(nodeTuple);
+		NodeTuple old = nodes.put(key, nodeTuple);
+		if (old == null) {
+			return null;
+		}
+		return old.getValueNode();
 	}
 
 	@Override
-	public YamlValue<Node> set(String key, boolean value) {
-		return create(key, Tag.BOOL, Boolean.toString(value), ScalarStyle.PLAIN);
+	public Node remove(Object key) {
+		NodeTuple nodeTuple = nodes.remove(key);
+		if (nodeTuple == null) {
+			return null;
+		}
+		yamlNode.getValue().remove(nodeTuple);
+		return nodeTuple.getValueNode();
 	}
 
 	@Override
-	public YamlValue<Node> set(String key, String value) {
-		return create(key, Tag.STR, value, ScalarStyle.DOUBLE_QUOTED);
+	public void putAll(@NotNull Map<? extends String, ? extends Node> m) {
+		for (Map.Entry<? extends String, ? extends Node> entry : m.entrySet()) {
+			put(entry.getKey(), entry.getValue());
+		}
 	}
 
 	@Override
-	public YamlValue<Node> set(String key, char value) {
-		return create(key, Tag.STR, Character.toString(value), ScalarStyle.SINGLE_QUOTED);
+	public void clear() {
+		nodes.clear();
+		yamlNode.getValue().clear();
 	}
 
+	@NotNull
 	@Override
-	public YamlValue<Node> set(String key, double value) {
-		return create(key, Tag.FLOAT, Double.toString(value), ScalarStyle.PLAIN);
+	public Set<String> keySet() {
+		return nodes.keySet();
 	}
 
+	@NotNull
 	@Override
-	public YamlValue<Node> set(String key, float value) {
-		return create(key, Tag.FLOAT, Float.toString(value), ScalarStyle.PLAIN);
+	public Collection<Node> values() {
+		return CollectionUtils.mapCollection(nodes.values(), NodeTuple::getValueNode);
 	}
 
+	@NotNull
 	@Override
-	public YamlValue<Node> set(String key, long value) {
-		return create(key, Tag.INT, Long.toString(value), ScalarStyle.PLAIN);
-	}
+	public Set<Entry<String, Node>> entrySet() {
+		return CollectionUtils.mapSet(nodes.entrySet(), entry -> new Entry<String, Node>() {
+			@Override
+			public String getKey() {
+				return entry.getKey();
+			}
 
-	@Override
-	public YamlValue<Node> set(String key, int value) {
-		return create(key, Tag.INT, Integer.toString(value), ScalarStyle.PLAIN);
-	}
+			@Override
+			public Node getValue() {
+				return entry.getValue().getValueNode();
+			}
 
-	@Override
-	public YamlValue<Node> set(String key, short value) {
-		return create(key, Tag.INT, Short.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(String key, byte value) {
-		return create(key, Tag.INT, Byte.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> addNull(String key) {
-		return create(key, Tag.NULL, "null", ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlObject addObject(String key) {
-		YamlObject yamlObject = new YamlObject(new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO));
-		setInternal(key, yamlObject);
-		return yamlObject;
-	}
-
-	@Override
-	public YamlList addList(String key) {
-		YamlList yamlList = new YamlList(new SequenceNode(Tag.SEQ, new ArrayList<>(), FlowStyle.AUTO));
-		setInternal(key, yamlList);
-		return yamlList;
-	}
-
-	@Override
-	public YamlValue<Node> get(String key) {
-		return new YamlValue<>(nodes.get(key));
-	}
-
-	@Override
-	public @NotNull Iterator<Pair<String, YamlValue<Node>>> iterator() {
-		return nodes.entrySet().stream()
-				.map(entry -> Pair.of(entry.getKey(), new YamlValue<>(entry.getValue().getValueNode()))).iterator();
+			@Override
+			public Node setValue(Node value) {
+				NodeTuple tuple = entry.getValue();
+				Node old = tuple.getValueNode();
+				NodeTuple newTuple = new NodeTuple(tuple.getKeyNode(), value);
+				entry.setValue(newTuple);
+				return old;
+			}
+		});
 	}
 }

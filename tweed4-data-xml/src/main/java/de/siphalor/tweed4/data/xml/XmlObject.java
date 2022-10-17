@@ -16,23 +16,25 @@
 
 package de.siphalor.tweed4.data.xml;
 
-import com.mojang.datafixers.util.Pair;
+import de.siphalor.tweed4.data.CollectionUtils;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataSerializer;
+import de.siphalor.tweed4.data.xml.value.SimpleXmlValue;
+import de.siphalor.tweed4.data.xml.value.XmlValue;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
-public class XmlObject extends XmlContainer<String> implements DataObject<XmlValue, XmlList, XmlObject> {
+public class XmlObject implements DataObject<XmlValue, XmlList, XmlObject>, XmlBaseContainer {
+	private final Element xmlElement;
 	private final HashSet<String> keys;
 
 	public XmlObject(Element xmlElement) {
-		super(xmlElement);
+		this.xmlElement = xmlElement;
 
 		if (!xmlElement.hasAttribute("type")) {
 			xmlElement.setAttribute("type", "object");
@@ -49,8 +51,41 @@ public class XmlObject extends XmlContainer<String> implements DataObject<XmlVal
 	}
 
 	@Override
+	public @NotNull XmlValue getValue() {
+		return new SimpleXmlValue(xmlElement);
+	}
+
+	@Override
 	public int size() {
 		return keys.size();
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return keys.isEmpty();
+	}
+
+	@Override
+	public boolean containsValue(Object value) {
+		//noinspection SuspiciousMethodCalls
+		return values().contains(value);
+	}
+
+	@Override
+	public String getComment(String key) {
+		NodeList nodes = xmlElement.getElementsByTagName(key);
+		if (nodes.getLength() > 0) {
+			return getComment((Element) nodes.item(0));
+		}
+		return null;
+	}
+
+	@Override
+	public void setComment(String key, String comment) {
+		NodeList nodes = xmlElement.getElementsByTagName(key);
+		if (nodes.getLength() > 0) {
+			setComment((Element) nodes.item(0), comment);
+		}
 	}
 
 	@Override
@@ -59,69 +94,160 @@ public class XmlObject extends XmlContainer<String> implements DataObject<XmlVal
 	}
 
 	@Override
-	public void remove(String key) {
-		NodeList nodes = xmlElement.getElementsByTagName(key);
+	public DataSerializer<XmlValue, XmlList, XmlObject> getSerializer() {
+		return XmlSerializer.INSTANCE;
+	}
+
+	@Override
+	public XmlValue remove(Object key) {
+		NodeList nodes = xmlElement.getElementsByTagName(key.toString());
+		Element removedElement = null;
 		for (int i = 0; i < nodes.getLength(); i++) {
-			xmlElement.removeChild(nodes.item(i));
+			Node removedNode = xmlElement.removeChild(nodes.item(i));
+			if (removedNode instanceof Element) {
+				removedElement = (Element) removedNode;
+			}
 		}
-		keys.remove(key);
+		keys.remove(key.toString());
+		if (removedElement != null) {
+			return new SimpleXmlValue(removedElement);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
-	public XmlValue set(String key, XmlValue value) {
+	public void putAll(@NotNull Map<? extends String, ? extends XmlValue> m) {
+		for (Map.Entry<? extends String, ? extends XmlValue> entry : m.entrySet()) {
+			put(entry.getKey(), entry.getValue());
+		}
+	}
+
+	@Override
+	public void clear() {
+		NodeList childNodes = xmlElement.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			Node node = childNodes.item(i);
+			xmlElement.removeChild(node);
+		}
+		keys.clear();
+	}
+
+	@NotNull
+	@Override
+	public Set<String> keySet() {
+		return new AbstractSet<String>() {
+			@Override
+			public Iterator<String> iterator() {
+				return new Iterator<String>() {
+					private final Iterator<String> iterator = keys.iterator();
+					private String last;
+					@Override
+					public boolean hasNext() {
+						return iterator.hasNext();
+					}
+
+					@Override
+					public String next() {
+						return last = iterator.next();
+					}
+
+					@Override
+					public void remove() {
+						iterator.remove();
+						XmlObject.this.remove(last);
+					}
+				};
+			}
+
+			@Override
+			public int size() {
+				return keys.size();
+			}
+		};
+	}
+
+	@NotNull
+	@Override
+	public Collection<XmlValue> values() {
+		ArrayList<String> keyList = new ArrayList<>(keys);
+
+		return new AbstractList<XmlValue>() {
+			@Override
+			public XmlValue get(int index) {
+				return XmlObject.this.get(keyList.get(index));
+			}
+
+			@Override
+			public int size() {
+				return keyList.size();
+			}
+
+			@Override
+			public XmlValue remove(int index) {
+				return XmlObject.this.remove(keyList.get(index));
+			}
+		};
+	}
+
+	@NotNull
+	@Override
+	public Set<Entry<String, XmlValue>> entrySet() {
+		return CollectionUtils.mapSet(keys, key -> new Entry<String, XmlValue>() {
+			@Override
+			public String getKey() {
+				return key;
+			}
+
+			@Override
+			public XmlValue getValue() {
+				return XmlObject.this.get(key);
+			}
+
+			@Override
+			public XmlValue setValue(XmlValue value) {
+				return XmlObject.this.put(key, value);
+			}
+		}, keys -> {
+			for (String key : keys) {
+				NodeList elements = xmlElement.getElementsByTagName(key);
+				for (int i = 0; i < elements.getLength(); i++) {
+					xmlElement.removeChild(elements.item(i));
+				}
+			}
+		});
+	}
+
+	@Override
+	public XmlValue put(String key, XmlValue value) {
+		Element oldElement = null;
+		Element element = (Element) xmlElement.getElementsByTagName(key).item(0);
+		if (element != null) {
+			oldElement = (Element) xmlElement.removeChild(element);
+		}
+
 		Document document = xmlElement.getOwnerDocument();
-		document.adoptNode(value.xmlElement);
-		value = XmlValue.of((Element) document.renameNode(value.xmlElement, null, key));
-		xmlElement.appendChild(value.xmlElement);
+		element = value.getElement(() -> document.createElement(key));
+		document.adoptNode(element);
+		if (!element.getTagName().equals(key)) {
+			element = (Element) document.renameNode(element, null, key);
+		}
+		xmlElement.appendChild(element);
 		keys.add(key);
-		return value;
+
+		if (oldElement != null) {
+			return new SimpleXmlValue(oldElement);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
-	protected XmlValue createTypedChild(String key, String type, String value) {
-		Element child = xmlElement.getOwnerDocument().createElement(key);
-		child.setTextContent(value);
-		remove(key);
-		xmlElement.appendChild(child);
-		keys.add(key);
-		return new TypedXmlValue(child, type);
-	}
-
-	@Override
-	public XmlList addList(String key) {
-		remove(key);
-		keys.add(key);
-		return new XmlList(xmlElement.getOwnerDocument().createElement(key));
-	}
-
-	@Override
-	public XmlObject addObject(String key) {
-		remove(key);
-		keys.add(key);
-		return new XmlObject(xmlElement.getOwnerDocument().createElement(key));
-	}
-
-	@Override
-	public XmlValue get(String key) {
-		NodeList nodes = xmlElement.getElementsByTagName(key);
+	public XmlValue get(Object key) {
+		NodeList nodes = xmlElement.getElementsByTagName(key.toString());
 		if (nodes.getLength() > 0) {
-			return XmlValue.of(((Element) nodes.item(0)));
+			return new SimpleXmlValue((Element) nodes.item(0));
 		}
 		return null;
-	}
-
-	@Override
-	public XmlObject asObject() {
-		return this;
-	}
-
-	@Override
-	public Set<String> keys() {
-		return keys;
-	}
-
-	@Override
-	public @NotNull Iterator<Pair<String, XmlValue>> iterator() {
-		return keys.stream().map(key -> Pair.of(key, get(key))).iterator();
 	}
 }

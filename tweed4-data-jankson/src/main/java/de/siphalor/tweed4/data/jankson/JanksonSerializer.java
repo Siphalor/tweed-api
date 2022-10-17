@@ -18,87 +18,24 @@ package de.siphalor.tweed4.data.jankson;
 
 import blue.endless.jankson.*;
 import blue.endless.jankson.api.SyntaxError;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
+import de.siphalor.tweed4.data.DataNull;
 import de.siphalor.tweed4.data.DataSerializer;
+import de.siphalor.tweed4.data.DataType;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
-public class JanksonSerializer implements DataSerializer<JanksonValue, JanksonList, JanksonObject> {
+public class JanksonSerializer implements DataSerializer<JsonElement, JanksonList, JanksonObject> {
     public static final JanksonSerializer INSTANCE = new JanksonSerializer();
 
-    static final Consumer<String> SET_COMMENT_VOID = comment -> {};
-    static final Supplier<String> GET_COMMENT_VOID = () -> "";
-    static final Function<Class<?>, Object> AS_VOID = clazz -> null;
-
 	@Override
-	public JanksonObject newObject() {
-		return new JanksonObject(new JsonObject(), SET_COMMENT_VOID, GET_COMMENT_VOID, AS_VOID);
-	}
-
-	@Override
-	public JanksonList newList() {
-		return new JanksonList(new JsonArray(), SET_COMMENT_VOID, GET_COMMENT_VOID, AS_VOID);
-	}
-
-	@Override
-	public JanksonValue newNull() {
-		return new JanksonValue(JsonNull.INSTANCE);
-	}
-
-	@Override
-	public JanksonValue newBoolean(boolean value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newChar(char value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newString(String value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newByte(byte value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newShort(short value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newInt(int value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newLong(long value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newFloat(float value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue newDouble(double value) {
-		return new JanksonValue(new JsonPrimitive(value));
-	}
-
-	@Override
-	public JanksonValue readValue(InputStream inputStream) {
+	public AnnotatedDataValue<JsonElement> read(InputStream inputStream) {
 		try {
 			JsonObject jsonObject = Jankson.builder().build().load(inputStream);
-			return new JanksonObject(jsonObject, (comment) -> {}, () -> "", (clazz) -> null);
+			return AnnotatedDataValue.of(jsonObject);
 		} catch (IOException | SyntaxError e) {
 			System.err.println("Failed to read jankson:");
 			e.printStackTrace();
@@ -107,13 +44,62 @@ public class JanksonSerializer implements DataSerializer<JanksonValue, JanksonLi
 	}
 
 	@Override
-	public void writeValue(OutputStream outputStream, JanksonValue dataValue) {
+	public void write(OutputStream outputStream, AnnotatedDataValue<JsonElement> dataValue) {
 		try {
-			outputStream.write(dataValue.getRaw().toJson(true, true).getBytes());
+			outputStream.write(dataValue.getValue().toJson(true, true).getBytes());
 		} catch (IOException e) {
 			System.err.println("Failed to write jankson:");
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public JanksonList newList() {
+		return new JanksonList();
+	}
+
+	@Override
+	public JanksonObject newObject() {
+		return new JanksonObject();
+	}
+
+	@Override
+	public Object toRaw(JsonElement value, @Nullable DataType typeHint) {
+		if (value instanceof JsonPrimitive) {
+			JsonPrimitive jsonPrimitive = (JsonPrimitive) value;
+			Object actualValue = ((JsonPrimitive) value).getValue();
+			if (typeHint != null && typeHint.isNumber() && actualValue instanceof Number) {
+				return typeHint.cast(actualValue);
+			}
+			return jsonPrimitive.getValue();
+		} else if (value instanceof JsonArray) {
+			return new JanksonList((JsonArray) value);
+		} else if (value instanceof JsonObject) {
+			return new JanksonObject((JsonObject) value);
+		} else if (value instanceof JsonNull) {
+			return DataNull.INSTANCE;
+		}
+		return null;
+	}
+
+	@Override
+	public JsonElement fromRawPrimitive(Object raw) {
+		if (raw instanceof JsonElement) {
+			return (JsonElement) raw;
+		} else if (raw instanceof Number) {
+			return new JsonPrimitive(raw);
+		} else if (raw instanceof String) {
+			return new JsonPrimitive(raw);
+		} else if (raw instanceof Boolean) {
+			return new JsonPrimitive(raw);
+		} else if (raw instanceof JanksonList) {
+			return ((JanksonList) raw).getJsonArray();
+		} else if (raw instanceof JanksonObject) {
+			return ((JanksonObject) raw).getJsonObject();
+		} else if (raw == DataNull.INSTANCE) {
+			return JsonNull.INSTANCE;
+		}
+		return null;
 	}
 
 	@Override
@@ -125,5 +111,4 @@ public class JanksonSerializer implements DataSerializer<JanksonValue, JanksonLi
 	public String getId() {
 		return "tweed4:jankson";
 	}
-
 }

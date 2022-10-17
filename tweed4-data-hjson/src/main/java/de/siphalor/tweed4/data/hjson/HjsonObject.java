@@ -1,139 +1,156 @@
-/*
- * Copyright 2021-2022 Siphalor
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package de.siphalor.tweed4.data.hjson;
 
-import com.mojang.datafixers.util.Pair;
+import de.siphalor.tweed4.data.CollectionUtils;
 import de.siphalor.tweed4.data.DataObject;
-import org.hjson.JsonArray;
+import de.siphalor.tweed4.data.DataSerializer;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
+import java.util.*;
+import java.util.function.Function;
 
-public class HjsonObject extends HjsonValue implements DataObject<HjsonValue, HjsonList, HjsonObject> {
-	HjsonObject(JsonValue jsonValue) {
-		super(jsonValue);
+public class HjsonObject implements DataObject<JsonValue, HjsonList, HjsonObject> {
+	private final JsonObject jsonObject;
+
+	public HjsonObject(JsonObject jsonObject) {
+		this.jsonObject = jsonObject;
+	}
+
+	public HjsonObject() {
+		this(new JsonObject());
+	}
+
+	@Override
+	public @NotNull JsonValue getValue() {
+		return jsonObject;
+	}
+
+	public JsonObject getJsonObject() {
+		return jsonObject;
+	}
+
+	@Override
+	public String getComment(String key) {
+		return jsonObject.get(key).getBOLComment();
+	}
+
+	@Override
+	public void setComment(String key, String comment) {
+		jsonObject.setComment(key, comment);
 	}
 
 	@Override
 	public boolean has(String key) {
-		return jsonValue.asObject().has(key);
+		return jsonObject.has(key);
+	}
+
+	@Override
+	public DataSerializer<JsonValue, HjsonList, HjsonObject> getSerializer() {
+		return HjsonSerializer.INSTANCE;
 	}
 
 	@Override
 	public int size() {
-		return jsonValue.asObject().size();
+		return jsonObject.size();
 	}
 
 	@Override
-	public HjsonValue get(String key) {
-		if (!has(key)) return null;
-		return new HjsonValue(jsonValue.asObject().get(key));
+	public boolean isEmpty() {
+		return jsonObject.isEmpty();
 	}
 
 	@Override
-	public HjsonValue set(String key, int value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
+	public boolean containsValue(Object value) {
+		return jsonObject.has(((String) value));
 	}
 
 	@Override
-	public HjsonValue set(String key, short value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
+	public JsonValue get(Object key) {
+		return jsonObject.get((String) key);
+	}
+
+	@Nullable
+	@Override
+	public JsonValue put(String key, JsonValue value) {
+		return jsonObject.set(key, value);
 	}
 
 	@Override
-	public HjsonValue set(String key, byte value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
+	public JsonValue remove(Object key) {
+		return jsonObject.remove((String) key);
 	}
 
 	@Override
-	public HjsonValue set(String key, float value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
+	public void putAll(@NotNull Map<? extends String, ? extends JsonValue> map) {
+		map.forEach(jsonObject::set);
 	}
 
 	@Override
-	public HjsonValue set(String key, long value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
+	public void clear() {
+		for (String name : jsonObject.names()) {
+			jsonObject.remove(name);
+		}
 	}
 
-	@Override
-	public HjsonValue set(String key, String value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
-	}
-
-	@Override
-	public HjsonValue set(String key, char value) {
-		jsonValue.asObject().set(key, String.valueOf(value));
-		return new HjsonValue(jsonValue.asObject().get(key));
-	}
-
-	@Override
-	public HjsonValue set(String key, double value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
-	}
-
-	@Override
-	public HjsonValue set(String key, boolean value) {
-		jsonValue.asObject().set(key, value);
-		return new HjsonValue(jsonValue.asObject().get(key));
-	}
-
-	@Override
-	public HjsonValue set(String key, HjsonValue value) {
-		jsonValue.asObject().set(key, value.getRaw());
-		return value;
-	}
-
-	@Override
-	public HjsonObject addObject(String key) {
-		JsonObject jsonObject = new JsonObject();
-		jsonValue.asObject().set(key, jsonObject);
-		return new HjsonObject(jsonObject);
-	}
-
-	@Override
-	public HjsonList addList(String key) {
-		JsonArray jsonArray = new JsonArray();
-		jsonValue.asObject().set(key, jsonArray);
-		return new HjsonList(jsonArray);
-	}
-
-	@Override
-	public HjsonValue addNull(String key) {
-		jsonValue.asObject().set(key, JsonValue.valueOf(null));
-		return new HjsonValue(jsonValue.asObject().get(key));
-	}
-
-	@Override
-	public void remove(String key) {
-		jsonValue.asObject().remove(key);
-	}
-
-	@Override
 	@NotNull
-	public Iterator<Pair<String, HjsonValue>> iterator() {
-		return jsonValue.asObject().names().stream().map(name -> new Pair<>(name, new HjsonValue(jsonValue.asObject().get(name)))).iterator();
+	@Override
+	public Set<String> keySet() {
+		Set<String> names = new HashSet<>(jsonObject.names());
+		return new AbstractSet<String>() {
+			@Override
+			public Iterator<String> iterator() {
+				return CollectionUtils.mapIterator(names.iterator(), Function.identity(), jsonObject::remove);
+			}
+
+			@Override
+			public int size() {
+				return names.size();
+			}
+
+			@Override
+			public boolean remove(Object o) {
+				jsonObject.remove((String) o);
+				return names.remove(o);
+			}
+		};
+	}
+
+	@NotNull
+	@Override
+	public Collection<JsonValue> values() {
+		List<String> names = new ArrayList<>(jsonObject.names());
+		return CollectionUtils.mapCollection(names, jsonObject::get, keys -> {
+			for (String key : keys) {
+				jsonObject.remove(key);
+			}
+		});
+	}
+
+	@NotNull
+	@Override
+	public Set<Entry<String, JsonValue>> entrySet() {
+		Set<String> names = new HashSet<>(jsonObject.names());
+		return CollectionUtils.mapSet(names, key -> new Entry<String, JsonValue>() {
+			@Override
+			public String getKey() {
+				return key;
+			}
+
+			@Override
+			public JsonValue getValue() {
+				return jsonObject.get(key);
+			}
+
+			@Override
+			public JsonValue setValue(JsonValue value) {
+				return jsonObject.set(key, value);
+			}
+		}, keys -> {
+			for (String key : keys) {
+				jsonObject.remove(key);
+			}
+		});
 	}
 }

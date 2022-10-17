@@ -16,13 +16,20 @@
 
 package de.siphalor.tweed4.data.yaml;
 
+import de.siphalor.tweed4.data.AnnotatedDataValue;
+import de.siphalor.tweed4.data.DataNull;
 import de.siphalor.tweed4.data.DataSerializer;
+import de.siphalor.tweed4.data.DataType;
+import org.jetbrains.annotations.Nullable;
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.comments.CommentLine;
+import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
 import org.snakeyaml.engine.v2.emitter.Emitter;
+import org.snakeyaml.engine.v2.events.CommentEvent;
 import org.snakeyaml.engine.v2.nodes.*;
 import org.snakeyaml.engine.v2.parser.ParserImpl;
 import org.snakeyaml.engine.v2.scanner.StreamReader;
@@ -33,82 +40,78 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class YamlSerializer implements DataSerializer<YamlValue<Node>, YamlList, YamlObject> {
+public class YamlSerializer implements DataSerializer<Node, YamlList, YamlObject> {
 	public static final YamlSerializer INSTANCE = new YamlSerializer();
 
 	private static final LoadSettings LOAD_SETTINGS = LoadSettings.builder().setParseComments(true).build();
 	private static final DumpSettings DUMP_SETTINGS = DumpSettings.builder().setIndent(2).build();
 
 	@Override
-	public YamlValue<Node> readValue(InputStream inputStream) {
-		Optional<Node> rootNode = new Composer(LOAD_SETTINGS, new ParserImpl(
+	public AnnotatedDataValue<Node> read(InputStream inputStream) {
+		return new Composer(LOAD_SETTINGS, new ParserImpl(
 				LOAD_SETTINGS,
 				new StreamReader(LOAD_SETTINGS, new InputStreamReader(inputStream))
-		)).getSingleNode();
-		return rootNode.map(YamlValue::new).orElse(null);
+		)).getSingleNode().map(node -> AnnotatedDataValue.of(node, getComment(node))).orElse(null);
 	}
 
 	@Override
-	public void writeValue(OutputStream outputStream, YamlValue<Node> dataValue) {
+	public void write(OutputStream outputStream, AnnotatedDataValue<Node> dataValue) {
 		Serializer serializer = new Serializer(
 				DUMP_SETTINGS,
 				new Emitter(DUMP_SETTINGS, new CustomYamlOutputStreamWriter(outputStream, StandardCharsets.UTF_8))
 		);
 		serializer.open();
-		serializer.serialize(dataValue.getNode());
+		setComment(dataValue.getValue(), dataValue.getComment());
+		serializer.serialize(dataValue.getValue());
 		serializer.close();
 	}
 
 	@Override
-	public YamlList newList() {
-		return new YamlList(new SequenceNode(Tag.SEQ, new ArrayList<>(), FlowStyle.AUTO));
+	public Object toRaw(Node value, @Nullable DataType typeHint) {
+		if (value instanceof ScalarNode) {
+			ScalarNode scalarNode = (ScalarNode) value;
+			if (scalarNode.getTag().equals(Tag.BOOL)) {
+				return Boolean.parseBoolean(scalarNode.getValue());
+			} else if (scalarNode.getTag().equals(Tag.INT)) {
+				if (typeHint != null) {
+					return typeHint.cast(scalarNode.getValue());
+				}
+				return Integer.parseInt(scalarNode.getValue());
+			} else if (scalarNode.getTag().equals(Tag.FLOAT)) {
+				if (typeHint != null) {
+					return typeHint.cast(Double.parseDouble(scalarNode.getValue()));
+				}
+				return Double.parseDouble(scalarNode.getValue());
+			} else if (scalarNode.getTag().equals(Tag.NULL)) {
+				return DataNull.INSTANCE;
+			} else {
+				return scalarNode.getValue();
+			}
+		} else {
+			return null;
+		}
 	}
 
 	@Override
-	public YamlValue<Node> newBoolean(boolean value) {
-		return new YamlValue<>(new ScalarNode(Tag.BOOL, Boolean.toString(value), ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newChar(char value) {
-		return new YamlValue<>(new ScalarNode(Tag.STR, Character.toString(value), ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newString(String value) {
-		return new YamlValue<>(new ScalarNode(Tag.STR, value, ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newByte(byte value) {
-		return new YamlValue<>(new ScalarNode(Tag.INT, Byte.toString(value), ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newShort(short value) {
-		return new YamlValue<>(new ScalarNode(Tag.INT, Short.toString(value), ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newInt(int value) {
-		return new YamlValue<>(new ScalarNode(Tag.INT, Integer.toString(value), ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newLong(long value) {
-		return new YamlValue<>(new ScalarNode(Tag.INT, Long.toString(value), ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newFloat(float value) {
-		return new YamlValue<>(new ScalarNode(Tag.FLOAT, Float.toString(value), ScalarStyle.PLAIN));
-	}
-
-	@Override
-	public YamlValue<Node> newDouble(double value) {
-		return new YamlValue<>(new ScalarNode(Tag.FLOAT, Double.toString(value), ScalarStyle.PLAIN));
+	public Node fromRawPrimitive(Object raw) {
+		if (raw instanceof Boolean) {
+			return new ScalarNode(Tag.BOOL, (Boolean) raw ? "true" : "false", ScalarStyle.PLAIN);
+		} else if (raw instanceof Integer) {
+			return new ScalarNode(Tag.INT, raw.toString(), ScalarStyle.PLAIN);
+		} else if (raw instanceof Double) {
+			return new ScalarNode(Tag.FLOAT, raw.toString(), ScalarStyle.PLAIN);
+		} else if (raw instanceof String) {
+			return new ScalarNode(Tag.STR, (String) raw, DUMP_SETTINGS.getDefaultScalarStyle());
+		} else if (raw instanceof DataNull) {
+			return new ScalarNode(Tag.NULL, "null", ScalarStyle.PLAIN);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
@@ -117,8 +120,8 @@ public class YamlSerializer implements DataSerializer<YamlValue<Node>, YamlList,
 	}
 
 	@Override
-	public YamlValue<Node> newNull() {
-		return new YamlValue<>(new ScalarNode(Tag.NULL, "null", ScalarStyle.PLAIN));
+	public YamlList newList() {
+		return new YamlList(new SequenceNode(Tag.SEQ, new ArrayList<>(), FlowStyle.AUTO));
 	}
 
 	@Override
@@ -129,5 +132,22 @@ public class YamlSerializer implements DataSerializer<YamlValue<Node>, YamlList,
 	@Override
 	public String getId() {
 		return "tweed4:yaml";
+	}
+
+	public static @Nullable String getComment(Node node) {
+		List<CommentLine> blockComments = node.getBlockComments();
+		if (blockComments == null || blockComments.isEmpty()) {
+			return null;
+		}
+		return blockComments.stream().map(commentLine -> commentLine.getValue().trim()).collect(Collectors.joining("\n"));
+	}
+
+	public static void setComment(Node node, @Nullable String comment) {
+		if (comment == null) {
+			node.setBlockComments(null);
+			return;
+		}
+		List<CommentLine> commentLines = Arrays.stream(comment.split("\n")).map(line -> new CommentLine(new CommentEvent(CommentType.BLOCK, line, Optional.empty(), Optional.empty()))).collect(Collectors.toList());
+		node.setBlockComments(commentLines);
 	}
 }

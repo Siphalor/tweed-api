@@ -16,60 +16,82 @@
 
 package de.siphalor.tweed4.data;
 
-import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
 
-@SuppressWarnings("deprecation")
-public interface DataSerializer<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends ConfigDataSerializer<V, L, O> {
-	/**
-	 * @deprecated Use {@link DataSerializer#readValue(InputStream)} instead and check for the data type accordingly.
-	 */
-	@Override
-	@Deprecated
-	default O read(InputStream inputStream) {
-		V v = readValue(inputStream);
-		if (v.isObject()) {
-			return v.asObject();
+public interface DataSerializer<V, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> {
+	AnnotatedDataValue<V> read(InputStream inputStream);
+
+	void write(OutputStream outputStream, AnnotatedDataValue<V> value);
+
+	default Object toRaw(V value) {
+		return toRaw(value, null);
+	}
+	Object toRaw(V value, @Nullable DataType typeHint);
+	default boolean toBoolean(V value) {
+		return (boolean) toRaw(value, DataType.BOOLEAN);
+	}
+	default byte toByte(V value) {
+		return (byte) toRaw(value, DataType.BYTE);
+	}
+	default short toShort(V value) {
+		return (short) toRaw(value, DataType.SHORT);
+	}
+	default int toInt(V value) {
+		return (int) toRaw(value, DataType.INTEGER);
+	}
+	default long toLong(V value) {
+		return (long) toRaw(value, DataType.LONG);
+	}
+	default float toFloat(V value) {
+		return (float) toRaw(value, DataType.FLOAT);
+	}
+	default double toDouble(V value) {
+		return (double) toRaw(value, DataType.DOUBLE);
+	}
+	default String toString(V value) {
+		return (String) toRaw(value, DataType.STRING);
+	}
+	default L toList(V value) {
+		return (L) toRaw(value, DataType.LIST);
+	}
+	default O toObject(V value) {
+		return (O) toRaw(value, DataType.OBJECT);
+	}
+	default V fromRaw(Object raw) {
+		if (raw instanceof List) {
+			return fromRawList((List<?>) raw).getValue();
+		} else if (raw instanceof Map) {
+			//noinspection unchecked
+			return fromRawMap(((Map<String, ?>) raw)).getValue();
 		} else {
-			return null;
+			return fromRawPrimitive(raw);
 		}
 	}
-
-	V readValue(InputStream inputStream);
-
-	/**
-	 * @deprecated Use {@link DataSerializer#writeValue(OutputStream, DataValue)} instead.
-	 */
-	@Override
-	@Deprecated
-	default void write(OutputStream outputStream, O dataObject) {
-		//noinspection unchecked
-		writeValue(outputStream, (V) dataObject);
+	V fromRawPrimitive(Object raw);
+	default <RawValue> L fromRawList(List<RawValue> list) {
+		L newList = newList();
+		for (RawValue object : list) {
+			newList.add(fromRaw(object));
+		}
+		return newList;
+	}
+	default <RawValue> O fromRawMap(Map<String, RawValue> map) {
+		O newObject = newObject();
+		for (Map.Entry<String, RawValue> entry : map.entrySet()) {
+			newObject.put(entry.getKey(), fromRawPrimitive(entry.getValue()));
+		}
+		return newObject;
 	}
 
-
-	void writeValue(OutputStream outputStream, V dataValue);
-
+	O newObject();
 	L newList();
-	V newBoolean(boolean value);
-	V newChar(char value);
-	V newString(String value);
-	V newByte(byte value);
-	V newShort(short value);
-	V newInt(int value);
-	V newLong(long value);
-	V newFloat(float value);
-	V newDouble(double value);
-	/**
-	 * This should create a new null representative {@link DataValue}.
-	 * <i>This should always be overridden. The default is here for legacy reasons.</i>
-	 * @return A null representation.
-	 * This should not be <code>null</code> itself since that indicates that null is not supported.
-	 * @since 1.2
-	 */
-	default V newNull() {
-		return null;
-	}
+
+	String getId();
+
+	String getFileExtension();
 }

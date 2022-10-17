@@ -16,87 +16,41 @@
 
 package de.siphalor.tweed4.data.hjson;
 
+import de.siphalor.tweed4.data.AnnotatedDataValue;
+import de.siphalor.tweed4.data.DataNull;
 import de.siphalor.tweed4.data.DataSerializer;
+import de.siphalor.tweed4.data.DataType;
 import org.hjson.HjsonOptions;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 
-public class HjsonSerializer implements DataSerializer<HjsonValue, HjsonList, HjsonObject> {
+public class HjsonSerializer implements DataSerializer<JsonValue, HjsonList, HjsonObject> {
 	public static final HjsonSerializer INSTANCE = new HjsonSerializer();
 
 	private final HjsonOptions hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");
 
 	@Override
 	public HjsonObject newObject() {
-        return new HjsonObject(new JsonObject());
+        return new HjsonObject();
 	}
 
 	@Override
 	public HjsonList newList() {
-		return new HjsonList(new JsonArray());
+		return new HjsonList();
 	}
 
 	@Override
-	public HjsonValue newNull() {
-		return new HjsonValue(JsonValue.valueOf(null));
-	}
-
-	@Override
-	public HjsonValue newBoolean(boolean value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newChar(char value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newString(String value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newByte(byte value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newShort(short value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newInt(int value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newLong(long value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newFloat(float value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue newDouble(double value) {
-		return new HjsonValue(JsonValue.valueOf(value));
-	}
-
-	@Override
-	public HjsonValue readValue(InputStream inputStream) {
+	public AnnotatedDataValue<JsonValue> read(InputStream inputStream) {
 		JsonValue json;
 		try {
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 			json = JsonValue.readHjson(inputStreamReader);
 			inputStreamReader.close();
-			return new HjsonValue(json);
+			return AnnotatedDataValue.of(json, json.getBOLComment());
 		} catch (Exception e) {
 			System.err.println("Couldn't load hjson config file");
 			e.printStackTrace();
@@ -105,13 +59,55 @@ public class HjsonSerializer implements DataSerializer<HjsonValue, HjsonList, Hj
 	}
 
 	@Override
-	public void writeValue(OutputStream outputStream, HjsonValue dataValue) {
+	public void write(OutputStream outputStream, AnnotatedDataValue<JsonValue> value) {
+		value.getValue().setComment(value.getComment());
 		try {
 			OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
-			dataValue.getRaw().writeTo(outputStreamWriter, hjsonOptions);
+			value.getValue().writeTo(outputStreamWriter, hjsonOptions);
 			outputStreamWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public Object toRaw(JsonValue value, @Nullable DataType typeHint) {
+		if (value.isBoolean()) {
+			return value.asBoolean();
+		} else if (value.isNumber()) {
+			if (typeHint != null && typeHint.isNumber()) {
+				return typeHint.cast(value.asDouble());
+			}
+			return value.asDouble();
+		} else if (value.isString()) {
+			return value.asString();
+		} else if (value.isArray()) {
+			return new HjsonList((JsonArray) value);
+		} else if (value.isObject()) {
+			return new HjsonObject((JsonObject) value);
+		} else if (value.isNull()) {
+			return DataNull.INSTANCE;
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public JsonValue fromRawPrimitive(Object raw) {
+		if (raw instanceof Boolean) {
+			return JsonValue.valueOf(raw);
+		} else if (raw instanceof Number) {
+			return JsonValue.valueOf(raw);
+		} else if (raw instanceof String) {
+			return JsonValue.valueOf((String) raw);
+		} else if (raw instanceof HjsonList) {
+			return ((HjsonList) raw).getJsonArray();
+		} else if (raw instanceof HjsonObject) {
+			return ((HjsonObject) raw).getJsonObject();
+		} else if (raw instanceof DataNull) {
+			return JsonValue.valueOf(null);
+		} else {
+			return null;
 		}
 	}
 
@@ -124,5 +120,4 @@ public class HjsonSerializer implements DataSerializer<HjsonValue, HjsonList, Hj
 	public String getFileExtension() {
 		return "hjson";
 	}
-
 }

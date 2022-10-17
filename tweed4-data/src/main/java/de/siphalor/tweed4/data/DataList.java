@@ -16,81 +16,68 @@
 
 package de.siphalor.tweed4.data;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.List;
 
-public interface DataList<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends Iterable<V>, DataContainer<Integer, V, L, O> {
-	@Override
-	default boolean has(Integer index) {
-		return index < size();
+public interface DataList<V, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends List<V> {
+	V getValue();
+
+	String getComment(int index);
+	void setComment(int index, String comment);
+
+	default Object getRaw(int index) {
+		return getSerializer().toRaw(get(index), null);
 	}
 
-	@Override
-	void remove(Integer index);
-
-	@Override
-	V get(Integer index);
-
-	@Override
-	V set(Integer index, byte value);
-
-	@Override
-	V set(Integer index, short value);
-
-	@Override
-	V set(Integer index, int value);
-
-	@Override
-	V set(Integer index, long value);
-
-	@Override
-	V set(Integer index, float value);
-
-	@Override
-	V set(Integer index, double value);
-
-	@Override
-	V set(Integer index, char value);
-
-	@Override
-	V set(Integer index, String value);
-
-	@Override
-	V set(Integer index, boolean value);
-
-	@Override
-	V set(Integer index, V value);
-
-	@Override
-	L addList(Integer index);
-
-	@Override
-	O addObject(Integer index);
-
-	@Override
-	default boolean isObject() {
-		return false;
+	default void add(V value, String comment) {
+		add(value);
+		setComment(size() - 1, comment);
+	}
+	default void add(AnnotatedDataValue<V> value) {
+		add(value.getValue(), value.getComment());
+	}
+	default void add(int index, V value, String comment) {
+		add(index, value);
+		setComment(index, comment);
+	}
+	default void add(int index, AnnotatedDataValue<V> value) {
+		add(index, value.getValue(), value.getComment());
+	}
+	default void addRaw(Object raw) {
+		add(getSerializer().fromRawPrimitive(raw));
+	}
+	default void addRaw(int index, Object raw) {
+		add(index, getSerializer().fromRawPrimitive(raw));
+	}
+	default void addRaw(Object raw, String comment) {
+		add(getSerializer().fromRawPrimitive(raw), comment);
+	}
+	default void addRaw(AnnotatedDataValue<Object> value) {
+		addRaw(value.getValue(), value.getComment());
+	}
+	default void addRaw(int index, Object raw, String comment) {
+		add(index, getSerializer().fromRawPrimitive(raw), comment);
+	}
+	default void addRaw(int index, AnnotatedDataValue<Object> value) {
+		addRaw(index, value.getValue(), value.getComment());
 	}
 
-	@Override
-	default boolean isList() {
-		return true;
+	default Object set(int index, V value, String comment) {
+		Object old = set(index, value);
+		setComment(index, comment);
+		return old;
+	}
+	default Object set(int index, AnnotatedDataValue<V> value) {
+		return set(index, value.getValue(), value.getComment());
+	}
+	default Object setRaw(int index, Object raw) {
+		return set(index, getSerializer().fromRawPrimitive(raw));
+	}
+	default Object setRaw(int index, Object raw, String comment) {
+		return set(index, getSerializer().fromRawPrimitive(raw), comment);
+	}
+	default Object setRaw(int index, AnnotatedDataValue<Object> value) {
+		return setRaw(index, value.getValue(), value.getComment());
 	}
 
-	@Override
-	default O asObject() {
-		return null;
-	}
-
-	@Override
-	default L asList() {
-		//noinspection unchecked
-		return (L) this;
-	}
-
-	@Override
-	default Set<Integer> keys() {
-		return IntStream.range(0, size()).boxed().collect(Collectors.toSet());
-	}
+	DataSerializer<V, L, O> getSerializer();
 }

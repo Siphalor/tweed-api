@@ -16,107 +16,43 @@
 
 package de.siphalor.tweed4.data;
 
-import com.google.common.collect.Streams;
-import com.mojang.datafixers.util.Pair;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-public interface DataObject<V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends Iterable<Pair<String, V>>, DataContainer<String, V, L, O> {
-	@Override
+public interface DataObject<V, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends Map<String, V> {
+	@NotNull V getValue();
+
+	String getComment(String key);
+	void setComment(String key, String comment);
+
 	boolean has(String key);
-
 	@Override
-	void remove(String key);
-
-	@Override
-	V set(String key, V value);
-
-	@Override
-	V set(String key, boolean value);
-
-	@Override
-	V set(String key, String value);
-
-	@Override
-	V set(String key, char value);
-
-	@Override
-	V set(String key, double value);
-
-	@Override
-	V set(String key, float value);
-
-	@Override
-	V set(String key, long value);
-
-	@Override
-	V set(String key, int value);
-
-	@Override
-	V set(String key, short value);
-
-	@Override
-	V set(String key, byte value);
-
-	@Override
-	O addObject(String key);
-
-	@Override
-	L addList(String key);
-
-	@Override
-	V get(String key);
-
-	@Override
-	default boolean isObject() {
-		return true;
+	default boolean containsKey(Object key) {
+		return has((String) key);
 	}
 
-	@Override
-	default boolean isList() {
-		return false;
+	default Object getRaw(String key) {
+		return getSerializer().toRaw(get(key), null);
 	}
 
-	@Override
-	default O asObject() {
-		//noinspection unchecked
-		return (O) this;
+	default Object put(String key, V value, String comment) {
+		Object old = put(key, value);
+		setComment(key, comment);
+		return old;
+	}
+	default Object put(String key, AnnotatedDataValue<V> value) {
+		return put(key, value.getValue(), value.getComment());
+	}
+	default Object putRaw(String key, Object raw) {
+		return put(key, getSerializer().fromRawPrimitive(raw));
+	}
+	default Object putRaw(String key, Object raw, String comment) {
+		return put(key, getSerializer().fromRawPrimitive(raw), comment);
+	}
+	default Object putRaw(String key, AnnotatedDataValue<Object> value) {
+		return putRaw(key, value.getValue(), value.getComment());
 	}
 
-	@Override
-	default L asList() {
-		return null;
-	}
-
-	@Override
-	default Set<String> keys() {
-		//noinspection UnstableApiUsage
-		return Streams.stream(iterator()).map(Pair::getFirst).collect(Collectors.toSet());
-	}
-
-	/**
-	 * @deprecated Please override {@link DataObject#keys()} as well.
-	 * This method will at some point be removed in favor of {@link DataObject#keys()}.
-	 */
-	@NotNull
-	@Deprecated
-	@ApiStatus.OverrideOnly
-	Iterator<Pair<String, V>> iterator();
-
-	@Deprecated
-	default Spliterator<Pair<String, V>> spliterator() {
-		return Spliterators.spliteratorUnknownSize(iterator(), 0);
-	}
-
-	@Deprecated
-	default void forEach(Consumer<? super Pair<String, V>> action) {
-		Objects.requireNonNull(action);
-		for (Pair<String, V> pair : this) {
-			action.accept(pair);
-		}
-	}
+	DataSerializer<V, L, O> getSerializer();
 }

@@ -17,123 +17,61 @@
 package de.siphalor.tweed4.data.yaml;
 
 import de.siphalor.tweed4.data.DataList;
-import org.jetbrains.annotations.NotNull;
-import org.snakeyaml.engine.v2.common.FlowStyle;
-import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.nodes.*;
+import de.siphalor.tweed4.data.DataSerializer;
+import org.snakeyaml.engine.v2.nodes.Node;
+import org.snakeyaml.engine.v2.nodes.SequenceNode;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.AbstractList;
 
-public class YamlList extends YamlValue<SequenceNode> implements DataList<YamlValue<Node>, YamlList, YamlObject> {
+public class YamlList extends AbstractList<Node> implements DataList<Node, YamlList, YamlObject> {
+	private final SequenceNode yamlNode;
+
 	public YamlList(SequenceNode yamlNode) {
-		super(yamlNode);
+		this.yamlNode = yamlNode;
+	}
+
+	@Override
+	public Node getValue() {
+		return yamlNode;
+	}
+
+	@Override
+	public String getComment(int index) {
+		return YamlSerializer.getComment(yamlNode.getValue().get(index));
+	}
+
+	@Override
+	public void setComment(int index, String comment) {
+		YamlSerializer.setComment(yamlNode.getValue().get(index), comment);
+	}
+
+	@Override
+	public DataSerializer<Node, YamlList, YamlObject> getSerializer() {
+		return YamlSerializer.INSTANCE;
+	}
+
+	@Override
+	public Node get(int index) {
+		return yamlNode.getValue().get(index);
 	}
 
 	@Override
 	public int size() {
-		return getNode().getValue().size();
+		return yamlNode.getValue().size();
 	}
 
 	@Override
-	public void remove(Integer index) {
-		getNode().getValue().remove((int) index);
+	public Node set(int index, Node element) {
+		return yamlNode.getValue().set(index, element);
 	}
 
 	@Override
-	public YamlValue<Node> get(Integer index) {
-		return new YamlValue<>(getNode().getValue().get(index));
-	}
-
-	protected void set(int index, Node node) {
-		List<Node> list = getNode().getValue();
-		for (int i = list.size(); i <= index; i++) {
-			list.add(null);
-		}
-		list.set(index, node);
-	}
-
-	protected YamlValue<Node> set(int index, Tag tag, String value, ScalarStyle scalarStyle) {
-		ScalarNode node = new ScalarNode(tag, value, scalarStyle);
-		set(index, node);
-		getNode().getValue().set(index, node);
-		return new YamlValue<>(node);
+	public void add(int index, Node element) {
+		yamlNode.getValue().add(index, element);
 	}
 
 	@Override
-	public YamlValue<Node> set(Integer index, byte value) {
-		return set(index, Tag.INT, Byte.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, short value) {
-		return set(index, Tag.INT, Short.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, int value) {
-		return set(index, Tag.INT, Integer.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, long value) {
-		return set(index, Tag.INT, Long.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, float value) {
-		return set(index, Tag.FLOAT, Float.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, double value) {
-		return set(index, Tag.FLOAT, Double.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, char value) {
-		return set(index, Tag.STR, Character.toString(value), ScalarStyle.SINGLE_QUOTED);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, String value) {
-		return set(index, Tag.STR, value, ScalarStyle.DOUBLE_QUOTED);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, boolean value) {
-		return set(index, Tag.BOOL, Boolean.toString(value), ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlValue<Node> set(Integer index, YamlValue<Node> value) {
-		set(index, value.getNode());
-		return value;
-	}
-
-	@Override
-	public YamlValue<Node> addNull(Integer index) {
-		return set(index, Tag.NULL, "null", ScalarStyle.PLAIN);
-	}
-
-	@Override
-	public YamlList addList(Integer index) {
-		SequenceNode node = new SequenceNode(Tag.SEQ, new ArrayList<>(), FlowStyle.AUTO);
-		set(index, node);
-		return new YamlList(node);
-	}
-
-	@Override
-	public YamlObject addObject(Integer index) {
-		MappingNode node = new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO);
-		set(index, node);
-		return new YamlObject(node);
-	}
-
-	@NotNull
-	@Override
-	public Iterator<YamlValue<Node>> iterator() {
-		return getNode().getValue().stream().map(YamlValue::new).iterator();
+	public Node remove(int index) {
+		return yamlNode.getValue().remove(index);
 	}
 }

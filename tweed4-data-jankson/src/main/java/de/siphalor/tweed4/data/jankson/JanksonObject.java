@@ -1,155 +1,112 @@
-/*
- * Copyright 2021-2022 Siphalor
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package de.siphalor.tweed4.data.jankson;
 
-import blue.endless.jankson.*;
-import com.mojang.datafixers.util.Pair;
+import blue.endless.jankson.JsonElement;
+import blue.endless.jankson.JsonObject;
 import de.siphalor.tweed4.data.DataObject;
+import de.siphalor.tweed4.data.DataSerializer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
-public class JanksonObject extends JanksonValue implements DataObject<JanksonValue, JanksonList, JanksonObject> {
-	JsonObject self;
+public class JanksonObject implements DataObject<JsonElement, JanksonList, JanksonObject> {
+	private final JsonObject jsonObject;
 
-	JanksonObject(JsonElement jsonElement, Consumer<String> setComment, Supplier<String> getComment, Function<Class<?>, Object> as) {
-		super(jsonElement, setComment, getComment, as);
-		self = (JsonObject) element;
+	public JanksonObject(JsonObject jsonObject) {
+		this.jsonObject = jsonObject;
+	}
+
+	public JanksonObject() {
+		this(new JsonObject());
+	}
+
+	@Override
+	public @NotNull JsonElement getValue() {
+		return jsonObject;
+	}
+
+	public JsonObject getJsonObject() {
+		return jsonObject;
+	}
+
+	@Override
+	public String getComment(String key) {
+		return jsonObject.getComment(key);
+	}
+
+	@Override
+	public void setComment(String key, String comment) {
+		jsonObject.setComment(key, comment);
 	}
 
 	@Override
 	public boolean has(String key) {
-		return self.containsKey(key);
+		return jsonObject.containsKey(key);
+	}
+
+	@Override
+	public DataSerializer<JsonElement, JanksonList, JanksonObject> getSerializer() {
+		return JanksonSerializer.INSTANCE;
 	}
 
 	@Override
 	public int size() {
-		return self.size();
+		return jsonObject.size();
 	}
 
 	@Override
-	public JanksonValue get(String key) {
-		return createDataValue(self.get(key), key);
+	public boolean isEmpty() {
+		return jsonObject.isEmpty();
 	}
 
 	@Override
-	public JanksonValue set(String key, int value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
+	public boolean containsValue(Object value) {
+		return jsonObject.containsValue(value);
 	}
 
 	@Override
-	public JanksonValue set(String key, short value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
+	public JsonElement get(Object key) {
+		return jsonObject.get(key);
+	}
+
+	@Nullable
+	@Override
+	public JsonElement put(String key, JsonElement value) {
+		return jsonObject.put(key, value);
 	}
 
 	@Override
-	public JanksonValue set(String key, byte value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
+	public JsonElement remove(Object key) {
+		return jsonObject.remove(key);
 	}
 
 	@Override
-	public JanksonValue set(String key, float value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
+	public void putAll(@NotNull Map<? extends String, ? extends JsonElement> m) {
+		jsonObject.putAll(m);
 	}
 
 	@Override
-	public JanksonValue set(String key, long value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
+	public void clear() {
+		jsonObject.clear();
 	}
 
-	@Override
-	public JanksonValue set(String key, String value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
-	}
-
-	@Override
-	public JanksonValue set(String key, char value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
-	}
-
-	@Override
-	public JanksonValue set(String key, double value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
-	}
-
-	@Override
-	public JanksonValue set(String key, boolean value) {
-		JsonPrimitive jsonPrimitive = new JsonPrimitive(value);
-		self.put(key, jsonPrimitive);
-		return createDataValue(jsonPrimitive, key);
-	}
-
-	@Override
-	public JanksonValue set(String key, JanksonValue value) {
-		self.put(key, value.getRaw());
-		return createDataValue(value.getRaw(), key);
-	}
-
-	@Override
-	public JanksonObject addObject(String key) {
-		JsonObject jsonObject = new JsonObject();
-		self.put(key, jsonObject);
-		return createDataValue(jsonObject, key).asObject();
-	}
-
-	@Override
-	public JanksonList addList(String key) {
-		JsonArray jsonArray = new JsonArray();
-		self.put(key, jsonArray);
-		return createDataValue(jsonArray, key).asList();
-	}
-
-	@Override
-	public JanksonValue addNull(String key) {
-		self.put(key, JsonNull.INSTANCE);
-		return createDataValue(JsonNull.INSTANCE, key);
-	}
-
-	@Override
-	public void remove(String key) {
-		self.remove(key);
-	}
-
-	@Override
 	@NotNull
-	public Iterator<Pair<String, JanksonValue>> iterator() {
-		return self.entrySet().stream().map(entry -> new Pair<>(entry.getKey(), createDataValue(entry.getValue(), entry.getKey()))).iterator();
+	@Override
+	public Set<String> keySet() {
+		return jsonObject.keySet();
 	}
 
-	JanksonValue createDataValue(JsonElement jsonElement, String key) {
-		return new JanksonValue(jsonElement, (comment) -> self.setComment(key, comment), () -> self.getComment(key), (clazz) -> self.get(clazz, key));
+	@NotNull
+	@Override
+	public Collection<JsonElement> values() {
+		return jsonObject.values();
+	}
+
+	@NotNull
+	@Override
+	public Set<Entry<String, JsonElement>> entrySet() {
+		return jsonObject.entrySet();
 	}
 }

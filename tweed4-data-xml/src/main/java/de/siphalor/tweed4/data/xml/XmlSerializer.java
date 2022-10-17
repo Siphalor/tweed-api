@@ -16,9 +16,17 @@
 
 package de.siphalor.tweed4.data.xml;
 
+import de.siphalor.tweed4.data.AnnotatedDataValue;
 import de.siphalor.tweed4.data.DataSerializer;
+import de.siphalor.tweed4.data.DataType;
+import de.siphalor.tweed4.data.xml.value.DefinedXmlValue;
+import de.siphalor.tweed4.data.xml.value.SimpleXmlValue;
+import de.siphalor.tweed4.data.xml.value.XmlValue;
+import org.jetbrains.annotations.Nullable;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -35,22 +43,28 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class XmlSerializer implements DataSerializer<XmlValue, XmlList, XmlObject> {
-	private static DocumentBuilder DOCUMENT_BUILDER;
+	private static final DocumentBuilder DOCUMENT_BUILDER;
 	public static final XmlSerializer INSTANCE = new XmlSerializer();
 
 	static {
 		try {
 			DOCUMENT_BUILDER = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	public XmlValue readValue(InputStream inputStream) {
+	public AnnotatedDataValue<XmlValue> read(InputStream inputStream) {
 		try {
 			Document document = DOCUMENT_BUILDER.parse(inputStream);
-			return XmlValue.of(document.getDocumentElement());
+			Element documentElement = document.getDocumentElement();
+			Node previousSibling = documentElement.getPreviousSibling();
+			String comment = null;
+			if (previousSibling instanceof Comment) {
+				comment = previousSibling.getTextContent();
+			}
+			return AnnotatedDataValue.of(new SimpleXmlValue(documentElement), comment);
 		} catch (SAXException | IOException e) {
 			e.printStackTrace();
 		}
@@ -58,8 +72,19 @@ public class XmlSerializer implements DataSerializer<XmlValue, XmlList, XmlObjec
 	}
 
 	@Override
-	public void writeValue(OutputStream outputStream, XmlValue dataValue) {
-		Document document = dataValue.xmlElement.getOwnerDocument();
+	public void write(OutputStream outputStream, AnnotatedDataValue<XmlValue> dataValue) {
+		Element documentElement = dataValue.getValue().getElement(() -> DOCUMENT_BUILDER.newDocument().createElement("root"));
+		Document document = documentElement.getOwnerDocument();
+		if (dataValue.getComment() != null) {
+			Node previousSibling = documentElement.getPreviousSibling();
+			if (previousSibling instanceof Comment) {
+				previousSibling.setTextContent(dataValue.getComment());
+			} else {
+				Comment comment = document.createComment(dataValue.getComment());
+				document.insertBefore(comment, documentElement);
+			}
+		}
+
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		try {
 			Transformer transformer = transformerFactory.newTransformer();
@@ -79,66 +104,86 @@ public class XmlSerializer implements DataSerializer<XmlValue, XmlList, XmlObjec
 	}
 
 	@Override
-	public XmlValue newBoolean(boolean value) {
-		return new TypedXmlValue(createStandaloneElement(), "bool");
-	}
-
-	@Override
-	public XmlValue newChar(char value) {
-		return new TypedXmlValue(createStandaloneElement(), "char");
-	}
-
-	@Override
-	public XmlValue newString(String value) {
-		return new TypedXmlValue(createStandaloneElement(), "string");
-	}
-
-	@Override
-	public XmlValue newByte(byte value) {
-		return new TypedXmlValue(createStandaloneElement(), "byte");
-	}
-
-	@Override
-	public XmlValue newShort(short value) {
-		return new TypedXmlValue(createStandaloneElement(), "short");
-	}
-
-	@Override
-	public XmlValue newInt(int value) {
-		return new TypedXmlValue(createStandaloneElement(), "int");
-	}
-
-	@Override
-	public XmlValue newLong(long value) {
-		return new TypedXmlValue(createStandaloneElement(), "long");
-	}
-
-	@Override
-	public XmlValue newFloat(float value) {
-		return new TypedXmlValue(createStandaloneElement(), "float");
-	}
-
-	@Override
-	public XmlValue newDouble(double value) {
-		return new TypedXmlValue(createStandaloneElement(), "double");
-	}
-
-	@Override
 	public XmlObject newObject() {
 		return new XmlObject(createStandaloneElement());
 	}
 
-	@Override
-	public XmlValue newNull() {
-		return new TypedXmlValue(createStandaloneElement(), "null");
-	}
-
-	private Element createStandaloneElement() {
+	Element createStandaloneElement() {
 		Document document = DOCUMENT_BUILDER.newDocument();
 		Element root = document.createElement("root");
 		document.setXmlStandalone(true);
 		document.appendChild(root);
 		return root;
+	}
+
+	@Override
+	public Object toRaw(XmlValue value, @Nullable DataType typeHint) {
+		if (value.getType() != null) {
+			switch (value.getType()) {
+				case "char":
+				case "character":
+					return value.getText().charAt(0);
+				case "string":
+				case "text":
+					return value.getText();
+				case "bool":
+				case "boolean":
+					return "true".equals(value.getText());
+				case "byte":
+					return Byte.parseByte(value.getText());
+				case "short":
+					return Short.parseShort(value.getText());
+				case "int":
+				case "integer":
+					return Integer.parseInt(value.getText());
+				case "long":
+					return Long.parseLong(value.getText());
+				case "float":
+					return Float.parseFloat(value.getText());
+				case "double":
+					return Double.parseDouble(value.getText());
+				case "list":
+				case "array":
+					return new XmlList(value.getElement(this::createStandaloneElement));
+				case "object":
+				case "map":
+					return new XmlObject(value.getElement(this::createStandaloneElement));
+				default:
+					throw new RuntimeException("Unknown type \"" + value.getType() + "\"");
+			}
+		}
+		if (typeHint != null) {
+			try {
+				return typeHint.cast(value.getText());
+			} catch (IllegalArgumentException ignored) {
+			}
+		}
+		return value.getText();
+	}
+
+	@Override
+	public XmlValue fromRawPrimitive(Object raw) {
+		if (raw instanceof Boolean) {
+			return new DefinedXmlValue(raw.toString(), "boolean");
+		} else if (raw instanceof Byte) {
+			return new DefinedXmlValue(raw.toString(), "byte");
+		} else if (raw instanceof Short) {
+			return new DefinedXmlValue(raw.toString(), "short");
+		} else if (raw instanceof Integer) {
+			return new DefinedXmlValue(raw.toString(), "integer");
+		} else if (raw instanceof Long) {
+			return new DefinedXmlValue(raw.toString(), "long");
+		} else if (raw instanceof Float) {
+			return new DefinedXmlValue(raw.toString(), "float");
+		} else if (raw instanceof Double) {
+			return new DefinedXmlValue(raw.toString(), "double");
+		} else if (raw instanceof Character) {
+			return new DefinedXmlValue(raw.toString(), "character");
+		} else if (raw instanceof String) {
+			return new DefinedXmlValue(raw.toString(), "string");
+		}
+		// TODO: Lists and objects and stuff
+		throw new RuntimeException("Unknown type \"" + raw.getClass().getName() + "\"");
 	}
 
 	@Override

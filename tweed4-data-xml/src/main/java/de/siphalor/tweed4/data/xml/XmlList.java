@@ -17,38 +17,44 @@
 package de.siphalor.tweed4.data.xml;
 
 import de.siphalor.tweed4.data.DataList;
-import org.jetbrains.annotations.NotNull;
+import de.siphalor.tweed4.data.DataSerializer;
+import de.siphalor.tweed4.data.xml.value.SimpleXmlValue;
+import de.siphalor.tweed4.data.xml.value.XmlValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
-public class XmlList extends XmlContainer<Integer> implements DataList<XmlValue, XmlList, XmlObject> {
-	private final List<Element> elements;
-	private String childNameDefault;
+public class XmlList extends AbstractList<XmlValue> implements DataList<XmlValue, XmlList, XmlObject>, XmlBaseContainer {
+	private final Element xmlElement;
+	private final List<Element> children;
+	private final String childNameDefault;
 
 	public XmlList(Element xmlElement) {
-		super(xmlElement);
+		this.xmlElement = xmlElement;
 		NodeList nodes = xmlElement.getChildNodes();
-		elements = new ArrayList<>(nodes.getLength());
+		children = new ArrayList<>(nodes.getLength());
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node instanceof Element) {
-				elements.add((Element) node);
+				children.add((Element) node);
 			}
 		}
 
-		if (xmlElement.hasAttribute("childName")) {
-			childNameDefault = xmlElement.getAttribute("childName");
+		if (xmlElement.hasAttribute("child-name")) {
+			childNameDefault = xmlElement.getAttribute("child-name");
 		} else {
-			if (!elements.isEmpty()) {
-				childNameDefault = elements.get(0).getTagName();
+			if (!children.isEmpty()) {
+				childNameDefault = children.get(0).getTagName();
 			} else {
 				String tagName = xmlElement.getTagName();
-				if (tagName.endsWith("s")) {
+				if (tagName.endsWith("ies")) {
+					childNameDefault = tagName.substring(0, tagName.length() - 3) + "y";
+				} else if (tagName.endsWith("s")) {
 					childNameDefault = tagName.substring(0, tagName.length() - 1);
 				} else {
 					childNameDefault = "element";
@@ -58,74 +64,59 @@ public class XmlList extends XmlContainer<Integer> implements DataList<XmlValue,
 	}
 
 	@Override
-	protected XmlValue createTypedChild(Integer index, String type, String value) {
-		Element child = xmlElement.getOwnerDocument().createElement(childNameDefault);
-		child.setTextContent(value);
-		TypedXmlValue typedXmlValue = new TypedXmlValue(child, type);
-		set(index, typedXmlValue);
-		return typedXmlValue;
+	public XmlValue getValue() {
+		return new SimpleXmlValue(xmlElement);
+	}
+
+	@Override
+	public String getComment(int index) {
+		return getComment(children.get(index));
+	}
+
+	@Override
+	public void setComment(int index, String comment) {
+		setComment(children.get(index), comment);
+	}
+
+	private Supplier<Element> getElementSupplier() {
+		return () -> xmlElement.getOwnerDocument().createElement(childNameDefault);
+	}
+
+	@Override
+	public XmlValue get(int index) {
+		return new SimpleXmlValue(children.get(index));
+	}
+
+	@Override
+	public XmlValue set(int index, XmlValue value) {
+		Element element = value.getElement(getElementSupplier());
+		Element oldElement = children.get(index);
+		children.set(index, element);
+		xmlElement.replaceChild(element, oldElement);
+		return new SimpleXmlValue(oldElement);
 	}
 
 	@Override
 	public int size() {
-		return elements.size();
+		return children.size();
 	}
 
 	@Override
-	public XmlValue get(Integer index) {
-		return XmlValue.of(elements.get(index));
+	public void add(int index, XmlValue value) {
+		Element element = value.getElement(getElementSupplier());
+		xmlElement.insertBefore(element, children.get(index));
+		children.add(index, element);
 	}
 
 	@Override
-	public XmlValue set(Integer index, XmlValue value) {
-		if (index < elements.size()) {
-			xmlElement.removeChild(elements.get(index));
-			xmlElement.getOwnerDocument().adoptNode(value.xmlElement);
-			elements.set(index, value.xmlElement);
-		} else {
-			for (int i = elements.size(); i < index; i++) {
-				Element placeholder = xmlElement.getOwnerDocument().createElement(childNameDefault);
-				placeholder.setAttribute("type", null);
-				elements.add(placeholder);
-				xmlElement.appendChild(placeholder);
-			}
-			elements.add(value.xmlElement);
-			xmlElement.getOwnerDocument().adoptNode(value.xmlElement);
-			xmlElement.appendChild(value.xmlElement);
-		}
-		return value;
+	public XmlValue remove(int index) {
+		Element element = children.remove(index);
+		xmlElement.removeChild(element);
+		return new SimpleXmlValue(element);
 	}
 
 	@Override
-	public XmlObject addObject(Integer integer) {
-		Element child = xmlElement.getOwnerDocument().createElement(childNameDefault);
-		elements.add(child);
-		xmlElement.appendChild(child);
-		return new XmlObject(child);
-	}
-
-	@Override
-	public XmlList addList(Integer integer) {
-		Element child = xmlElement.getOwnerDocument().createElement(childNameDefault);
-		elements.add(child);
-		xmlElement.appendChild(child);
-		return new XmlList(child);
-	}
-
-	@Override
-	public void remove(Integer index) {
-		xmlElement.removeChild(elements.get(index));
-		elements.remove((int) index);
-	}
-
-	@Override
-	public XmlList asList() {
-		return this;
-	}
-
-	@NotNull
-	@Override
-	public Iterator<XmlValue> iterator() {
-		return elements.stream().map(XmlValue::of).iterator();
+	public DataSerializer<XmlValue, XmlList, XmlObject> getSerializer() {
+		return XmlSerializer.INSTANCE;
 	}
 }
