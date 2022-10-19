@@ -18,7 +18,7 @@ package de.siphalor.tweed4.data;
 
 import java.util.List;
 
-public interface DataList<V, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends List<V> {
+public interface DataList<V> extends List<V> {
 	V getValue();
 
 	String getComment(int index);
@@ -79,5 +79,5 @@ public interface DataList<V, L extends DataList<V, L, O>, O extends DataObject<V
 		return setRaw(index, value.getValue(), value.getComment());
 	}
 
-	DataSerializer<V, L, O> getSerializer();
+	DataSerializer<V> getSerializer();
 }

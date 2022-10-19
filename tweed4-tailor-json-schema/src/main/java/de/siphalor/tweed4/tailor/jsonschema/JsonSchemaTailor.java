@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package de.siphalor.tweed4.tailor.jsonschema;
 
 import com.google.gson.*;
@@ -26,9 +27,10 @@ import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.TweedRegistry;
 import de.siphalor.tweed4.config.entry.ConstantConfigEntry;
 import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
@@ -57,7 +59,8 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 
 		ConvertingObject rootConverter = new ConvertingObject(rootObject);
 		rootConverter.set("$schema", "");
-		configFile.getRootCategory().write(rootConverter, "", ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+		DataSerializer<Object> serializer = configFile.getDataSerializer();
+		configFile.write(serializer, AnnotatedDataValue.of(serializer.newObject().getValue()), ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
 
 		String schemaFileName = configFile.getName() + ".schema.json";
 		File file = FabricLoader.getInstance().getConfigDir().resolve(schemaFileName).toFile();
@@ -69,156 +72,18 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 	}
 
-	private static class ConvertingValue implements DataValue<ConvertingValue, ConvertingList, ConvertingObject> {
-		protected final JsonObject jsonObject;
+	private static class Value {
+		final String type;
+		String description;
+		String descriptionMd;
 
-		public ConvertingValue(JsonObject jsonObject) {
-			this.jsonObject = jsonObject;
+		public Value(String type) {
+			this.type = type;
 		}
 
-		public ConvertingValue(String type) {
-			jsonObject = new JsonObject();
-			jsonObject.addProperty("type", type);
-		}
-
-		@Override
-		public void setComment(String comment) {
-			jsonObject.addProperty("description", comment);
-			jsonObject.addProperty("descriptionMd", comment);
-		}
-
-		@Override
-		public String getComment() {
-			return jsonObject.get("description").getAsString();
-		}
-
-		@Override
-		public boolean isGenericNumber() {
-			return isNumber();
-		}
-
-		@Override
-		public boolean isNumber() {
-			return "number".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isByte() {
-			return "number".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isShort() {
-			return "number".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isInt() {
-			return "number".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isLong() {
-			return "number".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isFloat() {
-			return "number".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isDouble() {
-			return "number".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isChar() {
-			return "string".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isString() {
-			return "string".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isBoolean() {
-			return "boolean".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isObject() {
-			return "object".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public boolean isList() {
-			return "array".equals(jsonObject.get("type").getAsString());
-		}
-
-		@Override
-		public Number asNumber() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public byte asByte() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public short asShort() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int asInt() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long asLong() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public float asFloat() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public double asDouble() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public char asChar() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public String asString() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean asBoolean() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public ConvertingObject asObject() {
-			return new ConvertingObject(jsonObject);
-		}
-
-		@Override
-		public ConvertingList asList() {
-			return new ConvertingList(jsonObject);
-		}
 	}
 
-	private static class ConvertingObject extends ConvertingValue implements DataObject<ConvertingValue, ConvertingList, ConvertingObject> {
+	private static class ConvertingObject implements DataObject<Value> {
 		private final JsonObject propertiesObject;
 
 		public ConvertingObject(JsonObject jsonObject) {
@@ -460,3 +325,4 @@ public class JsonSchemaTailor extends Tailor implements TweedInitializer {
 		}
 	}
 }
+*/

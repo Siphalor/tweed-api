@@ -17,10 +17,8 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -38,26 +36,21 @@ public class ListSerializer<E, T extends List<E>> extends ConfigValueSerializer<
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	T read(V data) throws ConfigReadException {
+	public <V> T read(DataSerializer<V> serializer, V value) throws ConfigReadException {
 		T list = listSupplier.get();
-		if (data.isList()) {
-			L dataList = data.asList();
-			for (V dataValue : dataList) {
-				list.add(valueSerializer.read(dataValue));
-			}
+		for (V element : serializer.toList(value)) {
+			list.add(valueSerializer.read(serializer, element));
 		}
 		return list;
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, T value) {
-		DataList<?, ?, ?> dataList = dataContainer.addList(key);
-		int i = 0;
+	public <V> Object write(DataSerializer<V> serializer, T value) {
+		DataList<V> list = serializer.newList();
 		for (E element : value) {
-			valueSerializer.write(dataList, i++, element);
+			list.addRaw(valueSerializer.write(serializer, element));
 		}
+		return list;
 	}
 
 	@Override

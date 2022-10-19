@@ -21,14 +21,16 @@ import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.constraints.Constraint;
 import de.siphalor.tweed4.config.entry.AbstractBasicEntry;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
 import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
+import de.siphalor.tweed4.data.DataType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -59,7 +61,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void reset(ConfigEnvironment environment, ConfigScope scope) {
+	public void reset(@NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
 		entryStream(environment, scope).forEach(entry -> entry.getValue().reset(environment, scope));
 	}
 
@@ -87,7 +89,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public ConfigCategory setEnvironment(ConfigEnvironment environment) {
+	public ConfigCategory setEnvironment(@NotNull ConfigEnvironment environment) {
 		super.setEnvironment(environment);
 		for (ConfigEntry<?> configEntry : entries.values()) {
 			if (configEntry.getOwnEnvironment() == ConfigEnvironment.DEFAULT) {
@@ -100,14 +102,13 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	/**
 	 * @inheritDoc
 	 */
-	@Override
 	@Deprecated
 	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
 	public ConfigEnvironment getEnvironment() {
 		if (entries.isEmpty()) return environment;
 		ConfigEnvironment environment = this.environment;
 		for (ConfigEntry<?> configEntry : entries.values()) {
-			ConfigEnvironment itEnvironment = configEntry.getEnvironment();
+			ConfigEnvironment itEnvironment = configEntry.getOwnEnvironment();
 			if (environment == ConfigEnvironment.DEFAULT) {
 				environment = itEnvironment;
 				continue;
@@ -120,7 +121,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public ConfigCategory setScope(ConfigScope scope) {
+	public ConfigCategory setScope(@NotNull ConfigScope scope) {
 		super.setScope(scope);
 		for (ConfigEntry<?> configEntry : entries.values()) {
 			if (configEntry.getScope() == ConfigScope.DEFAULT) {
@@ -156,16 +157,12 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
-		if(!dataValue.isObject()) {
-			throw new ConfigReadException("The entry should be an object (category)");
-		}
-		O dataObject = dataValue.asObject();
+	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) throws ConfigReadException {
+		DataObject<V> dataObject = serializer.toObject(value);
 		entryStream(environment, scope).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
-			V value = dataObject.get(entry.getKey());
+			V fieldValue = dataObject.get(entry.getKey());
 			try {
-				entry.getValue().read(value, environment, scope, origin);
+				entry.getValue().read(serializer, fieldValue, environment, scope, origin);
 			} catch (ConfigReadException e) {
 				Tweed.LOGGER.error("Error reading " + entry.getKey() + ":");
 				e.printStackTrace();
@@ -185,7 +182,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void read(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
 		while(buf.readBoolean()) {
 			ConfigEntry<?> entry = entries.get(buf.readString(32767));
 			if (entry != null) {
@@ -198,7 +195,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void write(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
 		entryStream(environment, scope).forEach(entry -> {
 			buf.writeBoolean(true);
 			buf.writeString(entry.getKey());
@@ -208,20 +205,21 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
-		DataContainer<String, V, L, O> category;
-		if (key.equals("")) {
+	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+		DataObject<V> object;
+		if (oldValue != null && oldValue.getValue() instanceof DataObject) {
 			//noinspection unchecked
-			category = (DataContainer<String, V, L, O>) dataContainer;
-		} else if (!dataContainer.has(key)) {
-            category = dataContainer.addObject(key);
+			object = (DataObject<V>) oldValue.getValue();
 		} else {
-			category = dataContainer.get(key).asObject();
+			object = serializer.newObject();
 		}
-		if(!comment.equals(""))
-			category.setComment(getComment());
-		entryStream(environment, scope).forEach(entry -> entry.getValue().write(category, entry.getKey(), environment, scope));
+		entryStream(environment, scope).forEach(entry -> {
+			AnnotatedDataValue<?> value = entry.getValue().write(serializer, AnnotatedDataValue.of(object.get(entry.getKey())), environment, scope);
+			if (value != null) {
+				object.putRaw(entry.getKey(), value.getValue());
+			}
+		});
+		return AnnotatedDataValue.of(object, comment.equals("") ? null : comment);
 	}
 
 	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream() {

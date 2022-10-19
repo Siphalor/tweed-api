@@ -21,24 +21,19 @@ import de.siphalor.tweed4.config.ConfigOrigin;
 import de.siphalor.tweed4.config.ConfigReadException;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.Constraint;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Interface for all config entries
  * @param <T> The implementing class
  */
+@ParametersAreNonnullByDefault
 public interface ConfigEntry<T> {
 
 	/**
@@ -50,13 +45,14 @@ public interface ConfigEntry<T> {
 
 	/**
 	 * Abstract method for reading the entry's value from a data object
-	 * @param dataValue the given data value
+	 *
+	 * @param serializer  the serializer used for the data
+	 * @param value       the given data value
 	 * @param environment the current environment
-	 * @param scope the current reload scope
+	 * @param scope       the current reload scope
 	 * @throws ConfigReadException if an issue occurs during reading the value
 	 */
-	<V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
+	<V> void read(DataSerializer<V> serializer, V value, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
 
 	/**
 	 * Read this kind of entry from a packet.
@@ -77,14 +73,16 @@ public interface ConfigEntry<T> {
 	void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin);
 
 	/**
-	 * Method to write the main config value of the entry to HJSON (to be read by the user).
-	 * @param dataContainer the object where this entry should be appended to
-	 * @param key the key under which this entry should be appended
+	 * Method to write the main config value of the entry to a serialized form.
+	 * Use {@link DataSerializer#fromRaw(Object)} to convert primitive values or use {@link DataSerializer#newObject()}/{@link DataSerializer#newList()} for maps and lists.
+	 *
+	 * @param serializer  the serializer used for the data
+	 * @param oldValue
 	 * @param environment the current environment (handled by the system, can be ignored in most cases)
-	 * @param scope the current scope (handled by the system, can be ignored in most cases)
+	 * @param scope       the current scope (handled by the system, can be ignored in most cases)
+	 * @return The value serialized as annotated data
 	 */
-	<Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope);
+	<V> AnnotatedDataValue<Object> write(DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, ConfigEnvironment environment, ConfigScope scope);
 
 	/**
 	 * Sets the environment where this entry is defined
@@ -95,28 +93,12 @@ public interface ConfigEntry<T> {
 	T setEnvironment(ConfigEnvironment environment);
 
 	/**
-	 * Gets the environment where this entry will be loaded in.
-	 * This will be used to decide whether this entry's methods should be called or not.
-	 * If the entry is a composite entry, this is usually the combined environment of all its children.
-	 * @return the environment
-	 * @deprecated the returned environment may be inconsistent for composite entries.
-	 *             Use {@link #getOwnEnvironment()} or {@link #matches(ConfigEnvironment, ConfigScope)} instead.
-	 */
-	@Deprecated
-	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
-	default ConfigEnvironment getEnvironment() {
-		return ConfigEnvironment.DEFAULT;
-	}
-
-	/**
 	 * Gets the actual environment of the entry itself.
 	 * For composite entries this must always deliver the internal environment of the entry,
 	 * which is usually {@link ConfigEnvironment#DEFAULT} by default.
 	 * @return the environment of the entry itself
 	 */
-	default ConfigEnvironment getOwnEnvironment() {
-		return getEnvironment();
-	}
+	ConfigEnvironment getOwnEnvironment();
 
 	/**
 	 * Sets the scope in which the config can be (re-)loaded
@@ -139,8 +121,7 @@ public interface ConfigEntry<T> {
 	 * @param scope the scope to check
 	 * @return whether the entry is triggered by the given environment and scope
 	 */
-	@ApiStatus.AvailableSince("1.5.0")
-	default boolean matches(ConfigEnvironment environment, ConfigScope scope) {
+	default boolean matches(@Nullable ConfigEnvironment environment, @Nullable ConfigScope scope) {
 		return (environment == null || environment.triggers(getOwnEnvironment()))
 				&& (scope == null || scope.triggers(getScope()));
 	}
@@ -157,19 +138,6 @@ public interface ConfigEntry<T> {
 	 * @return the description
 	 */
 	String getDescription();
-
-	default Optional<Text[]> getClothyDescription() {
-		List<LiteralText> list = new ArrayList<>();
-		for (String s : getDescription().replace("\t", "    ").split("[\n\r]\r?")) {
-			LiteralText literalText = new LiteralText(s);
-			list.add(literalText);
-		}
-		if (list.isEmpty()) {
-			return Optional.empty();
-		} else {
-			return Optional.of(list.toArray(new Text[0]));
-		}
-	}
 
 	/**
 	 * Method for handling possible constraints after reading in the value.

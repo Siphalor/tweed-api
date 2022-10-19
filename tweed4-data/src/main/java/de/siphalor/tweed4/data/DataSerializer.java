@@ -18,12 +18,13 @@ package de.siphalor.tweed4.data;
 
 import org.jetbrains.annotations.Nullable;
 
+import javax.xml.crypto.Data;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-public interface DataSerializer<V, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> {
+public interface DataSerializer<V> {
 	AnnotatedDataValue<V> read(InputStream inputStream);
 
 	void write(OutputStream outputStream, AnnotatedDataValue<V> value);
@@ -56,11 +57,13 @@ public interface DataSerializer<V, L extends DataList<V, L, O>, O extends DataOb
 	default String toString(V value) {
 		return (String) toRaw(value, DataType.STRING);
 	}
-	default L toList(V value) {
-		return (L) toRaw(value, DataType.LIST);
+	default DataList<V> toList(V value) {
+		//noinspection unchecked
+		return (DataList<V>) toRaw(value, DataType.LIST);
 	}
-	default O toObject(V value) {
-		return (O) toRaw(value, DataType.OBJECT);
+	default DataObject<V> toObject(V value) {
+		//noinspection unchecked
+		return (DataObject) toRaw(value, DataType.OBJECT);
 	}
 	default V fromRaw(Object raw) {
 		if (raw instanceof List) {
@@ -73,23 +76,23 @@ public interface DataSerializer<V, L extends DataList<V, L, O>, O extends DataOb
 		}
 	}
 	V fromRawPrimitive(Object raw);
-	default <RawValue> L fromRawList(List<RawValue> list) {
-		L newList = newList();
+	default <RawValue> DataList<V> fromRawList(List<RawValue> list) {
+		DataList<V> newList = newList();
 		for (RawValue object : list) {
 			newList.add(fromRaw(object));
 		}
 		return newList;
 	}
-	default <RawValue> O fromRawMap(Map<String, RawValue> map) {
-		O newObject = newObject();
+	default <RawValue> DataObject<V> fromRawMap(Map<String, RawValue> map) {
+		DataObject<V> newObject = newObject();
 		for (Map.Entry<String, RawValue> entry : map.entrySet()) {
 			newObject.put(entry.getKey(), fromRawPrimitive(entry.getValue()));
 		}
 		return newObject;
 	}
 
-	O newObject();
-	L newList();
+	DataObject<V> newObject();
+	DataList<V> newList();
 
 	String getId();
 

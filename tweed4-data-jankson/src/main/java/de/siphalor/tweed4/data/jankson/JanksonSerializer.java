@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class JanksonSerializer implements DataSerializer<JsonElement, JanksonList, JanksonObject> {
+public class JanksonSerializer implements DataSerializer<JsonElement> {
     public static final JanksonSerializer INSTANCE = new JanksonSerializer();
 
 	@Override

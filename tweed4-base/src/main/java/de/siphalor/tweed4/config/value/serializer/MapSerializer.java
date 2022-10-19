@@ -17,10 +17,9 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
 import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.Map;
@@ -38,37 +37,27 @@ public class MapSerializer<MK, MV, M extends Map<MK, MV>> extends ConfigValueSer
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	M read(V data) throws ConfigReadException {
-		if (!data.isList()) {
-			throw new ConfigReadException("Expected a list, got " + data);
-		}
-
+	public <V> M read(DataSerializer<V> serializer, V value) throws ConfigReadException {
 		M map = mapSupplier.get();
-		for (V entry : data.asList()) {
-			if (!entry.isObject()) {
-				throw new ConfigReadException("Expected map entry to be an object, got " + entry);
-			}
-
-			O entryObject = entry.asObject();
-			MK key = keySerializer.read(entryObject.get("key"));
-			MV value = valueSerializer.read(entryObject.get("value"));
-			map.put(key, value);
+		for (V element : serializer.toList(value)) {
+			DataObject<V> elementObject = serializer.toObject(element);
+			MK elementKey = keySerializer.read(serializer, elementObject.get("key"));
+			MV elementValue = valueSerializer.read(serializer, elementObject.get("value"));
+			map.put(elementKey, elementValue);
 		}
-
 		return map;
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, M value) {
-		L list = dataContainer.addList(key);
-		int i = 0;
+	public <V> Object write(DataSerializer<V> serializer, M value) {
+		DataList<V> list = serializer.newList();
 		for (Map.Entry<MK, MV> entry : value.entrySet()) {
-			O entryObject = list.addObject(i);
-			keySerializer.write(entryObject, "key", entry.getKey());
-			valueSerializer.write(entryObject, "value", entry.getValue());
+			DataObject<V> elementObject = serializer.newObject();
+			elementObject.putRaw("key", keySerializer.write(serializer, entry.getKey()));
+			elementObject.putRaw("value", valueSerializer.write(serializer, entry.getValue()));
+			list.addRaw(elementObject);
 		}
+		return list;
 	}
 
 	@Override

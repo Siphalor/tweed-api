@@ -17,10 +17,7 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import de.siphalor.tweed4.util.StaticStringConvertible;
 import net.minecraft.network.PacketByteBuf;
 
@@ -32,19 +29,14 @@ public class StringConvertibleSerializer<T extends StaticStringConvertible<T>> e
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	StaticStringConvertible<T> read(V data) throws ConfigReadException {
-		if (data.isString()) {
-			T val = fallback.valueOf(data.asString());
-			return val == null ? fallback : val;
-		}
-		return fallback;
+	public <V> StaticStringConvertible<T> read(DataSerializer<V> serializer, V value) throws ConfigReadException {
+		T converted = fallback.valueOf(serializer.toString(value));
+		return converted == null ? fallback : converted;
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, StaticStringConvertible<T> value) {
-		dataContainer.set(key, value.asString());
+	public <V> Object write(DataSerializer<V> serializer, StaticStringConvertible<T> value) {
+		return value.asString();
 	}
 
 	@Override

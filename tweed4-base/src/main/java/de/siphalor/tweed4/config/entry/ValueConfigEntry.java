@@ -21,11 +21,11 @@ import de.siphalor.tweed4.config.value.ConfigValue;
 import de.siphalor.tweed4.config.value.SimpleConfigValue;
 import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * An entry to register at a {@link ConfigFile} or {@link ConfigCategory}.
@@ -81,10 +81,9 @@ public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEnt
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
+	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) throws ConfigReadException {
 		try {
-			currentValue.set(valueSerializer.read(dataValue));
+			currentValue.set(valueSerializer.read(serializer, value));
 		} catch (ConfigReadException e) {
 			currentValue.set(defaultValue);
 			if (origin == ConfigOrigin.MAIN) {
@@ -99,7 +98,7 @@ public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEnt
 	}
 
 	@Override
-	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void read(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
 		if (origin == ConfigOrigin.MAIN) {
 			mainConfigValue = valueSerializer.read(buf);
 			return;
@@ -114,17 +113,18 @@ public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEnt
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> void write(DataContainer<Key, V, L, O> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
-		valueSerializer.write(dataContainer, key, mainConfigValue);
-        if(dataContainer.has(key)) dataContainer.get(key).setComment(getDescription());
+	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+		Object written = valueSerializer.write(serializer, mainConfigValue);
+		return AnnotatedDataValue.of(written, getDescription());
     }
 
 	@Override
-	public void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		if(origin == ConfigOrigin.MAIN)
+	public void write(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
+		if (origin == ConfigOrigin.MAIN) {
 			valueSerializer.write(buf, mainConfigValue);
-		else
+		} else {
 			valueSerializer.write(buf, currentValue.get());
+		}
 	}
 
 }

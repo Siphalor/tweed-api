@@ -19,7 +19,6 @@ package de.siphalor.tweed4.config;
 import com.mojang.serialization.Lifecycle;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.data.DataSerializer;
-import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -32,17 +31,16 @@ import java.util.*;
 /**
  * Used to register {@link ConfigFile}s.
  */
-@SuppressWarnings("deprecation")
 public class TweedRegistry {
 	private static final Map<String, ConfigFile> CONFIG_FILES = new HashMap<>();
-	private static ConfigDataSerializer<?, ?, ?> defaultSerializer;
+	private static DataSerializer<?> defaultSerializer;
 	private static int serializerByExtensionSerializersHash;
-	private static Map<String, DataSerializer<?, ?, ?>> serializersByExtension;
+	private static Map<String, DataSerializer<?>> serializersByExtension;
 
 	/**
-	 * This registry contains all the known {@link ConfigDataSerializer}s.<br />
+	 * This registry contains all the known {@link DataSerializer}s.<br />
 	 */
-	public static final Registry<ConfigDataSerializer<?, ?, ?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
+	public static final Registry<DataSerializer<?>> SERIALIZERS = new SimpleRegistry<>(RegistryKey.ofRegistry(new Identifier(Tweed.MOD_ID, "serializers")), Lifecycle.experimental());
 	/**
 	 * This registry contains all the known {@link Tailor}s.<br />
 	 */
@@ -53,7 +51,7 @@ public class TweedRegistry {
 	 * The default serializer will be used (usually the HJSON serializer, if around).
 	 * @param fileName the file id which is used (without extension)
 	 * @return the new {@link ConfigFile}
-	 * @deprecated it is highly recommended to explicitly set the serializer with {@link #registerConfigFile(String, ConfigDataSerializer)}.
+	 * @deprecated it is highly recommended to explicitly set the serializer with {@link #registerConfigFile(String, DataSerializer)}.
 	 */
 	@Deprecated
 	public static ConfigFile registerConfigFile(String fileName) {
@@ -66,7 +64,7 @@ public class TweedRegistry {
 	 * @param dataSerializer a serializer for this config file
 	 * @return the new {@link ConfigFile}
 	 */
-	public static ConfigFile registerConfigFile(String fileName, ConfigDataSerializer<?, ?, ?> dataSerializer) {
+	public static ConfigFile registerConfigFile(String fileName, DataSerializer<?> dataSerializer) {
         ConfigFile configFile = new ConfigFile(fileName, dataSerializer);
 		return registerConfigFile(configFile);
 	}
@@ -89,7 +87,7 @@ public class TweedRegistry {
 	/**
 	 * Gets a collection of all registered {@link ConfigFile}s.
 	 * @return a collection of {@link ConfigFile}s
-	 * @see #registerConfigFile(String, ConfigDataSerializer)
+	 * @see #registerConfigFile(String, DataSerializer)
 	 * @deprecated use {@link #getAllConfigFiles()} instead
 	 */
 	@Deprecated
@@ -100,7 +98,7 @@ public class TweedRegistry {
 	/**
 	 * Gets a collection of all registered {@link ConfigFile}s.
 	 * @return a collection of {@link ConfigFile}s
-	 * @see #registerConfigFile(String, ConfigDataSerializer)
+	 * @see #registerConfigFile(String, DataSerializer)
 	 */
 	public static Collection<ConfigFile> getAllConfigFiles() {
 		return CONFIG_FILES.values();
@@ -120,18 +118,16 @@ public class TweedRegistry {
 	 * This is cached and will be updated if a new {@link DataSerializer} is registered.
 	 * @return a map of {@link DataSerializer}s by their file extension
 	 */
-	public static Map<String, DataSerializer<?, ?, ?>> getSerializersByExtension() {
-		Set<Map.Entry<RegistryKey<ConfigDataSerializer<?, ?, ?>>, ConfigDataSerializer<?, ?, ?>>> entries = SERIALIZERS.getEntries();
+	public static Map<String, DataSerializer<?>> getSerializersByExtension() {
+		Set<Map.Entry<RegistryKey<DataSerializer<?>>, DataSerializer<?>>> entries = SERIALIZERS.getEntries();
 		int entriesHash = entries.hashCode();
 		if (serializersByExtension != null && serializerByExtensionSerializersHash == entriesHash) {
 			return serializersByExtension;
 		}
 
 		serializersByExtension = new HashMap<>();
-		for (Map.Entry<RegistryKey<ConfigDataSerializer<?, ?, ?>>, ConfigDataSerializer<?, ?, ?>> entry : entries) {
-			if (entry.getValue() instanceof DataSerializer) {
-				serializersByExtension.put(entry.getValue().getFileExtension(), ((DataSerializer<?, ?, ?>) entry.getValue()));
-			}
+		for (Map.Entry<RegistryKey<DataSerializer<?>>, DataSerializer<?>> entry : entries) {
+			serializersByExtension.put(entry.getValue().getFileExtension(), entry.getValue());
 		}
 		serializerByExtensionSerializersHash = entriesHash;
 		return serializersByExtension;
@@ -141,7 +137,7 @@ public class TweedRegistry {
 	 * Gets the fallback config serializer.
 	 * @return The default config serializer
 	 */
-	public static ConfigDataSerializer<?, ?, ?> getDefaultSerializer() {
+	public static DataSerializer<?> getDefaultSerializer() {
 		return defaultSerializer;
 	}
 
@@ -152,7 +148,7 @@ public class TweedRegistry {
 	 */
 	@Deprecated
 	@ApiStatus.Internal
-	public static void setDefaultSerializer(ConfigDataSerializer<?, ?, ?> defaultSerializer) {
+	public static void setDefaultSerializer(DataSerializer<?> defaultSerializer) {
 		TweedRegistry.defaultSerializer = defaultSerializer;
 	}
 }

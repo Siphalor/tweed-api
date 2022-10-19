@@ -17,23 +17,18 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 public class DoubleSerializer extends ConfigValueSerializer<Double> {
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	Double read(V data) throws ConfigReadException {
-		return data.asDouble();
+	public <V> Double read(DataSerializer<V> serializer, V value) throws ConfigReadException {
+		return serializer.toDouble(value);
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, Double value) {
-		dataContainer.set(key, value);
+	public <V> Object write(DataSerializer<V> serializer, Double value) {
+		return value;
 	}
 
 	@Override

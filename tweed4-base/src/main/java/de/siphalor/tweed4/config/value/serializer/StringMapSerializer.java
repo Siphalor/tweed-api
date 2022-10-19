@@ -17,10 +17,8 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.Map;
@@ -36,27 +34,21 @@ public class StringMapSerializer<MV, M extends Map<String, MV>> extends ConfigVa
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> M
-	read(V data) throws ConfigReadException {
-		if (!data.isObject()) {
-			throw new ConfigReadException("Expected object, got " + data);
-		}
-
+	public <V> M read(DataSerializer<V> serializer, V value) throws ConfigReadException {
 		M map = mapSupplier.get();
-		O object = data.asObject();
-		for (String key : object.keys()) {
-			map.put(key, valueSerializer.read(object.get(key)));
+		for (Map.Entry<String, V> entry : serializer.toObject(value).entrySet()) {
+			map.put(entry.getKey(), valueSerializer.read(serializer, entry.getValue()));
 		}
 		return map;
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, M value) {
-		O object = dataContainer.addObject(key);
+	public <V> Object write(DataSerializer<V> serializer, M value) {
+		DataObject<V> object = serializer.newObject();
 		for (Map.Entry<String, MV> entry : value.entrySet()) {
-			valueSerializer.write(object, entry.getKey(), entry.getValue());
+			object.putRaw(entry.getKey(), valueSerializer.write(serializer, entry.getValue()));
 		}
+		return object;
 	}
 
 	@Override

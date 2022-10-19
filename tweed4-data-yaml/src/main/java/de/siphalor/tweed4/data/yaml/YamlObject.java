@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class YamlObject implements DataObject<Node, YamlList, YamlObject> {
+public class YamlObject implements DataObject<Node> {
 	private final MappingNode yamlNode;
 	private final Map<String, NodeTuple> nodes;
 
@@ -63,7 +63,7 @@ public class YamlObject implements DataObject<Node, YamlList, YamlObject> {
 	}
 
 	@Override
-	public DataSerializer<Node, YamlList, YamlObject> getSerializer() {
+	public DataSerializer<Node> getSerializer() {
 		return YamlSerializer.INSTANCE;
 	}
 

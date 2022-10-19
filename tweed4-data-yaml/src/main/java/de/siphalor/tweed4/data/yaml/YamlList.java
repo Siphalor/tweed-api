@@ -23,7 +23,7 @@ import org.snakeyaml.engine.v2.nodes.SequenceNode;
 
 import java.util.AbstractList;
 
-public class YamlList extends AbstractList<Node> implements DataList<Node, YamlList, YamlObject> {
+public class YamlList extends AbstractList<Node> implements DataList<Node> {
 	private final SequenceNode yamlNode;
 
 	public YamlList(SequenceNode yamlNode) {
@@ -46,7 +46,7 @@ public class YamlList extends AbstractList<Node> implements DataList<Node, YamlL
 	}
 
 	@Override
-	public DataSerializer<Node, YamlList, YamlObject> getSerializer() {
+	public DataSerializer<Node> getSerializer() {
 		return YamlSerializer.INSTANCE;
 	}
 

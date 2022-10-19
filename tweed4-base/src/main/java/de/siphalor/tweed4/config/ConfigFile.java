@@ -19,10 +19,9 @@ package de.siphalor.tweed4.config;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.fixers.ConfigEntryFixer;
-import de.siphalor.tweed4.data.DataList;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
 import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
-import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed4.data.DataSerializer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -39,34 +38,33 @@ import org.jetbrains.annotations.ApiStatus;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
 
 /**
  * A configuration file.
- * @see TweedRegistry#registerConfigFile(String, ConfigDataSerializer)
+ * @see TweedRegistry#registerConfigFile(String, DataSerializer)
  */
 @SuppressWarnings("unused")
 public class ConfigFile {
-	private String name;
+	private final String name;
 	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
-	private Queue<Pair<String, ConfigEntryFixer>> configEntryFixers;
-	private ConfigDataSerializer<?, ?, ?> dataSerializer;
+	private final Collection<Pair<String, ConfigEntryFixer>> configEntryFixers;
+	private final DataSerializer<?> dataSerializer;
 
 	private Map<Class<? extends Annotation>, Annotation> tailorAnnotations;
 
 	protected ConfigCategory rootCategory;
 
-	protected ConfigFile(String name, ConfigDataSerializer<?, ?, ?> dataSerializer) {
+	protected ConfigFile(String name, DataSerializer<?> dataSerializer) {
 		this(name, dataSerializer, new ConfigCategory());
 	}
 
 	@ApiStatus.Internal
-	public ConfigFile(String name, ConfigDataSerializer<?, ?, ?> dataSerializer, ConfigCategory rootCategory) {
+	public ConfigFile(String name, DataSerializer<?> dataSerializer, ConfigCategory rootCategory) {
 		this.name = name;
 		setRootCategory(rootCategory);
 		this.dataSerializer = dataSerializer;
-		configEntryFixers = new ConcurrentLinkedQueue<>();
+		configEntryFixers = new ArrayList<>();
 	}
 
 	/**
@@ -81,10 +79,9 @@ public class ConfigFile {
 		return this;
 	}
 
-	public  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	ConfigDataSerializer<V, L, O> getDataSerializer() {
+	public <V> DataSerializer<V> getDataSerializer() {
 		//noinspection unchecked
-		return (ConfigDataSerializer<V, L, O>) dataSerializer;
+		return (DataSerializer<V>) dataSerializer;
 	}
 
 	public void finishReload(ConfigEnvironment environment, ConfigScope scope) {
@@ -170,16 +167,15 @@ public class ConfigFile {
 	/**
 	 * Writes to the {@link DataObject} for handing it to the {@link Tweed#mainConfigDirectory}
 	 *
-	 * @param dataObject the target data
+	 * @param existingData data previously read in to be merged with
 	 * @param environment the current environment
 	 * @param scope the current definition scope
 	 * @return the new {@link DataObject}
 	 */
-	public  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	O write(O dataObject, ConfigEnvironment environment, ConfigScope scope) {
-		fixConfig(dataObject);
-		rootCategory.write(dataObject, "", environment, scope);
-		return dataObject;
+	public <V> AnnotatedDataValue<V> write(DataSerializer<V> serializer, AnnotatedDataValue<V> existingData, ConfigEnvironment environment, ConfigScope scope) {
+		fixConfig(serializer, existingData.getValue());
+		rootCategory.write(serializer, existingData, environment, scope);
+		return existingData;
 	}
 
 	/**
@@ -191,50 +187,48 @@ public class ConfigFile {
         rootCategory.reset(environment, scope);
 	}
 
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void fixConfig(O dataObject) {
+	public <V> void fixConfig(DataSerializer<V> serializer, V dataValue) {
 		configEntryFixers.forEach(stringConfigEntryFixerPair -> {
 			String entryName;
-			O location;
+			DataObject<V> location;
 			if (stringConfigEntryFixerPair.getLeft().isEmpty()) {
 				entryName = "";
-				location = dataObject;
+				location = serializer.toObject(dataValue);
 			} else {
 				String[] parts = StringUtils.split(stringConfigEntryFixerPair.getLeft(), Tweed.PATH_DELIMITER);
-				location = dataObject;
+				location = serializer.toObject(dataValue);
 				for (int i = 0; i < parts.length - 1; i++) {
-					V dataValue = location.get(parts[i]);
-					if (dataValue == null || !dataValue.isObject())
+					V locationElement = location.get(parts[i]);
+					try {
+						location = serializer.toObject(locationElement);
+					} catch (Exception e) {
 						return;
-					location = dataValue.asObject();
+					}
 				}
 				entryName = parts[parts.length - 1];
 			}
-			stringConfigEntryFixerPair.getRight().fix(location, entryName, dataObject);
+			stringConfigEntryFixerPair.getRight().fix(location, entryName, serializer.toObject(dataValue));
 		});
 	}
 
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		O dataObject = this.<V, L, O>getDataSerializer().read(resource.getInputStream());
+	public <V> void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		AnnotatedDataValue<V> data = this.<V>getDataSerializer().read(resource.getInputStream());
 		try {
 			resource.close();
 		} catch (IOException e) {
 			Tweed.LOGGER.error("Failed to close config resource after reading it in resource pack: " + resource.getResourcePackName());
 			e.printStackTrace();
 		}
-		if(dataObject != null) {
-			load(dataObject, environment, scope, origin);
+		if (data != null) {
+			load(getDataSerializer(), data, environment, scope, origin);
 		}
 	}
 
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void load(DataObject<V, L, O> dataObject, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		this.fixConfig(dataObject.asObject());
+	public <V> void load(DataSerializer<V> serializer, AnnotatedDataValue<V> data, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		this.fixConfig(serializer, data.getValue());
 
 		try {
-			//noinspection unchecked
-			rootCategory.read((V) dataObject, environment, scope, origin);
+			rootCategory.read(serializer, data.getValue(), environment, scope, origin);
 		} catch (ConfigReadException e) {
             Tweed.LOGGER.error("The config file " + name + "." + dataSerializer.getFileExtension() + " must contain an object!");
 		}

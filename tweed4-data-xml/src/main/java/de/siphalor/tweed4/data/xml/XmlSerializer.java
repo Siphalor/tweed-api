@@ -42,7 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class XmlSerializer implements DataSerializer<XmlValue, XmlList, XmlObject> {
+public class XmlSerializer implements DataSerializer<XmlValue> {
 	private static final DocumentBuilder DOCUMENT_BUILDER;
 	public static final XmlSerializer INSTANCE = new XmlSerializer();
 

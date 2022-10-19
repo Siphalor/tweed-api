@@ -17,10 +17,8 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataNull;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 /**
@@ -35,21 +33,20 @@ public class NullableSerializer<T> extends ConfigValueSerializer<T> {
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	T read(V data) throws ConfigReadException {
-		if (data.isNull()) {
+	public <V> T read(DataSerializer<V> serializer, V value) throws ConfigReadException {
+		if (value == DataNull.INSTANCE) {
 			return null;
+		} else {
+			return valueSerializer.read(serializer, value);
 		}
-		return valueSerializer.read(data);
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, T value) {
+	public <V> Object write(DataSerializer<V> serializer, T value) {
 		if (value == null) {
-			dataContainer.addNull(key);
+			return DataNull.INSTANCE;
 		} else {
-			valueSerializer.write(dataContainer, key, value);
+			return valueSerializer.write(serializer, value);
 		}
 	}
 

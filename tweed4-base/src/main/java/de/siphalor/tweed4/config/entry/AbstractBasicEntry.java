@@ -18,7 +18,7 @@ package de.siphalor.tweed4.config.entry;
 
 import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * An basic entry.
@@ -31,19 +31,9 @@ public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
 	protected String comment = "";
 
 	@Override
-	public T setEnvironment(ConfigEnvironment environment) {
+	public T setEnvironment(@NotNull ConfigEnvironment environment) {
 		this.environment = environment;
 		return (T) this;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	@Deprecated
-	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
-	public ConfigEnvironment getEnvironment() {
-		return environment;
 	}
 
 	@Override
@@ -52,7 +42,7 @@ public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
 	}
 
 	@Override
-	public T setScope(ConfigScope scope) {
+	public T setScope(@NotNull ConfigScope scope) {
 		this.scope = scope;
 		return (T) this;
 	}
@@ -68,14 +58,14 @@ public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
 	 * @return the current entry for chain calls
 	 */
 	@Override
-	public T setComment(String comment) {
+	public T setComment(@NotNull String comment) {
 		this.comment = comment;
 		return (T) this;
 	}
 
 	/**
 	 * Gets the comment which might be used in descriptions
-	 * @return
+	 * @return the comment
 	 */
 	public String getComment() {
 		return comment;

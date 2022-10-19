@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class XmlList extends AbstractList<XmlValue> implements DataList<XmlValue, XmlList, XmlObject>, XmlBaseContainer {
+public class XmlList extends AbstractList<XmlValue> implements DataList<XmlValue>, XmlBaseContainer {
 	private final Element xmlElement;
 	private final List<Element> children;
 	private final String childNameDefault;
@@ -116,7 +116,7 @@ public class XmlList extends AbstractList<XmlValue> implements DataList<XmlValue
 	}
 
 	@Override
-	public DataSerializer<XmlValue, XmlList, XmlObject> getSerializer() {
+	public DataSerializer<XmlValue> getSerializer() {
 		return XmlSerializer.INSTANCE;
 	}
 }

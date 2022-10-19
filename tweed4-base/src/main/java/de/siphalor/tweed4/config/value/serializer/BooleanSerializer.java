@@ -16,25 +16,20 @@
 
 package de.siphalor.tweed4.config.value.serializer;
 
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 public class BooleanSerializer extends ConfigValueSerializer<Boolean> {
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	Boolean read(V data) {
-		if (data.isBoolean())
-			return data.asBoolean();
+	public <V> Boolean read(DataSerializer<V> serializer, V value) {
+		if (value instanceof Boolean)
+			return ((Boolean) value);
 		return false;
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, Boolean value) {
-		dataContainer.set(key, value);
+	public <V> Object write(DataSerializer<V> serializer, Boolean value) {
+		return value;
 	}
 
 	@Override

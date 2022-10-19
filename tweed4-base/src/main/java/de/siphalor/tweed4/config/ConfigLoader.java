@@ -17,10 +17,8 @@
 package de.siphalor.tweed4.config;
 
 import de.siphalor.tweed4.Tweed;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
-import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -52,7 +50,8 @@ public final class ConfigLoader {
 
 		Tweed.runEntryPoints();
 
-		configFile.load(readMainConfigFile(configFile).asObject(), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
+		DataSerializer<Object> serializer = configFile.getDataSerializer();
+		configFile.load(serializer, readFileOrEmpty(getMainConfigFile(configFile), serializer), configEnvironment, ConfigScope.HIGHEST, ConfigOrigin.MAIN);
 		updateMainConfigFile(configFile, configEnvironment, ConfigScope.HIGHEST);
 		configFile.finishReload(configEnvironment, ConfigScope.HIGHEST);
 	}
@@ -99,7 +98,9 @@ public final class ConfigLoader {
 	private static void reloadSimple(ConfigFile configFile, ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
 		try {
 			configFile.reset(environment, scope);
-			configFile.load(readMainConfigFile(configFile).asObject(), environment, scope, ConfigOrigin.MAIN);
+			DataSerializer<Object> serializer = configFile.getDataSerializer();
+			AnnotatedDataValue<Object> data = readFileOrEmpty(getMainConfigFile(configFile), serializer);
+			configFile.load(serializer, data, environment, scope, ConfigOrigin.MAIN);
 			updateMainConfigFile(configFile, environment, scope);
 			try {
 				List<Resource> resources = resourceManager.getAllResources(configFile.getFileIdentifier());
@@ -132,16 +133,16 @@ public final class ConfigLoader {
 	 * @param environment the current environment
 	 * @param scope the definition scope
 	 */
-	public static <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
-        O dataObject = ConfigLoader.<V, L, O>readMainConfigFile(configFile).asObject();
-        configFile.write(dataObject, environment, scope);
+	public static <V> void updateMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
+		DataSerializer<V> serializer = configFile.getDataSerializer();
+		AnnotatedDataValue<V> data = ConfigLoader.readFileOrEmpty(getMainConfigFile(configFile), serializer);
+        configFile.write(serializer, data, environment, scope);
 		File mainConfigFile = getMainConfigFile(configFile);
 		//noinspection ResultOfMethodCallIgnored
 		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
 			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
-			configFile.<V, L, O>getDataSerializer().write(outputStream, dataObject);
+			serializer.write(outputStream, data);
             outputStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -151,27 +152,26 @@ public final class ConfigLoader {
 
 	/**
 	 * Reads data from the main config file
-	 * @param configFile the config file
+	 * @param file the file to read from
+	 * @param serializer the serializer to use
 	 * @return the read in data
 	 */
-	public static <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	DataObject<V, L, O> readMainConfigFile(ConfigFile configFile) {
-		File mainConfig = getMainConfigFile(configFile);
-		if(mainConfig.exists()) {
+	public static <V> AnnotatedDataValue<V> readFileOrEmpty(File file, DataSerializer<V> serializer) {
+		if (file.exists()) {
 			try {
-				FileInputStream inputStream = new FileInputStream(mainConfig);
-				O dataObject = configFile.<V, L, O>getDataSerializer().read(inputStream);
+				FileInputStream inputStream = new FileInputStream(file);
+				AnnotatedDataValue<V> data = serializer.read(inputStream);
                 inputStream.close();
-                if(dataObject == null) {
-                	Tweed.LOGGER.error("Failed to read config file " + configFile.getFileName());
-					return configFile.<V, L, O>getDataSerializer().newObject();
+                if (data == null) {
+                	Tweed.LOGGER.error("Failed to read config file " + file.getPath());
+					return AnnotatedDataValue.of(serializer.newObject().getValue());
 				}
-				return dataObject;
+				return data;
 			} catch (Exception ignored) {
-				Tweed.LOGGER.error("Failed to read config file " + configFile.getFileName());
+				Tweed.LOGGER.error("Failed to read config file " + file.getPath());
 			}
 		}
-		return configFile.<V, L, O>getDataSerializer().newObject();
+		return AnnotatedDataValue.of(serializer.newObject().getValue());
 	}
 
 	/**
@@ -180,14 +180,14 @@ public final class ConfigLoader {
 	 * @param environment the current environment
 	 * @param scope the definition scope
 	 */
-	public static  <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void writeMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
+	public static <V> void writeMainConfigFile(ConfigFile configFile, ConfigEnvironment environment, ConfigScope scope) {
 		File mainConfigFile = getMainConfigFile(configFile);
 		//noinspection ResultOfMethodCallIgnored
 		mainConfigFile.toPath().getParent().toFile().mkdirs();
 		try {
 			FileOutputStream outputStream = new FileOutputStream(mainConfigFile);
-			configFile.<V, L, O>getDataSerializer().write(outputStream, configFile.write(configFile.<V, L, O>getDataSerializer().newObject(), environment, scope));
+			DataSerializer<V> serializer = configFile.getDataSerializer();
+			serializer.write(outputStream, configFile.write(serializer, AnnotatedDataValue.of(serializer.newObject().getValue()), environment, scope));
             outputStream.close();
 		} catch (Exception e) {
 			Tweed.LOGGER.error("Failed to load config file " + configFile.getFileName());

@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
 
 import java.util.*;
 
-public class XmlObject implements DataObject<XmlValue, XmlList, XmlObject>, XmlBaseContainer {
+public class XmlObject implements DataObject<XmlValue>, XmlBaseContainer {
 	private final Element xmlElement;
 	private final HashSet<String> keys;
 
@@ -94,7 +94,7 @@ public class XmlObject implements DataObject<XmlValue, XmlList, XmlObject>, XmlB
 	}
 
 	@Override
-	public DataSerializer<XmlValue, XmlList, XmlObject> getSerializer() {
+	public DataSerializer<XmlValue> getSerializer() {
 		return XmlSerializer.INSTANCE;
 	}
 

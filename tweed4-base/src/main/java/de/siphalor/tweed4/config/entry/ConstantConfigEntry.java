@@ -21,11 +21,10 @@ import de.siphalor.tweed4.config.ConfigOrigin;
 import de.siphalor.tweed4.config.ConfigReadException;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.AnnotatedDataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
+import org.jetbrains.annotations.NotNull;
 
 public class ConstantConfigEntry<T> extends AbstractBasicEntry<T> {
 	private final T value;
@@ -37,30 +36,28 @@ public class ConstantConfigEntry<T> extends AbstractBasicEntry<T> {
 	}
 
 	@Override
-	public void reset(ConfigEnvironment environment, ConfigScope scope) {
+	public void reset(@NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
 
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void read(V dataValue, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException {
+	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) throws ConfigReadException {
 
 	}
 
 	@Override
-	public void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void read(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
 
 	}
 
 	@Override
-	public void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void write(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
 
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, ConfigEnvironment environment, ConfigScope scope) {
-		valueSerializer.write(dataContainer, key, value);
+	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, AnnotatedDataValue<V> oldValue, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+		return AnnotatedDataValue.of(valueSerializer.write(serializer, value));
 	}
 
 	@Override

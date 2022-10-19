@@ -32,10 +32,8 @@ import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed4.config.value.serializer.NullableSerializer;
 import de.siphalor.tweed4.config.value.serializer.ReflectiveNullable;
-import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
-import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed4.data.DataSerializer;
 import de.siphalor.tweed4.tailor.Tailor;
 import de.siphalor.tweed4.util.ReflectionUtil;
 import net.minecraft.util.Identifier;
@@ -79,8 +77,7 @@ public class POJOConverter {
 		if (file.isEmpty()) {
 			file = fallbackFileName;
 		}
-		//noinspection deprecation
-		ConfigDataSerializer<?, ?, ?> serializer = TweedRegistry.SERIALIZERS.getOrEmpty(new Identifier(tweedConfig.serializer())).orElse(TweedRegistry.getDefaultSerializer());
+		DataSerializer<?> serializer = TweedRegistry.SERIALIZERS.getOrEmpty(new Identifier(tweedConfig.serializer())).orElse(TweedRegistry.getDefaultSerializer());
 
 		ConfigFile configFile = new ConfigFile(file, serializer, rootCategory);
 
@@ -93,8 +90,7 @@ public class POJOConverter {
 
 					ConfigEntryFixer configEntryFixer = new ConfigEntryFixer() {
 						@Override
-						public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-						void fix(O dataObject, String propertyName, O mainCompound) {
+						public <V> void fix(DataObject<V> dataObject, String propertyName, DataObject<V> mainCompound) {
 							try {
 								method.invoke(pojo, dataObject, mainCompound);
 							} catch (IllegalAccessException | InvocationTargetException e) {

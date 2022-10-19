@@ -16,10 +16,8 @@
 
 package de.siphalor.tweed4.config.value.serializer;
 
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.config.ConfigReadException;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -44,23 +42,21 @@ public class EnumSerializer<E extends Enum<?>> extends ConfigValueSerializer<E> 
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	E read(V data) {
-		if (data.isString()) {
-			String str = data.asString().toLowerCase(Locale.ENGLISH);
-			for (E value : enumConstants) {
-				if (value.name().toLowerCase(Locale.ENGLISH).equals(str)) {
-					return value;
+	public <V> E read(DataSerializer<V> serializer, V value) throws ConfigReadException {
+		try {
+			String str = serializer.toString(value).toLowerCase(Locale.ROOT);
+			for (E enumConstant : enumConstants) {
+				if (enumConstant.name().toLowerCase(Locale.ROOT).equals(str)) {
+					return enumConstant;
 				}
 			}
-		}
+		} catch (Exception ignored) {}
 		return fallback;
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, E value) {
-		dataContainer.set(key, value.name());
+	public <V> Object write(DataSerializer<V> serializer, E value) {
+		return value.name().toLowerCase(Locale.ROOT);
 	}
 
 	@Override

@@ -17,10 +17,8 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataNull;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.Optional;
@@ -37,21 +35,20 @@ public class OptionalSerializer<T> extends ConfigValueSerializer<Optional<T>> {
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	Optional<T> read(V data) throws ConfigReadException {
-		if (data.isNull()) {
+	public <V> Optional<T> read(DataSerializer<V> serializer, V value) throws ConfigReadException {
+		if (value == DataNull.INSTANCE) {
 			return Optional.empty();
+		} else {
+			return Optional.of(valueSerializer.read(serializer, value));
 		}
-		return Optional.ofNullable(valueSerializer.read(data));
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, Optional<T> value) {
+	public <V> Object write(DataSerializer<V> serializer, Optional<T> value) {
 		if (value.isPresent()) {
-			valueSerializer.write(dataContainer, key, value.get());
+			return valueSerializer.write(serializer, value.get());
 		} else {
-			dataContainer.addNull(key);
+			return DataNull.INSTANCE;
 		}
 	}
 

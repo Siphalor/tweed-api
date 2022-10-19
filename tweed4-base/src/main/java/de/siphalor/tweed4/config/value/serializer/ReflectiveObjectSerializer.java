@@ -17,10 +17,8 @@
 package de.siphalor.tweed4.config.value.serializer;
 
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
 import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,38 +41,39 @@ public class ReflectiveObjectSerializer<T> extends ConfigValueSerializer<T> {
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	T read(V data) throws ConfigReadException {
-		if (data.isObject()) {
-			O dataObject = data.asObject();
-			T object = supplier.get();
+	public <V> T read(DataSerializer<V> serializer, V value) throws ConfigReadException {
+		DataObject<V> dataObject = serializer.toObject(value);
+		T object = supplier.get();
 
-			for (Map.Entry<String, Entry> entry : entries.entrySet()) {
-				if (Modifier.isFinal(entry.getValue().field.getModifiers())) {
-					continue;
-				}
-				try {
-					entry.getValue().field.set(object, entry.getValue().serializer.read(dataObject.get(entry.getKey())));
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			}
-			return object;
-		}
-		return null;
-	}
-
-	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, T value) {
-		O dataObject = dataContainer.addObject(key);
 		for (Map.Entry<String, Entry> entry : entries.entrySet()) {
+			Field field = entry.getValue().field;
+			if (Modifier.isFinal(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
+				continue;
+			}
 			try {
-				entry.getValue().serializer.write(dataObject, entry.getKey(), entry.getValue().field.get(value));
+				field.set(object, entry.getValue().serializer.read(serializer, dataObject.get(entry.getKey())));
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
 		}
+		return object;
+	}
+
+	@Override
+	public <V> Object write(DataSerializer<V> serializer, T value) {
+		DataObject<V> dataObject = serializer.newObject();
+		for (Map.Entry<String, Entry> entry : entries.entrySet()) {
+			Field field = entry.getValue().field;
+			if (Modifier.isFinal(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
+				continue;
+			}
+			try {
+				dataObject.putRaw(entry.getKey(), entry.getValue().serializer.write(serializer, field.get(value)));
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return dataObject;
 	}
 
 	@Override

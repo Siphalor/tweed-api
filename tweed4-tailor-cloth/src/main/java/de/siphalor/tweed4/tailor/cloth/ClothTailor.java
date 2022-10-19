@@ -42,10 +42,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Environment(EnvType.CLIENT)
@@ -163,7 +160,17 @@ public class ClothTailor extends ScreenTailor {
 		if (I18n.hasTranslation(langKey + ".description")) {
 			return Optional.of(new Text[]{new TranslatableText(langKey + ".description")});
 		}
-		return configEntry.getClothyDescription();
+		String description = configEntry.getDescription();
+		List<LiteralText> list = new ArrayList<>();
+		for (String s : description.replace("\t", "    ").split("[\n\r]\r?")) {
+			LiteralText literalText = new LiteralText(s);
+			list.add(literalText);
+		}
+		if (list.isEmpty()) {
+			return Optional.empty();
+		} else {
+			return Optional.of(list.toArray(new Text[0]));
+		}
 	}
 
 	public static BaseText categoryDescription(String langKey, ConfigEntry<?> entry) {

@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class YamlSerializer implements DataSerializer<Node, YamlList, YamlObject> {
+public class YamlSerializer implements DataSerializer<Node> {
 	public static final YamlSerializer INSTANCE = new YamlSerializer();
 
 	private static final LoadSettings LOAD_SETTINGS = LoadSettings.builder().setParseComments(true).build();

@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public interface DataObject<V, L extends DataList<V, L, O>, O extends DataObject<V, L, O>> extends Map<String, V> {
+public interface DataObject<V> extends Map<String, V> {
 	@NotNull V getValue();
 
 	String getComment(String key);
@@ -54,5 +54,5 @@ public interface DataObject<V, L extends DataList<V, L, O>, O extends DataObject
 		return putRaw(key, value.getValue(), value.getComment());
 	}
 
-	DataSerializer<V, L, O> getSerializer();
+	DataSerializer<V> getSerializer();
 }

@@ -17,7 +17,7 @@
 package de.siphalor.tweed4;
 
 import de.siphalor.tweed4.config.*;
-import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
+import de.siphalor.tweed4.data.DataSerializer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -137,10 +137,9 @@ public class Tweed implements ModInitializer {
 		FabricLoader loaderAPI = FabricLoader.getInstance();
 
 		{
-			// noinspection RedundantSuppression,deprecation,rawtypes
-			List<ConfigDataSerializer> serializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":serializer", ConfigDataSerializer.class);
-			//noinspection deprecation
-			for (ConfigDataSerializer<?, ?, ?> serializer : serializers) {
+			// noinspection RedundantSuppression,rawtypes
+			List<DataSerializer> serializers = loaderAPI.getEntrypoints(Tweed.MOD_ID + ":serializer", DataSerializer.class);
+			for (DataSerializer<?> serializer : serializers) {
 				if (serializer.getId() == null) {
 					LOGGER.error("Failed to register serializer of kind " + serializer.getClass().getName() + " through entrypoint " +
 							"because it has no `getId()` method declared!");

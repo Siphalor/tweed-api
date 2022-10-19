@@ -16,25 +16,19 @@
 
 package de.siphalor.tweed4.config.value.serializer;
 
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.config.ConfigReadException;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 public class FloatSerializer extends ConfigValueSerializer<Float> {
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	Float read(V data) {
-		if(data.isNumber())
-			return data.asFloat();
-		return 0F;
+	public <V> Float read(DataSerializer<V> serializer, V value) throws ConfigReadException {
+		return serializer.toFloat(value);
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L ,O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, Float value) {
-		dataContainer.set(key, value);
+	public <V> Object write(DataSerializer<V> serializer, Float value) {
+		return value;
 	}
 
 	@Override

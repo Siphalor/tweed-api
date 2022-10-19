@@ -18,10 +18,7 @@ package de.siphalor.tweed4.config.value.serializer;
 
 import com.mojang.datafixers.util.Either;
 import de.siphalor.tweed4.config.ConfigReadException;
-import de.siphalor.tweed4.data.DataContainer;
-import de.siphalor.tweed4.data.DataList;
-import de.siphalor.tweed4.data.DataObject;
-import de.siphalor.tweed4.data.DataValue;
+import de.siphalor.tweed4.data.DataSerializer;
 import net.minecraft.network.PacketByteBuf;
 
 import java.util.Optional;
@@ -40,26 +37,21 @@ public class EitherSerializer<A, B> extends ConfigValueSerializer<Either<A, B>> 
 	}
 
 	@Override
-	public <V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	Either<A, B> read(V data) throws ConfigReadException {
+	public <V> Either<A, B> read(DataSerializer<V> serializer, V value) throws ConfigReadException {
 		try {
-			A leftValue = leftSerializer.read(data);
-			return Either.left(leftValue);
-		} catch (ConfigReadException leftException) {
+			return Either.left(leftSerializer.read(serializer, value));
+		} catch (Exception e) {
 			try {
-				B rightValue = rightSerializer.read(data);
-				return Either.right(rightValue);
-			} catch (ConfigReadException rightException) {
-				throw new ConfigReadException("Failed to deserialize either of two values:\n    " + leftException + "\nand " + rightException);
+				return Either.right(rightSerializer.read(serializer, value));
+			} catch (Exception e2) {
+				throw new ConfigReadException("Failed to deserialize either of two values:\n    " + e + "\nand " + e2);
 			}
 		}
 	}
 
 	@Override
-	public <Key, V extends DataValue<V, L, O>, L extends DataList<V, L, O>, O extends DataObject<V, L, O>>
-	void write(DataContainer<Key, V, L, O> dataContainer, Key key, Either<A, B> value) {
-		value.ifLeft(leftValue -> leftSerializer.write(dataContainer, key, leftValue));
-		value.ifRight(rightValue -> rightSerializer.write(dataContainer, key, rightValue));
+	public <V> Object write(DataSerializer<V> serializer, Either<A, B> value) {
+		return value.map(a -> leftSerializer.write(serializer, a), b -> rightSerializer.write(serializer, b));
 	}
 
 	@Override

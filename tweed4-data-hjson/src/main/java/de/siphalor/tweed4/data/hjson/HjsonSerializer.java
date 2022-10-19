@@ -28,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 
-public class HjsonSerializer implements DataSerializer<JsonValue, HjsonList, HjsonObject> {
+public class HjsonSerializer implements DataSerializer<JsonValue> {
 	public static final HjsonSerializer INSTANCE = new HjsonSerializer();
 
 	private final HjsonOptions hjsonOptions = new HjsonOptions().setAllowCondense(false).setBracesSameLine(true).setOutputComments(true).setSpace("\t");

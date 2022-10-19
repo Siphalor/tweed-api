@@ -68,18 +68,12 @@ public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<
 
 	public abstract T getMainConfigValue();
 
-	@Deprecated
-	public void setBothValues(T value) {
-		setValue(value);
-		setMainConfigValue(value);
-	}
-
 	public abstract Class<T> getType();
 
 	public abstract String asString(T value);
 
 	@Override
-	public void reset(ConfigEnvironment environment, ConfigScope scope) {
+	public void reset(@NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
 		setValue(defaultValue);
 		setMainConfigValue(defaultValue);
 	}
