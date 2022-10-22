@@ -162,7 +162,7 @@ subprojects {
 	publishing {
 		publications.create(projectId, MavenPublication.class, {
 			version = project.version
-			artifactId = "${project.name}-${project.minecraft_major_version}"
+			artifactId = project.name
 
 			from components.java
 			java.withSourcesJar()
@@ -196,11 +196,4 @@ publishing {
 			}
 		}
 	}
-
-	publications.create("tweed5", MavenPublication.class, {
-		version = project.version
-		artifactId = project.name + "-" + minecraft_major_version
-
-		from components.java
-	})
 }
