@@ -59,18 +59,6 @@ public final class ConfigLoader {
 
 	/**
 	 * Reloads all matching {@link ConfigFile}s.
-	 * @param resourceManager the current {@link ResourceManager}
-	 * @param environment the current environment
-	 * @param scope the definition scope
-	 * @deprecated Use {@link #reloadAll(ResourceManager, ConfigEnvironment, ConfigScope)} instead
-	 */
-	@Deprecated
-	public static void loadConfigs(ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
-		reloadAll(resourceManager, environment, scope);
-	}
-
-	/**
-	 * Reloads all matching {@link ConfigFile}s.
 	 * @param resourceManager the {@link ResourceManager} to use
 	 * @param environment the current environment
 	 * @param scope the current scope

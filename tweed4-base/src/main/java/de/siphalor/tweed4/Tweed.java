@@ -46,9 +46,6 @@ public class Tweed implements ModInitializer {
 	public static final String MOD_ISSUES_URL = "https://github.com/Siphalor/tweed-api/issues";
 	public static final Identifier CONFIG_SYNC_S2C_PACKET = new Identifier(MOD_ID, "sync_config");
 	public static final Identifier REQUEST_SYNC_C2S_PACKET = new Identifier(MOD_ID, "request_sync");
-	@SuppressWarnings("DeprecatedIsStillUsed")
-	@Deprecated
-	public static final Identifier TWEED_CLOTH_SYNC_C2S_PACKET = new Identifier(MOD_ID, "sync_from_cloth_client");
 	public static final Identifier CONFIG_SYNC_C2S_PACKET = new Identifier(MOD_ID, "sync_config_from_client");
 
 	public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
@@ -102,7 +99,6 @@ public class Tweed implements ModInitializer {
 			}
 		});
 		ServerPlayNetworking.registerGlobalReceiver(CONFIG_SYNC_C2S_PACKET, Tweed::receiveSyncC2SPacket);
-		ServerPlayNetworking.registerGlobalReceiver(TWEED_CLOTH_SYNC_C2S_PACKET, Tweed::receiveSyncC2SPacket);
 
 		Tweed.runEntryPoints();
 	}

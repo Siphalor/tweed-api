@@ -38,27 +38,6 @@ import java.util.function.Consumer;
 public class TweedClient implements ClientModInitializer {
 	private static ConfigSyncListener configSyncListener;
 
-	@Deprecated
-	public static void setSyncRunnable(Runnable syncRunnable) {
-		setSyncRunnable(file -> syncRunnable.run());
-	}
-
-	@Deprecated
-	public static void setSyncRunnable(Consumer<ConfigFile> syncRunnable) {
-		setSyncListener(new ConfigSyncListener() {
-			@Override
-			public boolean onSync(ConfigFile configFile) {
-				syncRunnable.accept(configFile);
-				return true;
-			}
-
-			@Override
-			public boolean onFail(ConfigFile configFile) {
-				return onSync(configFile);
-			}
-		});
-	}
-
 	public static void setSyncListener(ConfigSyncListener configSyncListener) {
 		if (TweedClient.configSyncListener != null) {
 			TweedClient.configSyncListener.onRemoved();
