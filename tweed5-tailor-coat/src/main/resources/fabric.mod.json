@@ -1,0 +1,53 @@
+{
+    "schemaVersion": 1,
+    "license": "Apache-2.0",
+    "contact": {
+        "email": "info@siphalor.de",
+        "issues": "https://github.com/Siphalor/tweed-api/issues",
+        "sources": "https://github.com/Siphalor/tweed-api"
+    },
+    "environment": "client",
+    "custom": {
+        "modmenu": {
+            "badges": [
+                "library"
+            ],
+            "links": {
+                "modmenu.discord": "https://discord.gg/6gaXmbj"
+            },
+            "parent": {
+                "id": "tweed5",
+                "name": "Tweed 5",
+                "description": "Configuration focused libraries",
+                "icon": "assets/tweed5_tailor_coat/icon.png",
+                "badges": [
+                    "library"
+                ]
+            }
+        },
+        "modmenu:api": true
+    },
+    "entrypoints": {
+        "tweed5:client_init": [
+            "de.siphalor.tweed5.tailor.coat.TweedCoatInitializer"
+        ]
+    },
+    "breaks": {
+        "coat": [
+            "<=0.1.2",
+            ">=2"
+        ]
+    },
+    "icon": "assets/tweed5_tailor_coat/icon.png",
+    "id": "tweed5_tailor_coat",
+    "version": "${version}",
+    "authors": [
+        "Siphalor"
+    ],
+    "depends": {
+        "tweed5_tailor_screen": "^1"
+    },
+    "suggests": {
+        "coat": "~1"
+    }
+}

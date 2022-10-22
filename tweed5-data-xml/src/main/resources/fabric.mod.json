@@ -1,0 +1,43 @@
+{
+    "license": "Apache-2.0",
+    "schemaVersion": 1,
+    "contact": {
+        "email": "info@siphalor.de",
+        "issues": "https://github.com/Siphalor/tweed-api/issues",
+        "sources": "https://github.com/Siphalor/tweed-api"
+    },
+    "entrypoints": {
+        "tweed5:serializer": [
+            "de.siphalor.tweed5.data.xml.XmlSerializer::INSTANCE"
+        ]
+    },
+    "custom": {
+        "modmenu": {
+            "badges": [
+                "library"
+            ],
+            "links": {
+                "modmenu.discord": "https://discord.gg/6gaXmbj"
+            },
+            "parent": {
+                "id": "tweed5",
+                "name": "Tweed 5",
+                "description": "Configuration focused libraries",
+                "icon": "assets/tweed5_data_xml/icon.png",
+                "badges": [
+                    "library"
+                ]
+            }
+        },
+        "modmenu:api": true
+    },
+    "depends": {
+        "tweed5_data": "^1.2"
+    },
+    "icon": "assets/tweed5_data_xml/icon.png",
+    "id": "tweed5_data_xml",
+    "version": "${version}",
+    "authors": [
+        "Siphalor"
+    ]
+}

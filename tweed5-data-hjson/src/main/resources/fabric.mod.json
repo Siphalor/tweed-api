@@ -1,0 +1,44 @@
+{
+    "schemaVersion": 1,
+    "id": "tweed5_data_hjson",
+    "description": "Hjson support for Tweed 4\n\nThis project uses and embeds the hjson-java fork of PersonTheCat, licensed as MIT: https://github.com/PersonTheCat/hjson-java",
+    "authors": [
+        "Siphalor"
+    ],
+    "contact": {
+        "email": "info@siphalor.de",
+        "issues": "https://github.com/Siphalor/tweed-api/issues",
+        "sources": "https://github.com/Siphalor/tweed-api"
+    },
+    "license": "Apache-2.0",
+    "icon": "assets/tweed5_data_hjson/icon.png",
+    "custom": {
+        "modmenu": {
+            "badges": [
+                "library"
+            ],
+            "links": {
+                "modmenu.discord": "https://discord.gg/6gaXmbj"
+            },
+            "parent": {
+                "id": "tweed5",
+                "name": "Tweed 5",
+                "description": "Configuration focused libraries",
+                "icon": "assets/tweed5_data_hjson/icon.png",
+                "badges": [
+                    "library"
+                ]
+            }
+        },
+        "modmenu:api": true
+    },
+    "entrypoints": {
+        "tweed5:serializer": [
+            "de.siphalor.tweed5.data.hjson.HjsonSerializer::INSTANCE"
+        ]
+    },
+    "version": "${version}",
+    "depends": {
+        "tweed5_data": "^1.2"
+    }
+}

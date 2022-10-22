@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "tweed4",
+	"id": "tweed5",
 	"version": "${version}",
 
 	"name": "Tweed",
@@ -16,7 +16,7 @@
 	},
 
 	"license": "CC0-1.0",
-	"icon": "assets/tweed4/icon.png",
+	"icon": "assets/tweed5/icon.png",
 
 	"environment": "*",
 	"depends": {
