@@ -37,7 +37,7 @@ public @interface ATweedConfig {
 	 * @return The serializer/file type to use for this config file.
 	 * @see TweedRegistries#SERIALIZERS
 	 */
-	String serializer() default "hjson";
+	String serializer();
 
 	/**
 	 * @return Defines the file name for this config file.
