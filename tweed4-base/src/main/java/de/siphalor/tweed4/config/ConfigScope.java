@@ -16,47 +16,48 @@
 
 package de.siphalor.tweed4.config;
 
+import de.siphalor.tweed4.util.EnumRepresentation;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Comparator;
+
 /**
- * An enum which sets when a config can be (re-)loaded. <br><br>
- *
- * HIGHEST: guaranteed to be the highest scope (internal usage) <br>
- * GAME: triggered when game starts <br>
- * WORLD: triggered when joining a world <br>
- * SMALLEST: always reload if some kind of reload is pushed <br>
- * DEFAULT: <i>should only be used internally</i>
+ * An enum which sets when a config can be (re-)loaded.
  */
-public enum ConfigScope {
+public class ConfigScope implements EnumRepresentation.EnumLike {
 	/**
-	 * Guaranteed to be the highest scope.
-	 * Triggers all other scopes.
-	 * Intended for internal usage.
+	 * Indicates that no scope is set, the actual scope will be determined by the implementation (e.g. via parents or children)
 	 */
-	HIGHEST(3),
+	@ApiStatus.Internal
+	public static final ConfigScope UNSPECIFIED = new ConfigScope("unspecified", Integer.MAX_VALUE);
 	/**
-	 * Triggered when the game is started.
+	 * The highest scope, triggers all other scopes
 	 */
-	GAME(2),
+	public static final ConfigScope HIGHEST = new ConfigScope("highest", Integer.MAX_VALUE - 1);
+	/**
+	 * Triggered when game starts
+	 */
+	public static final ConfigScope GAME = new ConfigScope("game", 2000);
 	/**
 	 * Triggered when joining a world
 	 */
-	WORLD(1),
+	public static final ConfigScope WORLD = new ConfigScope("world", 1000);
 	/**
-	 * The smallest scope, is triggered for any scope.
+	 * Triggers on all reloads
 	 */
-	SMALLEST(0),
-	/**
-	 * The default value for some functions.
-	 * This usually indicates that the scope should be inherited.
-	 * Intended for internal use only.
-	 */
-	@ApiStatus.Internal
-	DEFAULT(-1);
+	public static final ConfigScope SMALLEST = new ConfigScope("smallest", 0);
 
+	public static final int SPECIAL_SCOPE_VALUE = Integer.MAX_VALUE - 1000;
+
+	/**
+	 * Enum-like representation of this class.
+	 */
+	public static final EnumRepresentation<ConfigScope> ENUM = EnumRepresentation.fromConstants(HIGHEST, ConfigScope.class, Comparator.comparingInt(scope -> -scope.value));
+	private final String name;
 	private final int value;
 
-	ConfigScope(int value) {
+	ConfigScope(String name, int value) {
+		this.name = name;
 		this.value = value;
 	}
 
@@ -67,6 +68,22 @@ public enum ConfigScope {
 	 * @return Whether this scope triggers the other one
 	 */
 	public boolean triggers(ConfigScope other) {
-		return this.value >= other.value;
+		if (this == UNSPECIFIED) {
+			return false;
+		}
+		if (value == SPECIAL_SCOPE_VALUE) {
+			return this == other;
+		}
+		return value >= other.value;
+	}
+
+	@Override
+	public String name() {
+		return name;
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 }

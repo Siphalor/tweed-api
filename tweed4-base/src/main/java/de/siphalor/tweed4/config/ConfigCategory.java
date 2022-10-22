@@ -24,11 +24,9 @@ import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.data.AnnotatedDataValue;
 import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataSerializer;
-import de.siphalor.tweed4.data.DataType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,8 +49,8 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	 */
 	public <T extends ConfigEntry<?>> T register(String name, T configEntry) {
 		entries.put(name, configEntry);
-		if(configEntry.getOwnEnvironment() == ConfigEnvironment.DEFAULT) configEntry.setEnvironment(environment);
-		if(configEntry.getScope() == ConfigScope.DEFAULT) configEntry.setScope(scope);
+		if(configEntry.getOwnEnvironment() == ConfigEnvironment.UNSPECIFIED) configEntry.setEnvironment(environment);
+		if(configEntry.getScope() == ConfigScope.UNSPECIFIED) configEntry.setScope(scope);
 		return configEntry;
 	}
 
@@ -92,39 +90,18 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	public ConfigCategory setEnvironment(@NotNull ConfigEnvironment environment) {
 		super.setEnvironment(environment);
 		for (ConfigEntry<?> configEntry : entries.values()) {
-			if (configEntry.getOwnEnvironment() == ConfigEnvironment.DEFAULT) {
+			if (configEntry.getOwnEnvironment() == ConfigEnvironment.UNSPECIFIED) {
 				configEntry.setEnvironment(environment);
 			}
 		}
 		return this;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	@Deprecated
-	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
-	public ConfigEnvironment getEnvironment() {
-		if (entries.isEmpty()) return environment;
-		ConfigEnvironment environment = this.environment;
-		for (ConfigEntry<?> configEntry : entries.values()) {
-			ConfigEnvironment itEnvironment = configEntry.getOwnEnvironment();
-			if (environment == ConfigEnvironment.DEFAULT) {
-				environment = itEnvironment;
-				continue;
-			}
-			while (!environment.contains(itEnvironment) && environment.parent != null) {
-				environment = environment.parent;
-			}
-		}
-		return environment;
-	}
-
 	@Override
 	public ConfigCategory setScope(@NotNull ConfigScope scope) {
 		super.setScope(scope);
 		for (ConfigEntry<?> configEntry : entries.values()) {
-			if (configEntry.getScope() == ConfigScope.DEFAULT) {
+			if (configEntry.getScope() == ConfigScope.UNSPECIFIED) {
 				configEntry.setScope(scope);
 			}
 		}
@@ -134,13 +111,19 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	@Override
 	public ConfigScope getScope() {
 		// In this context this finds the highest scope (the scope that trigger most of the other scopes).
-		if(entries.isEmpty()) return scope;
+		if (entries.isEmpty()) return scope;
 
-		ConfigScope highest = scope;
+		ConfigScope highest = scope == ConfigScope.UNSPECIFIED ? ConfigScope.SMALLEST : scope;
 		for (ConfigEntry<?> entry : this.entries.values()) {
 			ConfigScope entryScope = entry.getScope();
+			if (entryScope == ConfigScope.UNSPECIFIED) {
+				return ConfigScope.UNSPECIFIED;
+			}
 			if (entryScope != highest && entryScope.triggers(highest)) {
 				highest = entryScope;
+			} else if (!highest.triggers(entryScope)) {
+				highest = ConfigScope.HIGHEST;
+				break;
 			}
 		}
 		return highest;

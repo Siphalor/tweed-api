@@ -43,8 +43,8 @@ public class MixinClientPlayNetworkHandler {
 			Tweed.LOGGER.info("Requested config sync for " + configFile.getName());
 			PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
 			packetByteBuf.writeString(configFile.getName());
-			packetByteBuf.writeEnumConstant(ConfigEnvironment.SYNCED);
-			packetByteBuf.writeEnumConstant(ConfigScope.WORLD);
+			packetByteBuf.writeString(ConfigEnvironment.SYNCED.name());
+			packetByteBuf.writeString(ConfigScope.WORLD.name());
 			packetByteBuf.writeEnumConstant(ConfigOrigin.DATAPACK);
 			ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, packetByteBuf);
 		}

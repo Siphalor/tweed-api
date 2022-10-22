@@ -26,8 +26,8 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unchecked")
 public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
-	protected ConfigEnvironment environment = ConfigEnvironment.DEFAULT;
-	protected ConfigScope scope = ConfigScope.DEFAULT;
+	protected ConfigEnvironment environment = ConfigEnvironment.UNSPECIFIED;
+	protected ConfigScope scope = ConfigScope.UNSPECIFIED;
 	protected String comment = "";
 
 	@Override

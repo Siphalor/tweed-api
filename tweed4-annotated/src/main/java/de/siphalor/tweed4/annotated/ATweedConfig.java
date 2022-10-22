@@ -46,13 +46,15 @@ public @interface ATweedConfig {
 
 	/**
 	 * @return The default scope for entries in this config file.
+	 * @see ConfigScope
 	 */
-	ConfigScope scope();
+	String scope();
 
 	/**
 	 * @return The default environment for entries in this config file.
+	 * @see ConfigEnvironment
 	 */
-	ConfigEnvironment environment();
+	String environment();
 
 	/**
 	 * @return Sets the casing that will be applied to all config entries.

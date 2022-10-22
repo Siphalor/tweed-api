@@ -22,37 +22,19 @@ public class ConfigEnvironmentTests {
 	@Test
 	public void testTriggers() {
 		Boolean[] expected = new Boolean[] {
+				true,  false, true,  true,  null, // CLIENT
+				false, true,  true,  true,  null, // SERVER
+				false, false, true,  false, null, // SYNCED
 				true,  true,  true,  true,  true, // UNIVERSAL
-				true,  true,  false, true,  null, // CLIENT
-				true,  false, true,  true,  null, // SERVER
-				false, false, false, true,  null, // SYNCED
-				null,  null,  null,  null,  null, // DEFAULT
+				null,  null,  null,  null,  null, // UNSPECIFIED
 		};
 		int i = 0;
-		for (ConfigEnvironment environment : ConfigEnvironment.values()) {
-			for (ConfigEnvironment other : ConfigEnvironment.values()) {
+		for (ConfigEnvironment environment : ConfigEnvironment.ENUM.values()) {
+			for (ConfigEnvironment other : ConfigEnvironment.ENUM.values()) {
 				if (expected[i] != null) {
 					Assertions.assertEquals(expected[i], environment.triggers(other), environment + " triggers " + other);
 				}
 				i++;
-			}
-		}
-	}
-
-	@Test
-	@Deprecated
-	public void testContains() {
-		boolean[] expected = new boolean[] {
-				true,  true,  true,  false, false, // UNIVERSAL
-				false, true,  false, false, false, // CLIENT
-				false, false, true,  false, false, // SERVER
-				false, false, false, true,  false, // SYNCED
-				false, false, false, false, true,  // DEFAULT
-		};
-		int i = 0;
-		for (ConfigEnvironment environment : ConfigEnvironment.values()) {
-			for (ConfigEnvironment other : ConfigEnvironment.values()) {
-				Assertions.assertEquals(expected[i++], environment.contains(other), environment + " contains " + other);
 			}
 		}
 	}

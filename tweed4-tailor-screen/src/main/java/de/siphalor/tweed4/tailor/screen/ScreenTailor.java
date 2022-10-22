@@ -76,8 +76,8 @@ public abstract class ScreenTailor extends Tailor {
 						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 						for (ConfigFile syncFile : syncFiles) {
 							buf.writeString(syncFile.getName());
-							buf.writeEnumConstant(ConfigEnvironment.UNIVERSAL);
-							buf.writeEnumConstant(ConfigScope.SMALLEST);
+							buf.writeString(ConfigEnvironment.UNIVERSAL.name());
+							buf.writeString(ConfigScope.SMALLEST.name());
 							buf.writeEnumConstant(ConfigOrigin.MAIN);
 						}
 						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);

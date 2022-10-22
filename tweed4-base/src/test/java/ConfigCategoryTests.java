@@ -26,7 +26,7 @@ public class ConfigCategoryTests {
 	public void testGetScope() {
 		ConfigCategory category = new ConfigCategory();
 
-		Assertions.assertEquals(ConfigScope.DEFAULT, category.getScope());
+		Assertions.assertEquals(ConfigScope.UNSPECIFIED, category.getScope());
 
 		category.setScope(ConfigScope.WORLD);
 		Assertions.assertEquals(ConfigScope.WORLD, category.getScope());
@@ -37,7 +37,7 @@ public class ConfigCategoryTests {
 		category.register("a", new ValueConfigEntry<>(10).setScope(ConfigScope.GAME));
 		Assertions.assertEquals(ConfigScope.GAME, category.getScope());
 
-		category.setScope(ConfigScope.DEFAULT);
+		category.setScope(ConfigScope.UNSPECIFIED);
 		Assertions.assertEquals(ConfigScope.GAME, category.getScope());
 
 		category.setScope(ConfigScope.HIGHEST);
@@ -49,8 +49,8 @@ public class ConfigCategoryTests {
 		ConfigCategory category = new ConfigCategory();
 		ValueConfigEntry<Integer> entry = category.register("a", new ValueConfigEntry<>(10));
 
-		Assertions.assertEquals(ConfigScope.DEFAULT, category.getScope());
-		Assertions.assertEquals(ConfigScope.DEFAULT, entry.getScope());
+		Assertions.assertEquals(ConfigScope.UNSPECIFIED, category.getScope());
+		Assertions.assertEquals(ConfigScope.UNSPECIFIED, entry.getScope());
 
 		category.setScope(ConfigScope.GAME);
 		Assertions.assertEquals(ConfigScope.GAME, category.getScope());
@@ -61,32 +61,12 @@ public class ConfigCategoryTests {
 	}
 
 	@Test
-	@Deprecated
-	public void testGetEnvironment() {
-		ConfigCategory category = new ConfigCategory();
-
-		Assertions.assertEquals(ConfigEnvironment.DEFAULT, category.getEnvironment());
-
-		category.setEnvironment(ConfigEnvironment.SERVER);
-		Assertions.assertEquals(ConfigEnvironment.SERVER, category.getEnvironment());
-
-		ValueConfigEntry<Integer> entry = category.register("a", new ValueConfigEntry<>(10).setEnvironment(ConfigEnvironment.CLIENT));
-		Assertions.assertEquals(ConfigEnvironment.UNIVERSAL, category.getEnvironment());
-
-		entry.setEnvironment(ConfigEnvironment.SERVER);
-		Assertions.assertEquals(ConfigEnvironment.SERVER, category.getEnvironment());
-
-		category.setEnvironment(ConfigEnvironment.CLIENT);
-		Assertions.assertEquals(ConfigEnvironment.UNIVERSAL, category.getEnvironment());
-	}
-
-	@Test
 	public void testSetEnvironment() {
 		ConfigCategory category = new ConfigCategory();
 		ValueConfigEntry<Integer> entry = category.register("a", new ValueConfigEntry<>(10));
 
-		Assertions.assertEquals(ConfigEnvironment.DEFAULT, category.getOwnEnvironment());
-		Assertions.assertEquals(ConfigEnvironment.DEFAULT, entry.getOwnEnvironment());
+		Assertions.assertEquals(ConfigEnvironment.UNSPECIFIED, category.getOwnEnvironment());
+		Assertions.assertEquals(ConfigEnvironment.UNSPECIFIED, entry.getOwnEnvironment());
 
 		entry.setEnvironment(ConfigEnvironment.SYNCED);
 		category.setEnvironment(ConfigEnvironment.SERVER);

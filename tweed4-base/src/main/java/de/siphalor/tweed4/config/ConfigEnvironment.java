@@ -16,37 +16,44 @@
 
 package de.siphalor.tweed4.config;
 
+import de.siphalor.tweed4.util.EnumRepresentation;
 import org.jetbrains.annotations.ApiStatus;
 
 /**
- * An enum which defines in which environment a config should be loaded.
- *
- * CLIENT: only clientside
- * SERVER: only serverside
- * SYNCED: configured at server side but synchronized to the clients
- * UNIVERSAL: on both sides
- * DEFAULT: only to be used internally
+ * An enum-like class, which defines in which environment a config should be loaded.
  */
-public enum ConfigEnvironment {
-	UNIVERSAL(null), CLIENT(UNIVERSAL), SERVER(UNIVERSAL), SYNCED(null), DEFAULT(null);
+public class ConfigEnvironment implements EnumRepresentation.EnumLike {
+	/**
+	 * The unspecified environment. Indicates that the environment should be determined by the implementation (e.g. via parents or children).
+	 */
+	@ApiStatus.Internal
+	public static final ConfigEnvironment UNSPECIFIED = new ConfigEnvironment("unspecified");
+	/**
+	 * The client environment. Indicates that the config should only be loaded on clients.
+	 */
+	public static final ConfigEnvironment CLIENT = new ConfigEnvironment("client");
+	/**
+	 * The server environment. Indicates that the config should only be loaded on dedicated servers.
+	 */
+	public static final ConfigEnvironment SERVER = new ConfigEnvironment("server");
+	/**
+	 * The common environment. Indicates that the config should be loaded on both clients and dedicated servers, but synced from the server to the client.
+	 */
+	public static final ConfigEnvironment SYNCED = new ConfigEnvironment("synced");
+	/**
+	 * The common environment. Indicates that the config should be loaded on both clients and dedicated servers, but not synced.
+	 */
+	public static final ConfigEnvironment UNIVERSAL = new ConfigEnvironment("universal");
 
-	@Deprecated
-	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
-	public final ConfigEnvironment parent;
+	/**
+	 * Enum-like representation of this class.
+	 */
+	public static final EnumRepresentation<ConfigEnvironment> ENUM = EnumRepresentation.fromConstants(UNSPECIFIED, ConfigEnvironment.class);
 
-	ConfigEnvironment(ConfigEnvironment parent) {
-		this.parent = parent;
-	}
+	private final String name;
 
-	@Deprecated
-	@ApiStatus.ScheduledForRemoval(inVersion = "2.0")
-	public boolean contains(ConfigEnvironment other) {
-        while(other != null) {
-        	if(this == other)
-        		return true;
-        	other = other.parent;
-		}
-        return false;
+	public ConfigEnvironment(String name) {
+		this.name = name;
 	}
 
 	/**
@@ -58,14 +65,22 @@ public enum ConfigEnvironment {
 		if (this == other) {
 			return true;
 		}
-		switch (this) {
-			case UNIVERSAL:
-				return true;
-			case CLIENT:
-			case SERVER:
-				return other == UNIVERSAL || other == SYNCED;
+		if (UNIVERSAL == this) {
+			return true;
+		} else if (CLIENT == this || SERVER == this) {
+			return other == UNIVERSAL || other == SYNCED;
 		}
 
 		return false;
+	}
+
+	@Override
+	public String name() {
+		return name;
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 }

@@ -82,8 +82,8 @@ public class Tweed implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(REQUEST_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {
 			while (packetByteBuf.isReadable()) {
 				String name = packetByteBuf.readString(32767);
-				ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
-				ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
+				ConfigEnvironment environment = ConfigEnvironment.ENUM.valueOf(packetByteBuf.readString(32767));
+				ConfigScope scope = ConfigScope.ENUM.valueOf(packetByteBuf.readString(32767));
 				ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);
 				ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 				if (configFile != null) {
@@ -112,8 +112,8 @@ public class Tweed implements ModInitializer {
 		ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 		if (configFile != null) {
 			if (server.getPermissionLevel(player.getGameProfile()) == 4) {
-				ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
-				ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
+				ConfigEnvironment environment = ConfigEnvironment.ENUM.valueOf(packetByteBuf.readString(32767));
+				ConfigScope scope = ConfigScope.ENUM.valueOf(packetByteBuf.readString(32767));
 				configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
 				ConfigLoader.updateMainConfigFile(configFile, environment, scope);
 			} else {

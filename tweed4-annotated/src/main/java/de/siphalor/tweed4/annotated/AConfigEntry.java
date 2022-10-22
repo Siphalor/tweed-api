@@ -42,13 +42,15 @@ public @interface AConfigEntry {
 
 	/**
 	 * @return Defines the scope where this entry will get reloaded in.
+	 * @see ConfigScope
 	 */
-	ConfigScope scope() default ConfigScope.DEFAULT;
+	String scope() default "unspecified";
 
 	/**
 	 * @return Defines the environment in which this entry will be available.
+	 * @see ConfigEnvironment
 	 */
-	ConfigEnvironment environment() default ConfigEnvironment.DEFAULT;
+	String environment() default "unspecified";
 
 	/**
 	 * @return Defines constraints for this entry.

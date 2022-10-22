@@ -125,7 +125,7 @@ public class ConfigFile {
 	 */
 	public void setRootCategory(ConfigCategory rootCategory) {
 		this.rootCategory = rootCategory;
-		if (rootCategory.getOwnEnvironment() == ConfigEnvironment.DEFAULT) {
+		if (rootCategory.getOwnEnvironment() == ConfigEnvironment.UNSPECIFIED) {
 			rootCategory.setEnvironment(ConfigEnvironment.UNIVERSAL);
 		}
 	}
@@ -258,8 +258,8 @@ public class ConfigFile {
 	public void syncToServer(ConfigEnvironment environment, ConfigScope scope) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
 		packetByteBuf.writeString(name);
-		packetByteBuf.writeEnumConstant(environment);
-		packetByteBuf.writeEnumConstant(scope);
+		packetByteBuf.writeString(environment.name());
+		packetByteBuf.writeString(scope.name());
 		write(packetByteBuf, environment, scope, ConfigOrigin.MAIN);
 
 		ClientPlayNetworking.send(Tweed.CONFIG_SYNC_C2S_PACKET, packetByteBuf);

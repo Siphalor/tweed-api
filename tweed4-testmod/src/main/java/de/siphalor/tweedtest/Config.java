@@ -19,7 +19,6 @@ package de.siphalor.tweedtest;
 import com.google.common.base.CaseFormat;
 import com.mojang.datafixers.util.Either;
 import de.siphalor.tweed4.annotated.*;
-import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.RangeConstraint;
 import de.siphalor.tweed4.config.value.serializer.ReflectiveNullable;
@@ -31,13 +30,13 @@ import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings({"unused", "OptionalUsedAsFieldOrParameterType"})
-@ATweedConfig(serializer = "tweed4:hjson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
+@ATweedConfig(serializer = "tweed4:hjson", scope = "game", environment = "universal", tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed4_testmod")
 public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
 	public static Boolean aBoolean = true;
 
-	@AConfigEntry(environment = ConfigEnvironment.SYNCED, comment = "A synced boolean")
+	@AConfigEntry(environment = "synced", comment = "A synced boolean")
 	public static boolean primBool = false;
 
 	@AConfigExclude
@@ -68,9 +67,9 @@ public class Config {
 	@AConfigTransitive
 	public static Trans trans;
 
-	public static ConfigScope scope = ConfigScope.DEFAULT;
+	public static ConfigScope scope = ConfigScope.UNSPECIFIED;
 
-	@AConfigEntry(scope = ConfigScope.SMALLEST, environment = ConfigEnvironment.CLIENT, comment = "This is a client side dropdown!")
+	@AConfigEntry(scope = "smallest", environment = "client", comment = "This is a client side dropdown!")
 	public static TestDropdown dropdown = TestDropdown.B;
 	public static TestDropdown dropdown2 = TestDropdown.C;
 

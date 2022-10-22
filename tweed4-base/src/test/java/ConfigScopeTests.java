@@ -22,15 +22,15 @@ public class ConfigScopeTests {
 	@Test
 	public void testTriggers() {
 		boolean[] expected = new boolean[] {
-				true,  true,  true,  true,  true,
+				false, false, false, false, false, // UNSPECIFIED
 				false, true,  true,  true,  true,
 				false, false, true,  true,  true,
 				false, false, false, true,  true,
 				false, false, false, false, true,
 		};
 		int i = 0;
-		for (ConfigScope scope : ConfigScope.values()) {
-			for (ConfigScope other : ConfigScope.values()) {
+		for (ConfigScope scope : ConfigScope.ENUM.values()) {
+			for (ConfigScope other : ConfigScope.ENUM.values()) {
 				Assertions.assertEquals(expected[i++], scope.triggers(other), scope + " triggers " + other);
 			}
 		}
