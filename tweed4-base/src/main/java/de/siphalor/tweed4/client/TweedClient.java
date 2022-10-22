@@ -17,6 +17,7 @@
 package de.siphalor.tweed4.client;
 
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.TweedRegistries;
 import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.mixin.MinecraftServerAccessor;
 import net.fabricmc.api.ClientModInitializer;
@@ -95,7 +96,7 @@ public class TweedClient implements ClientModInitializer {
 
 			if (name.charAt(0) == '!') { // file not known to server
 				name = name.substring(1);
-				ConfigFile file = TweedRegistry.getConfigFile(name);
+				ConfigFile file = TweedRegistries.CONFIG_FILES.get(name);
 				if (file == null) {
 					Tweed.LOGGER.error("Received negative config sync packet for unknown file {}.\n" +
 							"Please report to " + Tweed.MOD_ISSUES_URL, name);
@@ -110,7 +111,7 @@ public class TweedClient implements ClientModInitializer {
 				return;
 			}
 
-			ConfigFile configFile = TweedRegistry.getConfigFile(name);
+			ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 			if (configFile != null) {
 				configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
 

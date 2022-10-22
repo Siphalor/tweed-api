@@ -19,6 +19,7 @@ package de.siphalor.tweed4.annotated;
 import com.google.common.base.CaseFormat;
 import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
+import de.siphalor.tweed4.TweedRegistries;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -34,7 +35,7 @@ import java.lang.annotation.Target;
 public @interface ATweedConfig {
 	/**
 	 * @return The serializer/file type to use for this config file.
-	 * @see de.siphalor.tweed4.config.TweedRegistry#SERIALIZERS
+	 * @see TweedRegistries#SERIALIZERS
 	 */
 	String serializer() default "hjson";
 
@@ -60,7 +61,7 @@ public @interface ATweedConfig {
 
 	/**
 	 * @return Defines the tailors to apply to this file.
-	 * @see de.siphalor.tweed4.config.TweedRegistry#TAILORS
+	 * @see TweedRegistries#TAILORS
 	 */
 	String[] tailors() default {};
 }

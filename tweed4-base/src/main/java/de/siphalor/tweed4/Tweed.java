@@ -33,7 +33,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -86,7 +85,7 @@ public class Tweed implements ModInitializer {
 				ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
 				ConfigScope scope = packetByteBuf.readEnumConstant(ConfigScope.class);
 				ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);
-				ConfigFile configFile = TweedRegistry.getConfigFile(name);
+				ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 				if (configFile != null) {
 					if (server.getPermissionLevel(player.getGameProfile()) == 4) {
 						configFile.syncToClient(player, environment, scope, origin);
@@ -110,7 +109,7 @@ public class Tweed implements ModInitializer {
 
 	private static void receiveSyncC2SPacket(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
 		String name = packetByteBuf.readString(32767);
-		ConfigFile configFile = TweedRegistry.getConfigFile(name);
+		ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 		if (configFile != null) {
 			if (server.getPermissionLevel(player.getGameProfile()) == 4) {
 				ConfigEnvironment environment = packetByteBuf.readEnumConstant(ConfigEnvironment.class);
@@ -145,10 +144,10 @@ public class Tweed implements ModInitializer {
 							"because it has no `getId()` method declared!");
 					continue;
 				}
-				Registry.register(TweedRegistry.SERIALIZERS, Identifier.tryParse(serializer.getId()), serializer);
+				TweedRegistries.SERIALIZERS.register(serializer);
 				if ("tweed4:hjson".equals(serializer.getId())) {
 					//noinspection deprecation
-					TweedRegistry.setDefaultSerializer(serializer);
+					TweedRegistries.setDefaultSerializer(serializer);
 				}
 			}
 		}
@@ -164,9 +163,10 @@ public class Tweed implements ModInitializer {
 			initializers.forEach(TweedInitializer::tweedInit);
 		}
 
-		if (TweedRegistry.getDefaultSerializer() == null) {
+		if (TweedRegistries.getDefaultSerializer() == null) {
 			//noinspection deprecation
-			TweedRegistry.setDefaultSerializer(TweedRegistry.SERIALIZERS.getEntries().iterator().next().getValue());
+			TweedRegistries.setDefaultSerializer(TweedRegistries.SERIALIZERS.getValues().stream().findFirst()
+					.orElseThrow(() -> new RuntimeException("No serializer registered!")));
 		}
 
 		if (loaderAPI.getEnvironmentType() == EnvType.CLIENT) {

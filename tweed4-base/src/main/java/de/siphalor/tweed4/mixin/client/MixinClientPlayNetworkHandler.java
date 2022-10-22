@@ -17,6 +17,7 @@
 package de.siphalor.tweed4.mixin.client;
 
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.TweedRegistries;
 import de.siphalor.tweed4.config.*;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
@@ -35,7 +36,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinClientPlayNetworkHandler {
 	@Inject(method = "onGameJoin", at = @At("RETURN"), require = 0)
 	public void onGameJoined(GameJoinS2CPacket packet, CallbackInfo callbackInfo) {
-		for (ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
+		for (ConfigFile configFile : TweedRegistries.CONFIG_FILES.getValues()) {
 			if (!configFile.getRootCategory().matches(ConfigEnvironment.SYNCED, null)) {
 				continue;
 			}

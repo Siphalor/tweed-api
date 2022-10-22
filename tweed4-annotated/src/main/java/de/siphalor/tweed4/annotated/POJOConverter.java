@@ -21,12 +21,13 @@ import com.google.common.collect.HashMultimap;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.config.ConfigCategory;
 import de.siphalor.tweed4.config.ConfigFile;
-import de.siphalor.tweed4.config.TweedRegistry;
+import de.siphalor.tweed4.TweedRegistries;
 import de.siphalor.tweed4.config.constraints.AnnotationConstraint;
 import de.siphalor.tweed4.config.entry.AbstractValueConfigEntry;
 import de.siphalor.tweed4.config.entry.ConfigEntry;
 import de.siphalor.tweed4.config.entry.ValueConfigEntry;
 import de.siphalor.tweed4.config.fixers.ConfigEntryFixer;
+import de.siphalor.tweed4.registry.TweedIdentifier;
 import de.siphalor.tweed4.config.value.ReferenceConfigValue;
 import de.siphalor.tweed4.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed4.config.value.serializer.ConfigValueSerializer;
@@ -42,6 +43,7 @@ import net.minecraft.util.Pair;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class POJOConverter {
 	private static final HashMultimap<Class<?>, POJOConfigEntryMapper> ENTRY_MAPPERS = HashMultimap.create();
@@ -77,7 +79,11 @@ public class POJOConverter {
 		if (file.isEmpty()) {
 			file = fallbackFileName;
 		}
-		DataSerializer<?> serializer = TweedRegistry.SERIALIZERS.getOrEmpty(new Identifier(tweedConfig.serializer())).orElse(TweedRegistry.getDefaultSerializer());
+		DataSerializer<?> serializer = TweedRegistries.SERIALIZERS.get(TweedIdentifier.parse(tweedConfig.serializer()));
+		if (serializer == null) {
+			throw new RuntimeException("Unknown serializer: " + tweedConfig.serializer()
+					+ ", known serializers: " + TweedRegistries.SERIALIZERS.getKeys().stream().map(TweedIdentifier::toString).collect(Collectors.joining(", ")));
+		}
 
 		ConfigFile configFile = new ConfigFile(file, serializer, rootCategory);
 
@@ -108,7 +114,7 @@ public class POJOConverter {
 
 		Tailor tailor;
 		for (String tailorId : tweedConfig.tailors()) {
-			tailor = TweedRegistry.TAILORS.get(new Identifier(tailorId));
+			tailor = TweedRegistries.TAILORS.get(TweedIdentifier.parse(tailorId));
 			if (tailor != null)
 				tailor.process(configFile);
 		}

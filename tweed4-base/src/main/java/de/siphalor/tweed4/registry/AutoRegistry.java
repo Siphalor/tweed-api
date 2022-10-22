@@ -14,14 +14,26 @@
  * limitations under the License.
  */
 
-package de.siphalor.tweedtest;
+package de.siphalor.tweed4.registry;
 
-import de.siphalor.tweed4.TweedInitializer;
-import de.siphalor.tweed4.TweedRegistries;
+import org.jetbrains.annotations.NotNull;
 
-public class TweedTestmodInitializer implements TweedInitializer {
+import java.util.function.Function;
+
+public class AutoRegistry<K, T> extends Registry<K, T> {
+	private final Function<@NotNull T, @NotNull K> keyFunction;
+
+	public AutoRegistry(Function<@NotNull T, @NotNull K> keyFunction) {
+		this.keyFunction = keyFunction;
+	}
+
 	@Override
-	public void tweedInit() {
-		TweedRegistries.CONFIG_FILES.register(TraditionalConfig.FILE);
+	@Deprecated
+	public T register(@NotNull K key, @NotNull T value) {
+		return super.register(key, value);
+	}
+
+	public T register(@NotNull T value) {
+		return super.register(keyFunction.apply(value), value);
 	}
 }

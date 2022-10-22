@@ -18,16 +18,15 @@ package de.siphalor.tweed4.tailor.coat;
 
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.TweedClientInitializer;
-import de.siphalor.tweed4.config.TweedRegistry;
+import de.siphalor.tweed4.TweedRegistries;
+import de.siphalor.tweed4.registry.TweedIdentifier;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 public class TweedCoatInitializer implements TweedClientInitializer {
 	@Override
 	public void tweedRegisterClient() {
 		if (FabricLoader.getInstance().isModLoaded("coat")) {
-			Registry.register(TweedRegistry.TAILORS, new Identifier(Tweed.MOD_ID, "coat"), CoatTailor.INSTANCE);
+			TweedRegistries.TAILORS.register(TweedIdentifier.of(Tweed.MOD_ID, "coat"), CoatTailor.INSTANCE);
 		} else {
 			Tweed.LOGGER.warn("[tweed4-tailor-coat] Couldn't find Coat - some config screens might not be present.");
 		}

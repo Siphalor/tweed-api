@@ -21,8 +21,8 @@ import de.siphalor.tweed4.config.ConfigFile;
 public interface TweedInitializer {
 	/**
 	 * Register {@link de.siphalor.tweed4.tailor.Tailor}s or {@link de.siphalor.tweed4.data.DataSerializer}s in this method.
-	 * @see de.siphalor.tweed4.config.TweedRegistry#TAILORS
-	 * @see de.siphalor.tweed4.config.TweedRegistry#SERIALIZERS
+	 * @see TweedRegistries#TAILORS
+	 * @see TweedRegistries#SERIALIZERS
 	 */
 	default void tweedRegister() {
 
@@ -30,8 +30,8 @@ public interface TweedInitializer {
 
 	/**
 	 * Register {@link de.siphalor.tweed4.config.ConfigFile}s in this method.
-	 * @see de.siphalor.tweed4.config.TweedRegistry#registerConfigFile(String, de.siphalor.tweed4.data.DataSerializer)
-	 * @see de.siphalor.tweed4.config.TweedRegistry#registerConfigFile(ConfigFile)
+	 * @see TweedRegistries#registerConfigFile(String, de.siphalor.tweed4.data.DataSerializer)
+	 * @see TweedRegistries#registerConfigFile(ConfigFile)
 	 */
 	default void tweedInit() {
 

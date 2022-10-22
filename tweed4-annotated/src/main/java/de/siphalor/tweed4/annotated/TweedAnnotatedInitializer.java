@@ -19,7 +19,7 @@ package de.siphalor.tweed4.annotated;
 import de.siphalor.tweed4.Tweed;
 import de.siphalor.tweed4.TweedInitializer;
 import de.siphalor.tweed4.config.ConfigFile;
-import de.siphalor.tweed4.config.TweedRegistry;
+import de.siphalor.tweed4.TweedRegistries;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 
@@ -33,7 +33,7 @@ public class TweedAnnotatedInitializer implements TweedInitializer {
 		for (EntrypointContainer<Object> entrypoint : entrypoints) {
 			try {
 				ConfigFile configFile = POJOConverter.toConfigFile(entrypoint.getEntrypoint(), entrypoint.getProvider().getMetadata().getId());
-				TweedRegistry.registerConfigFile(configFile);
+				TweedRegistries.CONFIG_FILES.register(configFile);
 			} catch (RuntimeException e) {
 				e.printStackTrace();
 			}

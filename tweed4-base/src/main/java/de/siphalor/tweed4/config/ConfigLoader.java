@@ -17,6 +17,7 @@
 package de.siphalor.tweed4.config;
 
 import de.siphalor.tweed4.Tweed;
+import de.siphalor.tweed4.TweedRegistries;
 import de.siphalor.tweed4.data.AnnotatedDataValue;
 import de.siphalor.tweed4.data.DataSerializer;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -37,7 +38,7 @@ public final class ConfigLoader {
 	private static final ObjectArraySet<ConfigFile> initiallyReloadedFiles = new ObjectArraySet<>();
 
 	public static void initialReload(ConfigEnvironment configEnvironment) {
-		for (ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
+		for (ConfigFile configFile : TweedRegistries.CONFIG_FILES.getValues()) {
 			initialReload(configFile, configEnvironment);
 		}
 	}
@@ -76,7 +77,7 @@ public final class ConfigLoader {
 	 */
 	public static void reloadAll(ResourceManager resourceManager, ConfigEnvironment environment, ConfigScope scope) {
 		currentResourceManager.set(resourceManager);
-		for(ConfigFile configFile : TweedRegistry.getAllConfigFiles()) {
+		for(ConfigFile configFile : TweedRegistries.CONFIG_FILES.getValues()) {
 			reloadSimple(configFile, resourceManager, environment, scope);
 		}
 		currentResourceManager.set(null);
