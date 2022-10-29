@@ -16,10 +16,10 @@
 
 package de.siphalor.tweed5.config.entry;
 
-import de.siphalor.tweed5.config.ConfigEnvironment;
-import de.siphalor.tweed5.config.ConfigOrigin;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
 import de.siphalor.tweed5.config.ConfigReadException;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed5.data.AnnotatedDataValue;
 import de.siphalor.tweed5.data.DataSerializer;
@@ -36,27 +36,27 @@ public class ConstantConfigEntry<T> extends AbstractBasicEntry<T> {
 	}
 
 	@Override
-	public void reset(@NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+	public void reset(@NotNull ReloadEnvironment environment, @NotNull ReloadScope scope) {
 
 	}
 
 	@Override
-	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) throws ConfigReadException {
+	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ReloadContext context) throws ConfigReadException {
 
 	}
 
 	@Override
-	public void read(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
+	public void read(@NotNull PacketByteBuf buf, @NotNull ReloadContext context) {
 
 	}
 
 	@Override
-	public void write(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
+	public void write(@NotNull PacketByteBuf buf, @NotNull ReloadContext context) {
 
 	}
 
 	@Override
-	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, AnnotatedDataValue<V> oldValue, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, AnnotatedDataValue<V> oldValue, ReloadContext context) {
 		return AnnotatedDataValue.of(valueSerializer.write(serializer, value));
 	}
 

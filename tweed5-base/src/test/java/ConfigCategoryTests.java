@@ -15,8 +15,8 @@
  */
 
 import de.siphalor.tweed5.config.ConfigCategory;
-import de.siphalor.tweed5.config.ConfigEnvironment;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.config.entry.ValueConfigEntry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,22 +26,22 @@ public class ConfigCategoryTests {
 	public void testGetScope() {
 		ConfigCategory category = new ConfigCategory();
 
-		Assertions.assertEquals(ConfigScope.UNSPECIFIED, category.getScope());
+		Assertions.assertEquals(ReloadScope.UNSPECIFIED, category.getScope());
 
-		category.setScope(ConfigScope.WORLD);
-		Assertions.assertEquals(ConfigScope.WORLD, category.getScope());
+		category.setScope(ReloadScope.WORLD);
+		Assertions.assertEquals(ReloadScope.WORLD, category.getScope());
 
-		category.register("b", new ValueConfigEntry<>(10).setScope(ConfigScope.SMALLEST));
-		Assertions.assertEquals(ConfigScope.WORLD, category.getScope());
+		category.register("b", new ValueConfigEntry<>(10).setScope(ReloadScope.SMALLEST));
+		Assertions.assertEquals(ReloadScope.WORLD, category.getScope());
 
-		category.register("a", new ValueConfigEntry<>(10).setScope(ConfigScope.GAME));
-		Assertions.assertEquals(ConfigScope.GAME, category.getScope());
+		category.register("a", new ValueConfigEntry<>(10).setScope(ReloadScope.GAME));
+		Assertions.assertEquals(ReloadScope.GAME, category.getScope());
 
-		category.setScope(ConfigScope.UNSPECIFIED);
-		Assertions.assertEquals(ConfigScope.GAME, category.getScope());
+		category.setScope(ReloadScope.UNSPECIFIED);
+		Assertions.assertEquals(ReloadScope.GAME, category.getScope());
 
-		category.setScope(ConfigScope.HIGHEST);
-		Assertions.assertEquals(ConfigScope.HIGHEST, category.getScope());
+		category.setScope(ReloadScope.HIGHEST);
+		Assertions.assertEquals(ReloadScope.HIGHEST, category.getScope());
 	}
 
 	@Test
@@ -49,15 +49,15 @@ public class ConfigCategoryTests {
 		ConfigCategory category = new ConfigCategory();
 		ValueConfigEntry<Integer> entry = category.register("a", new ValueConfigEntry<>(10));
 
-		Assertions.assertEquals(ConfigScope.UNSPECIFIED, category.getScope());
-		Assertions.assertEquals(ConfigScope.UNSPECIFIED, entry.getScope());
+		Assertions.assertEquals(ReloadScope.UNSPECIFIED, category.getScope());
+		Assertions.assertEquals(ReloadScope.UNSPECIFIED, entry.getScope());
 
-		category.setScope(ConfigScope.GAME);
-		Assertions.assertEquals(ConfigScope.GAME, category.getScope());
-		Assertions.assertEquals(ConfigScope.GAME, entry.getScope());
+		category.setScope(ReloadScope.GAME);
+		Assertions.assertEquals(ReloadScope.GAME, category.getScope());
+		Assertions.assertEquals(ReloadScope.GAME, entry.getScope());
 
 		ValueConfigEntry<Integer> entry2 = category.register("b", new ValueConfigEntry<>(10));
-		Assertions.assertEquals(ConfigScope.GAME, entry2.getScope());
+		Assertions.assertEquals(ReloadScope.GAME, entry2.getScope());
 	}
 
 	@Test
@@ -65,15 +65,15 @@ public class ConfigCategoryTests {
 		ConfigCategory category = new ConfigCategory();
 		ValueConfigEntry<Integer> entry = category.register("a", new ValueConfigEntry<>(10));
 
-		Assertions.assertEquals(ConfigEnvironment.UNSPECIFIED, category.getOwnEnvironment());
-		Assertions.assertEquals(ConfigEnvironment.UNSPECIFIED, entry.getOwnEnvironment());
+		Assertions.assertEquals(ReloadEnvironment.UNSPECIFIED, category.getOwnEnvironment());
+		Assertions.assertEquals(ReloadEnvironment.UNSPECIFIED, entry.getOwnEnvironment());
 
-		entry.setEnvironment(ConfigEnvironment.SYNCED);
-		category.setEnvironment(ConfigEnvironment.SERVER);
-		Assertions.assertEquals(ConfigEnvironment.SERVER, category.getOwnEnvironment());
-		Assertions.assertEquals(ConfigEnvironment.SYNCED, entry.getOwnEnvironment());
+		entry.setEnvironment(ReloadEnvironment.SYNCED);
+		category.setEnvironment(ReloadEnvironment.SERVER);
+		Assertions.assertEquals(ReloadEnvironment.SERVER, category.getOwnEnvironment());
+		Assertions.assertEquals(ReloadEnvironment.SYNCED, entry.getOwnEnvironment());
 
 		ValueConfigEntry<Integer> entry2 = category.register("b", new ValueConfigEntry<>(10));
-		Assertions.assertEquals(ConfigEnvironment.SERVER, entry2.getOwnEnvironment());
+		Assertions.assertEquals(ReloadEnvironment.SERVER, entry2.getOwnEnvironment());
 	}
 }

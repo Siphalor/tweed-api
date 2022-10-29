@@ -24,6 +24,9 @@ import de.siphalor.tweed5.config.entry.ConfigEntry;
 import de.siphalor.tweed5.data.AnnotatedDataValue;
 import de.siphalor.tweed5.data.DataObject;
 import de.siphalor.tweed5.data.DataSerializer;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
@@ -49,8 +52,8 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	 */
 	public <T extends ConfigEntry<?>> T register(String name, T configEntry) {
 		entries.put(name, configEntry);
-		if(configEntry.getOwnEnvironment() == ConfigEnvironment.UNSPECIFIED) configEntry.setEnvironment(environment);
-		if(configEntry.getScope() == ConfigScope.UNSPECIFIED) configEntry.setScope(scope);
+		if(configEntry.getOwnEnvironment() == ReloadEnvironment.UNSPECIFIED) configEntry.setEnvironment(getOwnEnvironment());
+		if(configEntry.getScope() == ReloadScope.UNSPECIFIED) configEntry.setScope(getOwnScope());
 		return configEntry;
 	}
 
@@ -59,7 +62,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void reset(@NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+	public void reset(@NotNull ReloadEnvironment environment, @NotNull ReloadScope scope) {
 		entryStream(environment, scope).forEach(entry -> entry.getValue().reset(environment, scope));
 	}
 
@@ -87,10 +90,10 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public ConfigCategory setEnvironment(@NotNull ConfigEnvironment environment) {
+	public ConfigCategory setEnvironment(@NotNull ReloadEnvironment environment) {
 		super.setEnvironment(environment);
 		for (ConfigEntry<?> configEntry : entries.values()) {
-			if (configEntry.getOwnEnvironment() == ConfigEnvironment.UNSPECIFIED) {
+			if (configEntry.getOwnEnvironment() == ReloadEnvironment.UNSPECIFIED) {
 				configEntry.setEnvironment(environment);
 			}
 		}
@@ -98,10 +101,10 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public ConfigCategory setScope(@NotNull ConfigScope scope) {
+	public ConfigCategory setScope(@NotNull ReloadScope scope) {
 		super.setScope(scope);
 		for (ConfigEntry<?> configEntry : entries.values()) {
-			if (configEntry.getScope() == ConfigScope.UNSPECIFIED) {
+			if (configEntry.getScope() == ReloadScope.UNSPECIFIED) {
 				configEntry.setScope(scope);
 			}
 		}
@@ -109,20 +112,20 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public ConfigScope getScope() {
+	public ReloadScope getScope() {
 		// In this context this finds the highest scope (the scope that trigger most of the other scopes).
-		if (entries.isEmpty()) return scope;
+		if (entries.isEmpty()) return getOwnScope();
 
-		ConfigScope highest = scope == ConfigScope.UNSPECIFIED ? ConfigScope.SMALLEST : scope;
+		ReloadScope highest = getOwnScope() == ReloadScope.UNSPECIFIED ? ReloadScope.SMALLEST : getOwnScope();
 		for (ConfigEntry<?> entry : this.entries.values()) {
-			ConfigScope entryScope = entry.getScope();
-			if (entryScope == ConfigScope.UNSPECIFIED) {
-				return ConfigScope.UNSPECIFIED;
+			ReloadScope entryScope = entry.getScope();
+			if (entryScope == ReloadScope.UNSPECIFIED) {
+				return ReloadScope.UNSPECIFIED;
 			}
 			if (entryScope != highest && entryScope.triggers(highest)) {
 				highest = entryScope;
 			} else if (!highest.triggers(entryScope)) {
-				highest = ConfigScope.HIGHEST;
+				highest = ReloadScope.HIGHEST;
 				break;
 			}
 		}
@@ -130,7 +133,7 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public boolean matches(ConfigEnvironment environment, ConfigScope scope) {
+	public boolean matches(ReloadEnvironment environment, ReloadScope scope) {
 		for (ConfigEntry<?> entry : entries.values()) {
 			if (entry.matches(environment, scope)) {
 				return true;
@@ -140,12 +143,12 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) throws ConfigReadException {
+	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ReloadContext context) throws ConfigReadException {
 		DataObject<V> dataObject = serializer.toObject(value);
-		entryStream(environment, scope).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
+		entryStream(context).filter(entry -> dataObject.has(entry.getKey())).forEach(entry -> {
 			V fieldValue = dataObject.get(entry.getKey());
 			try {
-				entry.getValue().read(serializer, fieldValue, environment, scope, origin);
+				entry.getValue().read(serializer, fieldValue, context);
 			} catch (ConfigReadException e) {
 				Tweed.LOGGER.error("Error reading " + entry.getKey() + ":");
 				e.printStackTrace();
@@ -165,11 +168,11 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void read(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
-		while(buf.readBoolean()) {
+	public void read(@NotNull PacketByteBuf buf, @NotNull ReloadContext context) {
+		while (buf.readBoolean()) {
 			ConfigEntry<?> entry = entries.get(buf.readString(32767));
 			if (entry != null) {
-				entry.read(buf, environment, scope, origin);
+				entry.read(buf, context);
 			} else {
 				throw new RuntimeException("Attempt to sync unknown entry! Aborting.");
 			}
@@ -178,17 +181,17 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 	}
 
 	@Override
-	public void write(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
-		entryStream(environment, scope).forEach(entry -> {
+	public void write(@NotNull PacketByteBuf buf, @NotNull ReloadContext context) {
+		entryStream(context).forEach(entry -> {
 			buf.writeBoolean(true);
 			buf.writeString(entry.getKey());
-			entry.getValue().write(buf, environment, scope, origin);
+			entry.getValue().write(buf, context);
 		});
 		buf.writeBoolean(false);
 	}
 
 	@Override
-	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, @NotNull ReloadContext context) {
 		DataObject<V> object;
 		if (oldValue != null && oldValue.getValue() instanceof DataObject) {
 			//noinspection unchecked
@@ -196,8 +199,8 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		} else {
 			object = serializer.newObject();
 		}
-		entryStream(environment, scope).forEach(entry -> {
-			AnnotatedDataValue<?> value = entry.getValue().write(serializer, AnnotatedDataValue.of(object.get(entry.getKey())), environment, scope);
+		entryStream(context).forEach(entry -> {
+			AnnotatedDataValue<?> value = entry.getValue().write(serializer, AnnotatedDataValue.of(object.get(entry.getKey())), context);
 			if (value != null) {
 				object.putRaw(entry.getKey(), value.getValue());
 			}
@@ -209,8 +212,12 @@ public class ConfigCategory extends AbstractBasicEntry<ConfigCategory> {
 		return entries.entrySet().stream();
 	}
 
-	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream(ConfigEnvironment environment, ConfigScope scope) {
+	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream(ReloadEnvironment environment, ReloadScope scope) {
 		return entryStream().filter(entry -> entry.getValue().matches(environment, scope));
+	}
+
+	public Stream<Map.Entry<String, ConfigEntry<?>>> entryStream(ReloadContext context) {
+		return entryStream(context.getEnvironment(), context.getScope());
 	}
 
 	public boolean isEmpty() {

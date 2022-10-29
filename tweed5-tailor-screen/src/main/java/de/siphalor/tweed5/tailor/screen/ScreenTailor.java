@@ -20,6 +20,9 @@ import de.siphalor.tweed5.Tweed;
 import de.siphalor.tweed5.client.ConfigSyncListener;
 import de.siphalor.tweed5.client.TweedClient;
 import de.siphalor.tweed5.config.*;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.tailor.Tailor;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -76,9 +79,7 @@ public abstract class ScreenTailor extends Tailor {
 						PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 						for (ConfigFile syncFile : syncFiles) {
 							buf.writeString(syncFile.getName());
-							buf.writeString(ConfigEnvironment.UNIVERSAL.name());
-							buf.writeString(ConfigScope.SMALLEST.name());
-							buf.writeEnumConstant(ConfigOrigin.MAIN);
+							ReloadContext.nonFile(ReloadEnvironment.UNIVERSAL, ReloadScope.SMALLEST, true).write(buf);
 						}
 						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
 
@@ -123,7 +124,7 @@ public abstract class ScreenTailor extends Tailor {
 	 * @return Whether the config file requires to be synced before being opened
 	 */
 	protected boolean isSyncFromServerRequired(ConfigFile configFile) {
-		return configFile.getRootCategory().matches(ConfigEnvironment.SERVER, null);
+		return configFile.getRootCategory().matches(ReloadEnvironment.SERVER, null);
 	}
 
 	/**
@@ -134,7 +135,7 @@ public abstract class ScreenTailor extends Tailor {
 	 */
 	protected void save(ConfigFile configFile) {
 		if (isSyncToServerApplicable(configFile)) {
-			configFile.syncToServer(ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
+			configFile.syncToServer(ReloadEnvironment.UNIVERSAL, ReloadScope.SMALLEST);
 		}
 		saveLocally(configFile);
 	}
@@ -147,13 +148,13 @@ public abstract class ScreenTailor extends Tailor {
 	 */
 	protected void saveLocally(ConfigFile configFile) {
 		MinecraftClient client = MinecraftClient.getInstance();
-		ConfigLoader.updateMainConfigFile(configFile, ConfigEnvironment.UNIVERSAL, ConfigScope.HIGHEST);
+		ConfigLoader.updateMainConfigFile(configFile, ReloadEnvironment.UNIVERSAL, ReloadScope.HIGHEST);
 		if (client.world == null) {
 			// Player is in main menu, reload in world scope
-			ConfigLoader.reload(configFile, client.getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD);
+			ConfigLoader.reload(configFile, client.getResourceManager(), ReloadEnvironment.UNIVERSAL, ReloadScope.WORLD);
 		} else {
 			// Player is somewhere in game, reload in the smallest scope
-			ConfigLoader.reload(configFile, client.getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.SMALLEST);
+			ConfigLoader.reload(configFile, client.getResourceManager(), ReloadEnvironment.UNIVERSAL, ReloadScope.SMALLEST);
 		}
 	}
 
@@ -166,7 +167,7 @@ public abstract class ScreenTailor extends Tailor {
 	protected boolean isSyncToServerApplicable(ConfigFile configFile) {
 		if (TweedClient.isOnRemoteServer()) {
 			assert MinecraftClient.getInstance().player != null;
-			return configFile.getRootCategory().matches(ConfigEnvironment.SERVER, null)
+			return configFile.getRootCategory().matches(ReloadEnvironment.SERVER, null)
 					&& MinecraftClient.getInstance().player.hasPermissionLevel(3);
 		}
 		return false;

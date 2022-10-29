@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.siphalor.tweed5.config;
+package de.siphalor.tweed5.reload;
 
 import de.siphalor.tweed5.util.EnumRepresentation;
 import org.jetbrains.annotations.ApiStatus;
@@ -22,37 +22,37 @@ import org.jetbrains.annotations.ApiStatus;
 /**
  * An enum-like class, which defines in which environment a config should be loaded.
  */
-public class ConfigEnvironment implements EnumRepresentation.EnumLike {
+public class ReloadEnvironment implements EnumRepresentation.EnumLike {
 	/**
 	 * The unspecified environment. Indicates that the environment should be determined by the implementation (e.g. via parents or children).
 	 */
 	@ApiStatus.Internal
-	public static final ConfigEnvironment UNSPECIFIED = new ConfigEnvironment("unspecified");
+	public static final ReloadEnvironment UNSPECIFIED = new ReloadEnvironment("unspecified");
 	/**
 	 * The client environment. Indicates that the config should only be loaded on clients.
 	 */
-	public static final ConfigEnvironment CLIENT = new ConfigEnvironment("client");
+	public static final ReloadEnvironment CLIENT = new ReloadEnvironment("client");
 	/**
 	 * The server environment. Indicates that the config should only be loaded on dedicated servers.
 	 */
-	public static final ConfigEnvironment SERVER = new ConfigEnvironment("server");
+	public static final ReloadEnvironment SERVER = new ReloadEnvironment("server");
 	/**
 	 * The common environment. Indicates that the config should be loaded on both clients and dedicated servers, but synced from the server to the client.
 	 */
-	public static final ConfigEnvironment SYNCED = new ConfigEnvironment("synced");
+	public static final ReloadEnvironment SYNCED = new ReloadEnvironment("synced");
 	/**
 	 * The common environment. Indicates that the config should be loaded on both clients and dedicated servers, but not synced.
 	 */
-	public static final ConfigEnvironment UNIVERSAL = new ConfigEnvironment("universal");
+	public static final ReloadEnvironment UNIVERSAL = new ReloadEnvironment("universal");
 
 	/**
 	 * Enum-like representation of this class.
 	 */
-	public static final EnumRepresentation<ConfigEnvironment> ENUM = EnumRepresentation.fromConstants(UNSPECIFIED, ConfigEnvironment.class);
+	public static final EnumRepresentation<ReloadEnvironment> ENUM = EnumRepresentation.fromConstants(UNSPECIFIED, ReloadEnvironment.class);
 
 	private final String name;
 
-	public ConfigEnvironment(String name) {
+	public ReloadEnvironment(String name) {
 		this.name = name;
 	}
 
@@ -61,7 +61,7 @@ public class ConfigEnvironment implements EnumRepresentation.EnumLike {
 	 * @param other Another environment.
 	 * @return Whether an update would be propagated.
 	 */
-	public boolean triggers(ConfigEnvironment other) {
+	public boolean triggers(ReloadEnvironment other) {
 		if (this == other) {
 			return true;
 		}

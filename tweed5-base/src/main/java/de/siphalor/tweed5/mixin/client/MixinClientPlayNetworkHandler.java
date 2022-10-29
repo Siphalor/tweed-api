@@ -19,6 +19,9 @@ package de.siphalor.tweed5.mixin.client;
 import de.siphalor.tweed5.Tweed;
 import de.siphalor.tweed5.TweedRegistries;
 import de.siphalor.tweed5.config.*;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -37,15 +40,13 @@ public class MixinClientPlayNetworkHandler {
 	@Inject(method = "onGameJoin", at = @At("RETURN"), require = 0)
 	public void onGameJoined(GameJoinS2CPacket packet, CallbackInfo callbackInfo) {
 		for (ConfigFile configFile : TweedRegistries.CONFIG_FILES.getValues()) {
-			if (!configFile.getRootCategory().matches(ConfigEnvironment.SYNCED, null)) {
+			if (!configFile.getRootCategory().matches(ReloadEnvironment.SYNCED, null)) {
 				continue;
 			}
 			Tweed.LOGGER.info("Requested config sync for " + configFile.getName());
 			PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
 			packetByteBuf.writeString(configFile.getName());
-			packetByteBuf.writeString(ConfigEnvironment.SYNCED.name());
-			packetByteBuf.writeString(ConfigScope.WORLD.name());
-			packetByteBuf.writeEnumConstant(ConfigOrigin.DATAPACK);
+			ReloadContext.nonFile(ReloadEnvironment.SYNCED, ReloadScope.HIGHEST, true).write(packetByteBuf);
 			ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, packetByteBuf);
 		}
 	}

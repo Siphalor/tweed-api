@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-import de.siphalor.tweed5.config.ConfigEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ConfigEnvironmentTests {
+public class ReloadScopeTests {
 	@Test
 	public void testTriggers() {
-		Boolean[] expected = new Boolean[] {
-				true,  false, true,  true,  null, // CLIENT
-				false, true,  true,  true,  null, // SERVER
-				false, false, true,  false, null, // SYNCED
-				true,  true,  true,  true,  true, // UNIVERSAL
-				null,  null,  null,  null,  null, // UNSPECIFIED
+		boolean[] expected = new boolean[] {
+				false, false, false, false, false, // UNSPECIFIED
+				false, true,  true,  true,  true,
+				false, false, true,  true,  true,
+				false, false, false, true,  true,
+				false, false, false, false, true,
 		};
 		int i = 0;
-		for (ConfigEnvironment environment : ConfigEnvironment.ENUM.values()) {
-			for (ConfigEnvironment other : ConfigEnvironment.ENUM.values()) {
-				if (expected[i] != null) {
-					Assertions.assertEquals(expected[i], environment.triggers(other), environment + " triggers " + other);
-				}
-				i++;
+		for (ReloadScope scope : ReloadScope.ENUM.values()) {
+			for (ReloadScope other : ReloadScope.ENUM.values()) {
+				Assertions.assertEquals(expected[i++], scope.triggers(other), scope + " triggers " + other);
 			}
 		}
 	}

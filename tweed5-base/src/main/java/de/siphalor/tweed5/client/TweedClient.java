@@ -20,6 +20,9 @@ import de.siphalor.tweed5.Tweed;
 import de.siphalor.tweed5.TweedRegistries;
 import de.siphalor.tweed5.config.*;
 import de.siphalor.tweed5.mixin.MinecraftServerAccessor;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -45,7 +48,7 @@ public class TweedClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ConfigLoader.initialReload(ConfigEnvironment.UNIVERSAL);
+		ConfigLoader.initialReload(ReloadEnvironment.UNIVERSAL);
 
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
@@ -56,7 +59,7 @@ public class TweedClient implements ClientModInitializer {
 			@Override
 			public void apply(ResourceManager resourceManager) {
 				try {
-					ConfigLoader.reloadAll(resourceManager, ConfigEnvironment.CLIENT, ConfigScope.SMALLEST);
+					ConfigLoader.reloadAll(resourceManager, ReloadEnvironment.CLIENT, ReloadScope.SMALLEST);
 				} catch (Throwable e) {
 					Tweed.LOGGER.error("Tweed failed to load config files");
 					e.printStackTrace();
@@ -64,11 +67,10 @@ public class TweedClient implements ClientModInitializer {
 			}
 		});
 		ServerLifecycleEvents.SERVER_STARTED.register(minecraftServer ->
-				ConfigLoader.reloadAll(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ConfigEnvironment.UNIVERSAL, ConfigScope.WORLD)
+				ConfigLoader.reloadAll(((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager(), ReloadEnvironment.UNIVERSAL, ReloadScope.WORLD)
 		);
 
 		ClientPlayNetworking.registerGlobalReceiver(Tweed.CONFIG_SYNC_S2C_PACKET, (client, handler, packetByteBuf, packetSender) -> {
-			ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);
 			String name = packetByteBuf.readString();
 
 			if (name.charAt(0) == '!') { // file not known to server
@@ -90,7 +92,7 @@ public class TweedClient implements ClientModInitializer {
 
 			ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 			if (configFile != null) {
-				configFile.read(packetByteBuf, ConfigEnvironment.SERVER, ConfigScope.WORLD, origin);
+				configFile.read(packetByteBuf, ReloadContext.read(packetByteBuf));
 
 				if (configSyncListener != null) {
 					if (configSyncListener.onSync(configFile)) {

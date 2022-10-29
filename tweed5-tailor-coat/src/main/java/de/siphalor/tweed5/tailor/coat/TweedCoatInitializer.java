@@ -28,7 +28,7 @@ public class TweedCoatInitializer implements TweedClientInitializer {
 		if (FabricLoader.getInstance().isModLoaded("coat")) {
 			TweedRegistries.TAILORS.register(TweedIdentifier.of(Tweed.MOD_ID, "coat"), CoatTailor.INSTANCE);
 		} else {
-			Tweed.LOGGER.warn("[tweed4-tailor-coat] Couldn't find Coat - some config screens might not be present.");
+			Tweed.LOGGER.warn("[tweed5-tailor-coat] Couldn't find Coat - some config screens might not be present.");
 		}
 	}
 }

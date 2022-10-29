@@ -17,8 +17,8 @@
 package de.siphalor.tweed5.annotated;
 
 import com.google.common.base.CaseFormat;
-import de.siphalor.tweed5.config.ConfigEnvironment;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.TweedRegistries;
 
 import java.lang.annotation.ElementType;
@@ -46,13 +46,13 @@ public @interface ATweedConfig {
 
 	/**
 	 * @return The default scope for entries in this config file.
-	 * @see ConfigScope
+	 * @see ReloadScope
 	 */
 	String scope();
 
 	/**
 	 * @return The default environment for entries in this config file.
-	 * @see ConfigEnvironment
+	 * @see ReloadEnvironment
 	 */
 	String environment();
 

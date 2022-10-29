@@ -23,6 +23,7 @@ import de.siphalor.tweed5.config.value.serializer.ConfigSerializers;
 import de.siphalor.tweed5.config.value.serializer.ConfigValueSerializer;
 import de.siphalor.tweed5.data.AnnotatedDataValue;
 import de.siphalor.tweed5.data.DataSerializer;
+import de.siphalor.tweed5.reload.ReloadContext;
 import net.minecraft.network.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
  */
 @SuppressWarnings("unchecked")
 public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEntry<T>, T> {
-	private ConfigValueSerializer<T> valueSerializer;
+	private final ConfigValueSerializer<T> valueSerializer;
 
 	protected T mainConfigValue;
 
@@ -81,29 +82,29 @@ public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEnt
 	}
 
 	@Override
-	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) throws ConfigReadException {
+	public <V> void read(@NotNull DataSerializer<V> serializer, @NotNull V value, @NotNull ReloadContext context) throws ConfigReadException {
 		try {
 			currentValue.set(valueSerializer.read(serializer, value));
 		} catch (ConfigReadException e) {
 			currentValue.set(defaultValue);
-			if (origin == ConfigOrigin.MAIN) {
+			if (context.isMainOrigin()) {
 				mainConfigValue = currentValue.get();
 			}
 			throw e;
 		}
-		if (origin == ConfigOrigin.MAIN) {
+		if (context.isMainOrigin()) {
 			mainConfigValue = currentValue.get();
 		}
 		onReload();
 	}
 
 	@Override
-	public void read(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
-		if (origin == ConfigOrigin.MAIN) {
+	public void read(@NotNull PacketByteBuf buf, @NotNull ReloadContext context) {
+		if (context.isMainOrigin()) {
 			mainConfigValue = valueSerializer.read(buf);
 			return;
 		}
-		if (matches(environment, scope)) {
+		if (matches(context)) {
 			currentValue.set(valueSerializer.read(buf));
 			onReload();
 		} else {
@@ -113,14 +114,14 @@ public class ValueConfigEntry<T> extends AbstractValueConfigEntry<ValueConfigEnt
 	}
 
 	@Override
-	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+	public <V> AnnotatedDataValue<Object> write(@NotNull DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, @NotNull ReloadContext context) {
 		Object written = valueSerializer.write(serializer, mainConfigValue);
 		return AnnotatedDataValue.of(written, getDescription());
     }
 
 	@Override
-	public void write(@NotNull PacketByteBuf buf, @NotNull ConfigEnvironment environment, @NotNull ConfigScope scope, @NotNull ConfigOrigin origin) {
-		if (origin == ConfigOrigin.MAIN) {
+	public void write(@NotNull PacketByteBuf buf, @NotNull ReloadContext context) {
+		if (context.isMainOrigin()) {
 			valueSerializer.write(buf, mainConfigValue);
 		} else {
 			valueSerializer.write(buf, currentValue.get());

@@ -23,22 +23,27 @@ import de.siphalor.tweed5.config.fixers.ConfigEntryFixer;
 import de.siphalor.tweed5.data.AnnotatedDataValue;
 import de.siphalor.tweed5.data.DataObject;
 import de.siphalor.tweed5.data.DataSerializer;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.resource.Resource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * A configuration file.
@@ -47,7 +52,7 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("unused")
 public class ConfigFile {
 	private final String name;
-	private BiConsumer<ConfigEnvironment, ConfigScope> reloadListener = null;
+	private Consumer<ReloadContext> reloadListener = null;
 	private final Collection<Pair<String, ConfigEntryFixer>> configEntryFixers;
 	private final DataSerializer<?> dataSerializer;
 
@@ -68,12 +73,12 @@ public class ConfigFile {
 
 	/**
 	 * Adds a new reload listener.
-	 *
+	 * <br />
 	 * This gets called after all reloading of sub-entries is done for the specific reload point.
-	 * @param listener a {@link BiConsumer} accepting the used {@link ConfigEnvironment} and {@link ConfigScope}
+	 * @param listener the listener
 	 * @return the current config file (for chain calls)
 	 */
-	public ConfigFile setReloadListener(BiConsumer<ConfigEnvironment, ConfigScope> listener) {
+	public ConfigFile setReloadListener(Consumer<ReloadContext> listener) {
 		reloadListener = listener;
 		return this;
 	}
@@ -83,16 +88,19 @@ public class ConfigFile {
 		return (DataSerializer<V>) dataSerializer;
 	}
 
-	public void finishReload(ConfigEnvironment environment, ConfigScope scope) {
-		Tweed.LOGGER.info("Reloaded configs for " + name + " (" + environment.name().toLowerCase(Locale.ENGLISH) + "/" + scope.name().toLowerCase(Locale.ENGLISH) + ")");
-		if(reloadListener != null)
-			reloadListener.accept(environment, scope);
+	@Deprecated
+	public void finishReload(ReloadContext context) {
+		Tweed.LOGGER.info("Reloaded configs for " + name + " (" + context.getEnvironment() + "/" + context.getScope() + ")");
+		if(reloadListener != null) {
+			reloadListener.accept(context);
+		}
 	}
 
 	/**
 	 * Gets the file identifier used in datapacks.
 	 * @return the identifier
 	 */
+	// TODO: ?
 	public Identifier getFileIdentifier() {
 		return new Identifier(Tweed.MOD_ID, "config/" + getFileName());
 	}
@@ -125,8 +133,8 @@ public class ConfigFile {
 	 */
 	public void setRootCategory(ConfigCategory rootCategory) {
 		this.rootCategory = rootCategory;
-		if (rootCategory.getOwnEnvironment() == ConfigEnvironment.UNSPECIFIED) {
-			rootCategory.setEnvironment(ConfigEnvironment.UNIVERSAL);
+		if (rootCategory.getOwnEnvironment() == ReloadEnvironment.UNSPECIFIED) {
+			rootCategory.setEnvironment(ReloadEnvironment.UNIVERSAL);
 		}
 	}
 
@@ -167,22 +175,21 @@ public class ConfigFile {
 	 * Writes to the {@link DataObject} for handing it to the {@link Tweed#mainConfigDirectory}
 	 *
 	 * @param existingData data previously read in to be merged with
-	 * @param environment the current environment
-	 * @param scope the current definition scope
+	 * @param context the reload context
 	 * @return the new {@link DataObject}
 	 */
-	public <V> AnnotatedDataValue<V> write(DataSerializer<V> serializer, AnnotatedDataValue<V> existingData, ConfigEnvironment environment, ConfigScope scope) {
+	public <V> AnnotatedDataValue<V> write(DataSerializer<V> serializer, AnnotatedDataValue<V> existingData, ReloadContext context) {
 		fixConfig(serializer, existingData.getValue());
-		rootCategory.write(serializer, existingData, environment, scope);
+		rootCategory.write(serializer, existingData, context);
 		return existingData;
 	}
 
 	/**
 	 * Resets all entries to their default values
-	 * @param environment The current {@link ConfigEnvironment}
-	 * @param scope The current {@link ConfigScope}
+	 * @param environment The current {@link ReloadEnvironment}
+	 * @param scope The current {@link ReloadScope}
 	 */
-	public void reset(ConfigEnvironment environment, ConfigScope scope) {
+	public void reset(ReloadEnvironment environment, ReloadScope scope) {
         rootCategory.reset(environment, scope);
 	}
 
@@ -210,34 +217,26 @@ public class ConfigFile {
 		});
 	}
 
-	public <V> void load(Resource resource, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		AnnotatedDataValue<V> data = this.<V>getDataSerializer().read(resource.getInputStream());
-		try {
-			resource.close();
-		} catch (IOException e) {
-			Tweed.LOGGER.error("Failed to close config resource after reading it in resource pack: " + resource.getResourcePackName());
-			e.printStackTrace();
-		}
+	public <V> void load(InputStream inputStream, ReloadContext context) {
+		AnnotatedDataValue<V> data = this.<V>getDataSerializer().read(inputStream);
 		if (data != null) {
-			load(getDataSerializer(), data, environment, scope, origin);
+			load(getDataSerializer(), data, context);
 		}
 	}
 
-	public <V> void load(DataSerializer<V> serializer, AnnotatedDataValue<V> data, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public <V> void load(DataSerializer<V> serializer, AnnotatedDataValue<V> data, ReloadContext context) {
 		this.fixConfig(serializer, data.getValue());
 
 		try {
-			rootCategory.read(serializer, data.getValue(), environment, scope, origin);
+			rootCategory.read(serializer, data.getValue(), context);
 		} catch (ConfigReadException e) {
             Tweed.LOGGER.error("The config file " + name + "." + dataSerializer.getFileExtension() + " must contain an object!");
 		}
 	}
 
-	public void syncToClients(ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void syncToClients(ReloadContext context) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		packetByteBuf.writeEnumConstant(origin);
-		packetByteBuf.writeString(name);
-		write(packetByteBuf, environment, scope, origin);
+		context.write(packetByteBuf);
 
 		for (MinecraftServer server : Tweed.MINECRAFT_SERVERS) {
 			for (ServerPlayerEntity player : PlayerLookup.all(server)) {
@@ -246,33 +245,34 @@ public class ConfigFile {
 		}
 	}
 
-	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+	public void syncToClient(ServerPlayerEntity playerEntity, ReloadContext context) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		packetByteBuf.writeEnumConstant(origin);
-		packetByteBuf.writeString(name);
-		write(packetByteBuf, environment, scope, origin);
+		context.write(packetByteBuf);
+		write(packetByteBuf, context);
 
 		ServerPlayNetworking.send(playerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
 	}
 
-	public void syncToServer(ConfigEnvironment environment, ConfigScope scope) {
+	public void syncToServer(ReloadEnvironment environment, ReloadScope scope) {
+		ReloadContext context = ReloadContext.nonFile(environment, scope, true);
+
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
 		packetByteBuf.writeString(name);
-		packetByteBuf.writeString(environment.name());
-		packetByteBuf.writeString(scope.name());
-		write(packetByteBuf, environment, scope, ConfigOrigin.MAIN);
+		context.write(packetByteBuf);
+		write(packetByteBuf, context);
 
 		ClientPlayNetworking.send(Tweed.CONFIG_SYNC_C2S_PACKET, packetByteBuf);
 	}
 
-	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		rootCategory.write(buffer, environment, scope, origin);
+	protected void write(PacketByteBuf buffer, ReloadContext context) {
+		rootCategory.write(buffer, context);
 	}
 
-	public void read(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		rootCategory.read(buffer, environment, scope, origin);
-		if(reloadListener != null)
-			reloadListener.accept(environment, scope);
+	public void read(PacketByteBuf buffer, ReloadContext context) {
+		rootCategory.read(buffer, context);
+		if(reloadListener != null) {
+			reloadListener.accept(context);
+		}
 	}
 
 	/**
@@ -299,7 +299,7 @@ public class ConfigFile {
 	 * Sets the default environment for config entries. Equivalent to <code>getRootCategory().setEnvironment(...)</code>
 	 * @param environment the environment
 	 */
-	public ConfigFile setEnvironment(ConfigEnvironment environment) {
+	public ConfigFile setEnvironment(ReloadEnvironment environment) {
 		rootCategory.setEnvironment(environment);
 		return this;
 	}
@@ -308,7 +308,7 @@ public class ConfigFile {
 	 * Sets the default scope for config entries. Equivalent to <code>getRootCategory().setScope(...)</code>
 	 * @param scope the scope
 	 */
-	public ConfigFile setScope(ConfigScope scope) {
+	public ConfigFile setScope(ReloadScope scope) {
 		rootCategory.setScope(scope);
 		return this;
 	}

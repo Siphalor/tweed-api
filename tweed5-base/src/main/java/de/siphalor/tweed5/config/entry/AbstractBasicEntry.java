@@ -16,8 +16,8 @@
 
 package de.siphalor.tweed5.config.entry;
 
-import de.siphalor.tweed5.config.ConfigEnvironment;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -26,29 +26,33 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unchecked")
 public abstract class AbstractBasicEntry<T> implements ConfigEntry<T> {
-	protected ConfigEnvironment environment = ConfigEnvironment.UNSPECIFIED;
-	protected ConfigScope scope = ConfigScope.UNSPECIFIED;
+	private ReloadEnvironment environment = ReloadEnvironment.UNSPECIFIED;
+	private ReloadScope scope = ReloadScope.UNSPECIFIED;
 	protected String comment = "";
 
 	@Override
-	public T setEnvironment(@NotNull ConfigEnvironment environment) {
+	public T setEnvironment(@NotNull ReloadEnvironment environment) {
 		this.environment = environment;
 		return (T) this;
 	}
 
+	protected final ReloadScope getOwnScope() {
+		return scope;
+	}
+
 	@Override
-	public final ConfigEnvironment getOwnEnvironment() {
+	public final ReloadEnvironment getOwnEnvironment() {
 		return environment;
 	}
 
 	@Override
-	public T setScope(@NotNull ConfigScope scope) {
+	public T setScope(@NotNull ReloadScope scope) {
 		this.scope = scope;
 		return (T) this;
 	}
 
 	@Override
-	public ConfigScope getScope() {
+	public ReloadScope getScope() {
 		return scope;
 	}
 

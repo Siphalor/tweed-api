@@ -19,7 +19,7 @@ package de.siphalor.tweedtest;
 import com.google.common.base.CaseFormat;
 import com.mojang.datafixers.util.Either;
 import de.siphalor.tweed5.annotated.*;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.config.constraints.RangeConstraint;
 import de.siphalor.tweed5.config.value.serializer.ReflectiveNullable;
 import de.siphalor.tweed5.tailor.cloth.ClothData;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings({"unused", "OptionalUsedAsFieldOrParameterType"})
-@ATweedConfig(serializer = "tweed4:hjson", scope = "game", environment = "universal", tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
+@ATweedConfig(serializer = "tweed5:hjson", scope = "game", environment = "universal", tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed5_testmod")
 public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
@@ -56,7 +56,7 @@ public class Config {
 
 	public static List<Entry> entries = Arrays.asList(
 			new Entry("hi", "ho"),
-			new Entry("tweed4:id", "tweed4:type")
+			new Entry("tweed5:id", "tweed5:type")
 	);
 
 	public static List<String> strings = Arrays.asList(
@@ -67,7 +67,7 @@ public class Config {
 	@AConfigTransitive
 	public static Trans trans;
 
-	public static ConfigScope scope = ConfigScope.UNSPECIFIED;
+	public static ReloadScope scope = ReloadScope.UNSPECIFIED;
 
 	@AConfigEntry(scope = "smallest", environment = "client", comment = "This is a client side dropdown!")
 	public static TestDropdown dropdown = TestDropdown.B;

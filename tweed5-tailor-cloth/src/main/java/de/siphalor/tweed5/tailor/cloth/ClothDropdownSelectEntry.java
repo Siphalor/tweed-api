@@ -71,7 +71,7 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 	public void setValue(V value) {
 		this.value = value;
 		if (value == null) {
-			mainButton.setMessage(new TranslatableText("tweed4.cloth.dropdown.empty"));
+			mainButton.setMessage(new TranslatableText("tweed5.cloth.dropdown.empty"));
 		} else {
 			mainButton.setMessage(valueConverter.apply(value));
 		}

@@ -76,7 +76,7 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	public void setValue(V value) {
 		this.value = value;
 		if (value == null) {
-			button.setMessage(new TranslatableText("tweed4.cloth.dropdown.empty"));
+			button.setMessage(new TranslatableText("tweed5.cloth.dropdown.empty"));
 		} else {
 			button.setMessage(valueConverter.apply(value));
 		}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.siphalor.tweed5.config;
+package de.siphalor.tweed5.reload;
 
 import de.siphalor.tweed5.util.EnumRepresentation;
 import org.jetbrains.annotations.ApiStatus;
@@ -24,39 +24,39 @@ import java.util.Comparator;
 /**
  * An enum which sets when a config can be (re-)loaded.
  */
-public class ConfigScope implements EnumRepresentation.EnumLike {
+public class ReloadScope implements EnumRepresentation.EnumLike {
 	/**
 	 * Indicates that no scope is set, the actual scope will be determined by the implementation (e.g. via parents or children)
 	 */
 	@ApiStatus.Internal
-	public static final ConfigScope UNSPECIFIED = new ConfigScope("unspecified", Integer.MAX_VALUE);
+	public static final ReloadScope UNSPECIFIED = new ReloadScope("unspecified", Integer.MAX_VALUE);
 	/**
 	 * The highest scope, triggers all other scopes
 	 */
-	public static final ConfigScope HIGHEST = new ConfigScope("highest", Integer.MAX_VALUE - 1);
+	public static final ReloadScope HIGHEST = new ReloadScope("highest", Integer.MAX_VALUE - 1);
 	/**
 	 * Triggered when game starts
 	 */
-	public static final ConfigScope GAME = new ConfigScope("game", 2000);
+	public static final ReloadScope GAME = new ReloadScope("game", 2000);
 	/**
 	 * Triggered when joining a world
 	 */
-	public static final ConfigScope WORLD = new ConfigScope("world", 1000);
+	public static final ReloadScope WORLD = new ReloadScope("world", 1000);
 	/**
 	 * Triggers on all reloads
 	 */
-	public static final ConfigScope SMALLEST = new ConfigScope("smallest", 0);
+	public static final ReloadScope SMALLEST = new ReloadScope("smallest", 0);
 
 	public static final int SPECIAL_SCOPE_VALUE = Integer.MAX_VALUE - 1000;
 
 	/**
 	 * Enum-like representation of this class.
 	 */
-	public static final EnumRepresentation<ConfigScope> ENUM = EnumRepresentation.fromConstants(HIGHEST, ConfigScope.class, Comparator.comparingInt(scope -> -scope.value));
+	public static final EnumRepresentation<ReloadScope> ENUM = EnumRepresentation.fromConstants(HIGHEST, ReloadScope.class, Comparator.comparingInt(scope -> -scope.value));
 	private final String name;
 	private final int value;
 
-	ConfigScope(String name, int value) {
+	ReloadScope(String name, int value) {
 		this.name = name;
 		this.value = value;
 	}
@@ -67,7 +67,7 @@ public class ConfigScope implements EnumRepresentation.EnumLike {
 	 * @param other Another scope to check against
 	 * @return Whether this scope triggers the other one
 	 */
-	public boolean triggers(ConfigScope other) {
+	public boolean triggers(ReloadScope other) {
 		if (this == UNSPECIFIED) {
 			return false;
 		}

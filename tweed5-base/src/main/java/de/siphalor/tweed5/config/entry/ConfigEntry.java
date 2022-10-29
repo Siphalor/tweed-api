@@ -16,10 +16,10 @@
 
 package de.siphalor.tweed5.config.entry;
 
-import de.siphalor.tweed5.config.ConfigEnvironment;
-import de.siphalor.tweed5.config.ConfigOrigin;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
 import de.siphalor.tweed5.config.ConfigReadException;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.config.constraints.Constraint;
 import de.siphalor.tweed5.data.AnnotatedDataValue;
 import de.siphalor.tweed5.data.DataSerializer;
@@ -41,78 +41,84 @@ public interface ConfigEntry<T> {
 	 * @param environment the current environment the current environment (handled by the system, can be ignored in most cases)
 	 * @param scope the current scope the current scope (handled by the system, can be ignored in most cases)
 	 */
-	void reset(ConfigEnvironment environment, ConfigScope scope);
+	void reset(ReloadEnvironment environment, ReloadScope scope);
 
 	/**
 	 * Abstract method for reading the entry's value from a data object
 	 *
-	 * @param serializer  the serializer used for the data
-	 * @param value       the given data value
-	 * @param environment the current environment
-	 * @param scope       the current reload scope
+	 * @param serializer the serializer used for the data
+	 * @param value      the given data value
+	 * @param context    the current reload context
 	 * @throws ConfigReadException if an issue occurs during reading the value
 	 */
-	<V> void read(DataSerializer<V> serializer, V value, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) throws ConfigReadException;
+	<V> void read(DataSerializer<V> serializer, V value, ReloadContext context) throws ConfigReadException;
 
 	/**
 	 * Read this kind of entry from a packet.
-	 * @param buf the packet's buffer
-	 * @param environment the current environment
-	 * @param scope the current reload scope
-	 * @param origin the kind of source where this data comes from/should go to
+	 *
+	 * @param buf     the packet's buffer
+	 * @param context the current reload context
 	 */
-	void read(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin);
+	void read(PacketByteBuf buf, ReloadContext context);
 
 	/**
 	 * Write this kind of entry to a packet.
-	 * @param buf the packet's buffer
-	 * @param environment the current environment
-	 * @param scope the current reload scope
-	 * @param origin the kind of source where this data comes from/should go to
+	 *
+	 * @param buf     the packet's buffer
+	 * @param context the current reload context
 	 */
-	void write(PacketByteBuf buf, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin);
+	void write(PacketByteBuf buf, ReloadContext context);
 
 	/**
 	 * Method to write the main config value of the entry to a serialized form.
 	 * Use {@link DataSerializer#fromRaw(Object)} to convert primitive values or use {@link DataSerializer#newObject()}/{@link DataSerializer#newList()} for maps and lists.
 	 *
-	 * @param serializer  the serializer used for the data
-	 * @param oldValue
-	 * @param environment the current environment (handled by the system, can be ignored in most cases)
-	 * @param scope       the current scope (handled by the system, can be ignored in most cases)
+	 * @param serializer the serializer used for the data
+	 * @param oldValue   the old value of the entry
+	 * @param context    the current reload context
 	 * @return The value serialized as annotated data
 	 */
-	<V> AnnotatedDataValue<Object> write(DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, ConfigEnvironment environment, ConfigScope scope);
+	<V> AnnotatedDataValue<Object> write(DataSerializer<V> serializer, @Nullable AnnotatedDataValue<V> oldValue, ReloadContext context);
 
 	/**
 	 * Sets the environment where this entry is defined
 	 * @param environment the environment
 	 * @return the current entry for chain calls
-	 * @see ConfigEnvironment
+	 * @see ReloadEnvironment
 	 */
-	T setEnvironment(ConfigEnvironment environment);
+	T setEnvironment(ReloadEnvironment environment);
 
 	/**
 	 * Gets the actual environment of the entry itself.
 	 * For composite entries this must always deliver the internal environment of the entry,
-	 * which is usually {@link ConfigEnvironment#DEFAULT} by default.
+	 * which is usually {@link ReloadEnvironment#UNSPECIFIED} by default.
 	 * @return the environment of the entry itself
 	 */
-	ConfigEnvironment getOwnEnvironment();
+	ReloadEnvironment getOwnEnvironment();
 
 	/**
 	 * Sets the scope in which the config can be (re-)loaded
 	 * @param scope the scope to use
 	 * @return the current entry for chain calls
-	 * @see ConfigScope
+	 * @see ReloadScope
 	 */
-	T setScope(ConfigScope scope);
+	T setScope(ReloadScope scope);
 
 	/**
 	 * Gets the scope in which the entry gets reloaded.
 	 * @return the scope
 	 */
-	ConfigScope getScope();
+	ReloadScope getScope();
+
+	/**
+	 * Checks whether this entry is triggered by the given context.
+	 * Convenience method for {@link #matches(ReloadEnvironment, ReloadScope)}.
+	 * @param context the context to check
+	 * @return whether the entry is triggered by the context
+	 */
+	default boolean matches(@NotNull ReloadContext context) {
+		return matches(context.getEnvironment(), context.getScope());
+	}
 
 	/**
 	 * Checks whether this entry is triggered by the given environment and scope.
@@ -121,7 +127,7 @@ public interface ConfigEntry<T> {
 	 * @param scope the scope to check
 	 * @return whether the entry is triggered by the given environment and scope
 	 */
-	default boolean matches(@Nullable ConfigEnvironment environment, @Nullable ConfigScope scope) {
+	default boolean matches(@Nullable ReloadEnvironment environment, @Nullable ReloadScope scope) {
 		return (environment == null || environment.triggers(getOwnEnvironment()))
 				&& (scope == null || scope.triggers(getScope()));
 	}

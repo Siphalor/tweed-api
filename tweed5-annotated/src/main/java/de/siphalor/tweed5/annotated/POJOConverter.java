@@ -20,10 +20,10 @@ import com.google.common.base.CaseFormat;
 import com.google.common.collect.HashMultimap;
 import de.siphalor.tweed5.Tweed;
 import de.siphalor.tweed5.config.ConfigCategory;
-import de.siphalor.tweed5.config.ConfigEnvironment;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
 import de.siphalor.tweed5.config.ConfigFile;
 import de.siphalor.tweed5.TweedRegistries;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.config.constraints.AnnotationConstraint;
 import de.siphalor.tweed5.config.entry.AbstractValueConfigEntry;
 import de.siphalor.tweed5.config.entry.ConfigEntry;
@@ -75,8 +75,8 @@ public class POJOConverter {
 			throw new RuntimeException("Tweed POJOs need the ATweedConfig annotation!");
 		}
 		ConfigCategory rootCategory = toCategory(pojo, tweedConfig.casing());
-		rootCategory.setScope(ConfigScope.ENUM.valueOf(tweedConfig.scope()));
-		rootCategory.setEnvironment(ConfigEnvironment.ENUM.valueOf(tweedConfig.environment()));
+		rootCategory.setScope(ReloadScope.ENUM.valueOf(tweedConfig.scope()));
+		rootCategory.setEnvironment(ReloadEnvironment.ENUM.valueOf(tweedConfig.environment()));
 		String file = tweedConfig.file();
 		if (file.isEmpty()) {
 			file = fallbackFileName;
@@ -315,8 +315,8 @@ public class POJOConverter {
 				name = configData.name();
 			}
 			entry.setComment(configData.comment());
-			entry.setScope(ConfigScope.ENUM.valueOf(configData.scope()));
-			entry.setEnvironment(ConfigEnvironment.ENUM.valueOf(configData.environment()));
+			entry.setScope(ReloadScope.ENUM.valueOf(configData.scope()));
+			entry.setEnvironment(ReloadEnvironment.ENUM.valueOf(configData.environment()));
 
 			// Add constraints
 			if (entry instanceof AbstractValueConfigEntry) {

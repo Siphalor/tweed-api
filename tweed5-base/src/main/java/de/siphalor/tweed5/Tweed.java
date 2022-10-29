@@ -18,6 +18,9 @@ package de.siphalor.tweed5;
 
 import de.siphalor.tweed5.config.*;
 import de.siphalor.tweed5.data.DataSerializer;
+import de.siphalor.tweed5.reload.ReloadContext;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -68,7 +71,7 @@ public class Tweed implements ModInitializer {
 			@Override
 			public void apply(ResourceManager resourceManager) {
 				try {
-					ConfigLoader.reloadAll(resourceManager, ConfigEnvironment.SERVER, ConfigScope.SMALLEST);
+					ConfigLoader.reloadAll(resourceManager, ReloadEnvironment.SERVER, ReloadScope.SMALLEST);
 				} catch (Throwable e) {
 					Tweed.LOGGER.error("Tweed failed to load config files:");
 					e.printStackTrace();
@@ -78,21 +81,18 @@ public class Tweed implements ModInitializer {
 
 		ServerPlayNetworking.registerGlobalReceiver(REQUEST_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {
 			while (packetByteBuf.isReadable()) {
-				String name = packetByteBuf.readString(32767);
-				ConfigEnvironment environment = ConfigEnvironment.ENUM.valueOf(packetByteBuf.readString(32767));
-				ConfigScope scope = ConfigScope.ENUM.valueOf(packetByteBuf.readString(32767));
-				ConfigOrigin origin = packetByteBuf.readEnumConstant(ConfigOrigin.class);
+				String name = packetByteBuf.readString(Short.MAX_VALUE);
+				ReloadContext context = ReloadContext.read(packetByteBuf);
 				ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 				if (configFile != null) {
 					if (server.getPermissionLevel(player.getGameProfile()) == 4) {
-						configFile.syncToClient(player, environment, scope, origin);
+						configFile.syncToClient(player, context);
 					} else {
-						configFile.syncToClient(player, ConfigEnvironment.SYNCED, scope, ConfigOrigin.DATAPACK);
+						configFile.syncToClient(player, context.withEnvironment(ReloadEnvironment.SYNCED));
 					}
 				} else {
 					LOGGER.warn("Received request to sync config file " + name + " but it was not found.");
 					PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-					buf.writeEnumConstant(ConfigOrigin.DATAPACK);
 					buf.writeString("!" + name);
 					ServerPlayNetworking.send(player, CONFIG_SYNC_S2C_PACKET, buf);
 				}
@@ -108,10 +108,7 @@ public class Tweed implements ModInitializer {
 		ConfigFile configFile = TweedRegistries.CONFIG_FILES.get(name);
 		if (configFile != null) {
 			if (server.getPermissionLevel(player.getGameProfile()) == 4) {
-				ConfigEnvironment environment = ConfigEnvironment.ENUM.valueOf(packetByteBuf.readString(32767));
-				ConfigScope scope = ConfigScope.ENUM.valueOf(packetByteBuf.readString(32767));
-				configFile.read(packetByteBuf, environment, ConfigScope.SMALLEST, ConfigOrigin.MAIN);
-				ConfigLoader.updateMainConfigFile(configFile, environment, scope);
+				configFile.read(packetByteBuf, ReloadContext.read(packetByteBuf));
 			} else {
 				packetByteBuf.clear();
 			}
@@ -171,12 +168,11 @@ public class Tweed implements ModInitializer {
 		}
 	}
 
-	public static ConfigEnvironment getCurrentEnvironment() {
+	public static ReloadEnvironment getCurrentEnvironment() {
 		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-			return ConfigEnvironment.SERVER;
+			return ReloadEnvironment.SERVER;
 		} else {
-			return ConfigEnvironment.CLIENT;
+			return ReloadEnvironment.CLIENT;
 		}
 	}
-
 }

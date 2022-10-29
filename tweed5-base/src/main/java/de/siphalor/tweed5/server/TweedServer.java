@@ -16,9 +16,9 @@
 
 package de.siphalor.tweed5.server;
 
-import de.siphalor.tweed5.config.ConfigEnvironment;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
 import de.siphalor.tweed5.config.ConfigLoader;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.mixin.MinecraftServerAccessor;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -26,9 +26,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 public class TweedServer implements DedicatedServerModInitializer {
 	@Override
 	public void onInitializeServer() {
-        ConfigLoader.initialReload(ConfigEnvironment.SERVER);
+        ConfigLoader.initialReload(ReloadEnvironment.SERVER);
 		ServerLifecycleEvents.SERVER_STARTED.register(server ->
-				ConfigLoader.reloadAll(((MinecraftServerAccessor) server).getServerResourceManager().getResourceManager(), ConfigEnvironment.SERVER, ConfigScope.WORLD)
+				ConfigLoader.reloadAll(((MinecraftServerAccessor) server).getServerResourceManager().getResourceManager(), ReloadEnvironment.SERVER, ReloadScope.WORLD)
 		);
 	}
 }

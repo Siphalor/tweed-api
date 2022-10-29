@@ -28,7 +28,7 @@ public class TweedClothInitializer implements TweedClientInitializer {
 		if (FabricLoader.getInstance().isModLoaded("cloth-config2")) {
 			TweedRegistries.TAILORS.register(TweedIdentifier.of(Tweed.MOD_ID, "cloth"), ClothTailor.INSTANCE);
 		} else {
-			Tweed.LOGGER.warn("[tweed4-tailor-cloth] Couldn't find Cloth - some config screens might not be present.");
+			Tweed.LOGGER.warn("[tweed5-tailor-cloth] Couldn't find Cloth - some config screens might not be present.");
 		}
 	}
 }

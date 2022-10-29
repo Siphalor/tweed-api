@@ -17,8 +17,8 @@
 package de.siphalor.tweed5.config.entry;
 
 import com.mojang.datafixers.util.Pair;
-import de.siphalor.tweed5.config.ConfigEnvironment;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.config.constraints.Constraint;
 import de.siphalor.tweed5.config.value.ConfigValue;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +73,7 @@ public abstract class AbstractValueConfigEntry<S, T> extends AbstractBasicEntry<
 	public abstract String asString(T value);
 
 	@Override
-	public void reset(@NotNull ConfigEnvironment environment, @NotNull ConfigScope scope) {
+	public void reset(@NotNull ReloadEnvironment environment, @NotNull ReloadScope scope) {
 		setValue(defaultValue);
 		setMainConfigValue(defaultValue);
 	}

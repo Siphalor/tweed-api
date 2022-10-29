@@ -16,8 +16,8 @@
 
 package de.siphalor.tweed5.annotated;
 
-import de.siphalor.tweed5.config.ConfigEnvironment;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadEnvironment;
+import de.siphalor.tweed5.reload.ReloadScope;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -42,13 +42,13 @@ public @interface AConfigEntry {
 
 	/**
 	 * @return Defines the scope where this entry will get reloaded in.
-	 * @see ConfigScope
+	 * @see ReloadScope
 	 */
 	String scope() default "unspecified";
 
 	/**
 	 * @return Defines the environment in which this entry will be available.
-	 * @see ConfigEnvironment
+	 * @see ReloadEnvironment
 	 */
 	String environment() default "unspecified";
 

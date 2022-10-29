@@ -20,7 +20,7 @@ import com.mojang.datafixers.util.Pair;
 import de.siphalor.tweed5.Tweed;
 import de.siphalor.tweed5.config.ConfigCategory;
 import de.siphalor.tweed5.config.ConfigFile;
-import de.siphalor.tweed5.config.ConfigScope;
+import de.siphalor.tweed5.reload.ReloadScope;
 import de.siphalor.tweed5.config.constraints.Constraint;
 import de.siphalor.tweed5.config.entry.ConfigEntry;
 import de.siphalor.tweed5.config.entry.ValueConfigEntry;
@@ -150,9 +150,9 @@ public class ClothTailor extends ScreenTailor {
 
 	public static boolean requiresRestart(ValueConfigEntry<?> configEntry) {
 		if (MinecraftClient.getInstance().world == null) {
-			return configEntry.getScope().triggers(ConfigScope.GAME);
+			return configEntry.getScope().triggers(ReloadScope.GAME);
 		} else {
-			return configEntry.getScope().triggers(ConfigScope.WORLD);
+			return configEntry.getScope().triggers(ReloadScope.WORLD);
 		}
 	}
 
