@@ -23,30 +23,26 @@ import java.util.*;
 public class EnumRepresentation<T extends EnumRepresentation.EnumLike> {
 	private final Map<String, T> map;
 	private final SortedSet<T> values;
-	private final T fallback;
 
-	protected EnumRepresentation(T fallback, Comparator<T> comparator) {
-		this.fallback = fallback;
+	protected EnumRepresentation(Comparator<T> comparator) {
 		map = new HashMap<>();
 		values = new TreeSet<>(comparator);
 	}
 
-	public static <T extends EnumLike> EnumRepresentation<T> create(T fallback) {
-		return create(fallback, Comparator.comparing(EnumLike::name));
+	public static <T extends EnumLike> EnumRepresentation<T> create() {
+		return create(Comparator.comparing(EnumLike::name));
 	}
 
-	public static <T extends EnumLike> EnumRepresentation<T> create(T fallback, Comparator<T> comparator) {
-		EnumRepresentation<T> enumRepresentation = new EnumRepresentation<>(fallback, comparator);
-		enumRepresentation.register(fallback);
-		return enumRepresentation;
+	public static <T extends EnumLike> EnumRepresentation<T> create(Comparator<T> comparator) {
+		return new EnumRepresentation<>(comparator);
 	}
 
-	public static <T extends EnumLike> EnumRepresentation<T> fromConstants(T fallback, Class<T> clazz) {
-		return fromConstants(fallback, clazz, Comparator.comparing(EnumLike::name));
+	public static <T extends EnumLike> EnumRepresentation<T> fromConstants(Class<T> clazz) {
+		return fromConstants(clazz, Comparator.comparing(EnumLike::name));
 	}
 
-	public static <T extends EnumLike> EnumRepresentation<T> fromConstants(T fallback, Class<T> clazz, Comparator<T> comparator) {
-		EnumRepresentation<T> enumRepresentation = new EnumRepresentation<>(fallback, comparator);
+	public static <T extends EnumLike> EnumRepresentation<T> fromConstants(Class<T> clazz, Comparator<T> comparator) {
+		EnumRepresentation<T> enumRepresentation = new EnumRepresentation<>(comparator);
 		for (Field field : clazz.getFields()) {
 			int modifiers = field.getModifiers();
 			if (Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers) && clazz.isAssignableFrom(field.getType())) {
@@ -62,7 +58,11 @@ public class EnumRepresentation<T extends EnumRepresentation.EnumLike> {
 	}
 
 	public T valueOf(String name) {
-		return map.getOrDefault(name.toLowerCase(Locale.ROOT), fallback);
+		T value = map.get(name.toLowerCase(Locale.ROOT));
+		if (value == null) {
+			throw new IllegalArgumentException("No enum constant " + name);
+		}
+		return value;
 	}
 
 	public void register(T value) {

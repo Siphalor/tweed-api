@@ -52,7 +52,7 @@ public class ReloadScope implements EnumRepresentation.EnumLike {
 	/**
 	 * Enum-like representation of this class.
 	 */
-	public static final EnumRepresentation<ReloadScope> ENUM = EnumRepresentation.fromConstants(HIGHEST, ReloadScope.class, Comparator.comparingInt(scope -> -scope.value));
+	public static final EnumRepresentation<ReloadScope> ENUM = EnumRepresentation.fromConstants(ReloadScope.class, Comparator.comparingInt(scope -> -scope.value));
 	private final String name;
 	private final int value;
 

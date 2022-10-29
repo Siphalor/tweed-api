@@ -48,7 +48,7 @@ public class ReloadEnvironment implements EnumRepresentation.EnumLike {
 	/**
 	 * Enum-like representation of this class.
 	 */
-	public static final EnumRepresentation<ReloadEnvironment> ENUM = EnumRepresentation.fromConstants(UNSPECIFIED, ReloadEnvironment.class);
+	public static final EnumRepresentation<ReloadEnvironment> ENUM = EnumRepresentation.fromConstants(ReloadEnvironment.class);
 
 	private final String name;
 
