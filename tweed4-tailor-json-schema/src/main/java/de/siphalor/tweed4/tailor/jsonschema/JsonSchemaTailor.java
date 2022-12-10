@@ -31,8 +31,8 @@ import de.siphalor.tweed4.data.DataObject;
 import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.tailor.Tailor;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

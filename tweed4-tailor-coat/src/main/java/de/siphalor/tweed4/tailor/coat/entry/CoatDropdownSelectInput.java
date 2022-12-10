@@ -46,13 +46,13 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	public CoatDropdownSelectInput(V value, V[] options, Function<V, Text> valueConverter) {
 		this.options = options;
 		this.valueConverter = valueConverter;
-		button = new ButtonWidget(0,0, 20, 20, Text.empty(), button_ -> {
+		button = ButtonWidget.builder(Text.empty(), button_ -> {
 			expanded = !expanded;
 			scroll = 0;
 			if (parent != null) {
 				parent.entryHeightChanged(this);
 			}
-		});
+		}).size(20, 20).build();
 
 		setValue(value);
 	}
@@ -107,30 +107,30 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 
 	@Override
 	public void render(MatrixStack matrices, int x, int y, int width, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-		button.x = x;
-		button.y = y;
+		button.setX(x);
+		button.setY(y);
 		button.setWidth(width);
 		button.render(matrices, mouseX, mouseY, tickDelta);
 
 		if (expanded) {
 			int length = getOptionsVisibleLength();
-			int top = button.y + button.getHeight();
-			int right = button.x + button.getWidth();
+			int top = button.getY() + button.getHeight();
+			int right = button.getX() + button.getWidth();
 			int height = length * 14;
 
 			int mousePos = -1;
-			if (mouseX >= button.x && mouseX < right) {
+			if (mouseX >= button.getX() && mouseX < right) {
 				mousePos = (mouseY - top - 3) / 14 + scroll;
 			}
 
-			fill(matrices, button.x, top, button.x + button.getWidth(), top + height, 0xff000000);
+			fill(matrices, button.getX(), top, button.getX() + button.getWidth(), top + height, 0xff000000);
 			if (options.length > length) {
 				int l = options.length - 1;
 				fill(matrices, right - 3, top + scroll * height / l, right, top + (MAX_VISIBLE_LINES + scroll) * height / l, 0xffbbbbbb);
 			}
 
 			for (int i = scroll; i < scroll + length; i++) {
-				MinecraftClient.getInstance().textRenderer.draw(matrices, valueConverter.apply(options[i]), button.x + 3F, top + (i - scroll) * 14 + 3,
+				MinecraftClient.getInstance().textRenderer.draw(matrices, valueConverter.apply(options[i]), button.getX() + 3F, top + (i - scroll) * 14 + 3,
 						mousePos == i ? 0xffffffff : 0xffbbbbbb
 				);
 			}
@@ -144,15 +144,15 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 
 	@Override
 	public boolean isMouseOver(double mouseX, double mouseY) {
-		return mouseX >= button.x && mouseX < button.x + button.getWidth()
-				&& mouseY >= button.y && mouseY < button.y + getHeight();
+		return mouseX >= button.getX() && mouseX < button.getX() + button.getWidth()
+				&& mouseY >= button.getY() && mouseY < button.getY() + getHeight();
 	}
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
 		if (
-				mouseY >= button.y + button.getHeight() && mouseY < button.y + getHeight()
-						&& mouseX >= button.x && mouseX < button.x + button.getWidth()
+				mouseY >= button.getY() + button.getHeight() && mouseY < button.getY() + getHeight()
+						&& mouseX >= button.getX() && mouseX < button.getX() + button.getWidth()
 		) {
 			int newScroll = scroll - (int) amount;
 			scroll = MathHelper.clamp(newScroll, 0, Math.max(0, options.length - MAX_VISIBLE_LINES - 1));
@@ -163,9 +163,9 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-		if (mouseY >= button.y) {
-			if (expanded && mouseX >= button.x && mouseX < button.x + button.getWidth()) {
-				int pos = (int) ((mouseY - (button.y + button.getHeight() + 3)) / 14);
+		if (mouseY >= button.getY()) {
+			if (expanded && mouseX >= button.getX() && mouseX < button.getX() + button.getWidth()) {
+				int pos = (int) ((mouseY - (button.getY() + button.getHeight() + 3)) / 14);
 				if (pos >= 0 && pos < MAX_VISIBLE_LINES) {
 					pos += scroll;
 					setValue(options[pos]);

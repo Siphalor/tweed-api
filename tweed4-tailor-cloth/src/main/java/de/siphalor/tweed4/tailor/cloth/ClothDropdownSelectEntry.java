@@ -57,13 +57,13 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 		this.options = (V[]) options.toArray();
 		this.valueConverter = valueConverter;
 
-		mainButton = new ButtonWidget(0, 0, 150, 20, resetButtonText, button -> {
+		mainButton = ButtonWidget.builder(resetButtonText, button -> {
 			optionsVisible = !optionsVisible;
 			scrollOffset = 0;
-		});
-		resetButton = new ButtonWidget(0, 0, MinecraftClient.getInstance().textRenderer.getWidth(resetButtonText) + 6, 20, resetButtonText, button -> {
+		}).size(150, 20).build();
+		resetButton = ButtonWidget.builder(resetButtonText, button -> {
 			setValue(getDefaultValue().orElse(null));
-		});
+		}).size(MinecraftClient.getInstance().textRenderer.getWidth(resetButtonText) + 6, 20).build();
 
 		setValue(originalValue);
 	}
@@ -107,8 +107,8 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
 		if (
-				mouseY >= mainButton.y + mainButton.getHeight() && mouseY < mainButton.y + mainButton.getHeight() + getOptionsVisibleLength() * 14
-				&& mouseX >= mainButton.x && mouseX < mainButton.x + mainButton.getWidth()
+				mouseY >= mainButton.getY() + mainButton.getHeight() && mouseY < mainButton.getY() + mainButton.getHeight() + getOptionsVisibleLength() * 14
+				&& mouseX >= mainButton.getX() && mouseX < mainButton.getX() + mainButton.getWidth()
 		) {
 			scrollOffset = MathHelper.clamp(scrollOffset - (int) amount, 0, Math.max(0, options.length - MAX_VISIBLE_LINES - 1));
 			return true;
@@ -129,8 +129,8 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (mouseY >= mainButton.y && mouseY < mainButton.y + getItemHeight()) {
-			if (optionsVisible && mouseX >= mainButton.x && mouseX < mainButton.x + mainButton.getWidth()) {
+		if (mouseY >= mainButton.getY() && mouseY < mainButton.getY() + getItemHeight()) {
+			if (optionsVisible && mouseX >= mainButton.getX() && mouseX < mainButton.getX() + mainButton.getWidth()) {
 				int pos = (int) ((mouseY - getOptionsTop()) / 14);
 				if (pos >= 0 && pos < MAX_VISIBLE_LINES) {
 					pos += scrollOffset;
@@ -171,7 +171,7 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 	}
 
 	private int getOptionsTop() {
-		return mainButton.y + mainButton.getHeight() + 3;
+		return mainButton.getY() + mainButton.getHeight() + 3;
 	}
 
 	@Override
@@ -182,18 +182,18 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 		mainButton.active = isEditable();
 		resetButton.active = isEditable() && getDefaultValue().map(def -> !def.equals(value)).orElse(false);
 
-		mainButton.y = y;
-		resetButton.y = y;
+		mainButton.setY(y);
+		resetButton.setY(y);
 
 		Text displayedFieldName = getDisplayedFieldName();
 		if (MinecraftClient.getInstance().textRenderer.isRightToLeft()) {
 			MinecraftClient.getInstance().textRenderer.drawWithShadow(matrices, displayedFieldName, window.getScaledWidth() - x - MinecraftClient.getInstance().textRenderer.getWidth(displayedFieldName), y + 6, getPreferredTextColor());
-			resetButton.x = x;
-			mainButton.x = x + resetButton.getWidth() + 1;
+			resetButton.setX(x);
+			mainButton.setX(x + resetButton.getWidth() + 1);
 		} else {
 			MinecraftClient.getInstance().textRenderer.drawWithShadow(matrices, displayedFieldName, x, y + 6, getPreferredTextColor());
-			resetButton.x = x + entryWidth - resetButton.getWidth();
-			mainButton.x = x + entryWidth - 150 + 1;
+			resetButton.setX(x + entryWidth - resetButton.getWidth());
+			mainButton.setX(x + entryWidth - 150 + 1);
 		}
 		mainButton.setWidth(150 - resetButton.getWidth() - 4);
 
@@ -202,23 +202,23 @@ public class ClothDropdownSelectEntry<V> extends TooltipListEntry<V> {
 
 		if (optionsVisible) {
 			int length = getOptionsVisibleLength();
-			int top = mainButton.y + mainButton.getHeight();
-			int right = mainButton.x + mainButton.getWidth();
+			int top = mainButton.getY() + mainButton.getHeight();
+			int right = mainButton.getX() + mainButton.getWidth();
 			int height = length * 14;
 
 			int mousePos = -1;
-			if (mouseX >= mainButton.x && mouseX < right) {
+			if (mouseX >= mainButton.getX() && mouseX < right) {
 				mousePos = (mouseY - top - 3) / 14 + scrollOffset;
 			}
 
-			fill(matrices, mainButton.x, top, mainButton.x + mainButton.getWidth(), top + height, 0xff000000);
+			fill(matrices, mainButton.getX(), top, mainButton.getX() + mainButton.getWidth(), top + height, 0xff000000);
 			if (options.length > length) {
 				int l = options.length - 1;
 				fill(matrices, right - 3, top + scrollOffset * height / l, right, top + (MAX_VISIBLE_LINES + scrollOffset) * height / l, 0xffbbbbbb);
 			}
 
 			for (int i = scrollOffset; i < scrollOffset + length; i++) {
-				MinecraftClient.getInstance().textRenderer.draw(matrices, valueConverter.apply(options[i]), mainButton.x + 3F, top + (i - scrollOffset) * 14 + 3,
+				MinecraftClient.getInstance().textRenderer.draw(matrices, valueConverter.apply(options[i]), mainButton.getX() + 3F, top + (i - scrollOffset) * 14 + 3,
 						mousePos == i ? 0xffffffff : 0xffbbbbbb
 				);
 			}
