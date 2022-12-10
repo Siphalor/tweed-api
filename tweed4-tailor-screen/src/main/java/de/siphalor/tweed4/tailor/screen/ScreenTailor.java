@@ -93,7 +93,7 @@ public abstract class ScreenTailor extends Tailor {
 								});
 								List<ConfigFile> captured = awaitedSyncs.get();
 								if (captured != null && captured.isEmpty()) {
-									client.setScreen(screenFactory.create(parentScreen));
+                                    client.submit(() -> client.setScreen(screenFactory.create(parentScreen)));
 									return true;
 								}
 								return false;
@@ -107,7 +107,7 @@ public abstract class ScreenTailor extends Tailor {
 					},
 					() -> {
 						awaitedSyncs.set(null);
-						client.execute(() -> client.setScreen(parentScreen));
+                        client.submit(() -> client.setScreen(parentScreen));
 					},
 					new TranslatableText("tweed4_tailor_screen.syncFromServer"),
 					new TranslatableText("tweed4_tailor_screen.syncFromServer.note")
