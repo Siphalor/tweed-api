@@ -80,8 +80,6 @@ public abstract class ScreenTailor extends Tailor {
 							buf.writeEnumConstant(ConfigScope.SMALLEST);
 							buf.writeEnumConstant(ConfigOrigin.MAIN);
 						}
-						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
-
 						TweedClient.setSyncListener(new ConfigSyncListener() {
 							@Override
 							public boolean onSync(ConfigFile configFile) {
@@ -104,6 +102,8 @@ public abstract class ScreenTailor extends Tailor {
 								return onSync(configFile);
 							}
 						});
+
+						ClientPlayNetworking.send(Tweed.REQUEST_SYNC_C2S_PACKET, buf);
 					},
 					() -> {
 						awaitedSyncs.set(null);
