@@ -42,11 +42,12 @@
         "tweed4_tailor_screen": "^1"
     },
     "suggests": {
-        "cloth-config2": "~7"
+        "cloth-config2": "~10"
     },
     "breaks": {
         "cloth-config2": [
-            "<7"
+            "<10",
+            ">=11"
         ]
     }
 }
