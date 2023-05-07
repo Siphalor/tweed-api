@@ -7,7 +7,6 @@ dependencies {
 	implementation project(path: getSubProjectPath("data-hjson"), configuration: "namedElements")
 	implementation project(path: getSubProjectPath("data-gson"), configuration: "namedElements")
 
-	modRuntimeOnly("com.github.astei:lazydfu:master-SNAPSHOT")
 	modRuntimeOnly("de.siphalor:coat-$minecraft_major_version:$coat_version") {
 		exclude group: "net.fabricmc.fabric-api"
 		exclude module: "amecsapi-$minecraft_major_version"
