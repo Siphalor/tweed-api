@@ -93,10 +93,15 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	}
 
 	@Override
+	public boolean isFocused() {
+		return button.isFocused();
+	}
+
+	@Override
 	public void setFocused(boolean focused) {
 		if (button.isFocused() != focused) {
 			button.active = true;
-			button.changeFocus(true);
+			button.setFocused(true);
 		}
 	}
 
