@@ -20,16 +20,14 @@ import de.siphalor.coat.input.ConfigInput;
 import de.siphalor.coat.input.InputChangeListener;
 import de.siphalor.coat.list.entry.ConfigListConfigEntry;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.function.Function;
-
-import static net.minecraft.client.gui.DrawableHelper.fill;
 
 public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	private static final int MAX_VISIBLE_LINES = 5;
@@ -111,11 +109,11 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int x, int y, int width, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+	public void render(DrawContext drawContext, int x, int y, int width, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
 		button.setX(x);
 		button.setY(y);
 		button.setWidth(width);
-		button.render(matrices, mouseX, mouseY, tickDelta);
+		button.render(drawContext, mouseX, mouseY, tickDelta);
 
 		if (expanded) {
 			int length = getOptionsVisibleLength();
@@ -128,22 +126,26 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 				mousePos = (mouseY - top - 3) / 14 + scroll;
 			}
 
-			fill(matrices, button.getX(), top, button.getX() + button.getWidth(), top + height, 0xff000000);
+			drawContext.fill(button.getX(), top, button.getX() + button.getWidth(), top + height, 0xff000000);
 			if (options.length > length) {
 				int l = options.length - 1;
-				fill(matrices, right - 3, top + scroll * height / l, right, top + (MAX_VISIBLE_LINES + scroll) * height / l, 0xffbbbbbb);
+				drawContext.fill(right - 3, top + scroll * height / l, right, top + (MAX_VISIBLE_LINES + scroll) * height / l, 0xffbbbbbb);
 			}
 
 			for (int i = scroll; i < scroll + length; i++) {
-				MinecraftClient.getInstance().textRenderer.draw(matrices, valueConverter.apply(options[i]), button.getX() + 3F, top + (i - scroll) * 14 + 3,
-						mousePos == i ? 0xffffffff : 0xffbbbbbb
+				drawContext.drawText(
+						MinecraftClient.getInstance().textRenderer,
+						valueConverter.apply(options[i]),
+						button.getX() + 3, top + (i - scroll) * 14 + 3,
+						mousePos == i ? 0xffffffff : 0xffbbbbbb,
+						false
 				);
 			}
 		}
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
 
 	}
 

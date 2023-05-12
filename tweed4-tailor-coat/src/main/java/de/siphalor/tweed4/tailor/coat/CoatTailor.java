@@ -41,7 +41,7 @@ import de.siphalor.tweed4.tailor.screen.ScreenTailorScreenFactory;
 import de.siphalor.tweed4.util.DirectListMultimap;
 import de.siphalor.tweed4.util.StaticStringConvertible;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -89,7 +89,7 @@ public class CoatTailor extends ScreenTailor {
 				MinecraftClient.getInstance(), name, Collections.emptyList(),
 				category.getBackgroundTexture() != null
 						? category.getBackgroundTexture()
-						: DrawableHelper.OPTIONS_BACKGROUND_TEXTURE
+						: Screen.OPTIONS_BACKGROUND_TEXTURE
 		);
 
 		if (!category.getDescription().isEmpty()) {

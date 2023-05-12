@@ -23,7 +23,7 @@ import de.siphalor.tweed4.config.ConfigEnvironment;
 import de.siphalor.tweed4.config.ConfigScope;
 import de.siphalor.tweed4.config.constraints.RangeConstraint;
 import de.siphalor.tweed4.config.value.serializer.ReflectiveNullable;
-import de.siphalor.tweed4.tailor.cloth.ClothData;
+//import de.siphalor.tweed4.tailor.cloth.ClothData;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ import java.util.Optional;
 
 @SuppressWarnings({"unused", "OptionalUsedAsFieldOrParameterType"})
 @ATweedConfig(serializer = "tweed4:hjson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = {"tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
-@ClothData(modid = "tweed4_testmod")
+//@ClothData(modid = "tweed4_testmod")
 public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
 	public static Boolean aBoolean = true;
