@@ -6,7 +6,7 @@
 ![supported Minecraft versions: 1.14 | 1.15 | 1.16 | 1.17 | 1.18 | 1.19 | 1.20](https://img.shields.io/badge/support%20for%20MC-1.14%20%7C%201.15%20%7C%201.16%20%7C%201.17%20%7C%201.18%20%7C%201.19%20%7C%201.20-%2356AD56?style=for-the-badge)
 
 
-[![latest maven release](https://img.shields.io/maven-metadata/v?color=0f9fbc&metadataUrl=https%3A%2F%2Fmaven.siphalor.de%2Fde%2Fsiphalor%2Ftweed4%2Ftweed4-bom-1.16%2Fmaven-metadata.xml&style=flat-square)](https://maven.siphalor.de/de/siphalor/tweed4/)
+[![latest maven release](https://img.shields.io/maven-metadata/v?color=0f9fbc&metadataUrl=https%3A%2F%2Fmaven.siphalor.de%2Fde%2Fsiphalor%2Ftweed4%2Ftweed4-bom-1.17%2Fmaven-metadata.xml&style=flat-square)](https://maven.siphalor.de/de/siphalor/tweed4/)
 
 Yet another config API.
 
@@ -37,7 +37,7 @@ Use can find the latest version in the badge at the top of this README.
 # gradle.properties
 
 tweed_version=<latest version from badge>
-minecraft_major_version=1.16
+minecraft_major_version=1.17
 ```
 
 For a quick code example see [here](tweed-testmod/src/main/java/de/siphalor/tweedtest/Config.java).
