@@ -22,6 +22,7 @@ String getSubProjectPath(name) {
 
 allprojects {
     project.group = project.maven_group
+	project.version = "$project.version+mc$project.minecraft_version"
 }
 
 subprojects {
@@ -29,8 +30,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'org.cadixdev.licenser'
 
-    project.version = "$project.version+mc$project.minecraft_version"
-	project.archivesBaseName = "$project.archives_base_name+mc$project.minecraft_major_version"
+	project.archivesBaseName = project.archives_base_name
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
