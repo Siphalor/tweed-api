@@ -4,12 +4,13 @@ buildscript {
 	}
 }
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 plugins {
+    id 'java-platform'
 	id 'maven-publish'
-	id 'java'
 	id 'com.github.johnrengelman.shadow' version '7.0.0' apply false
 	id 'fabric-loom' version '0.11-SNAPSHOT' apply false
 	id 'org.cadixdev.licenser' version '0.6.1' apply false
@@ -20,11 +21,24 @@ String getSubProjectPath(name) {
 }
 
 allprojects {
-	apply plugin: 'fabric-loom'
-	apply plugin: 'java-library'
-	apply plugin: 'org.cadixdev.licenser'
+    project.group = project.maven_group
+	project.version = "$project.version+mc$project.minecraft_version"
+}
 
-	group = rootProject.maven_group
+subprojects {
+    apply plugin: 'fabric-loom'
+    apply plugin: 'java-library'
+    apply plugin: 'org.cadixdev.licenser'
+
+	project.archivesBaseName = project.archives_base_name
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+	// Fix for Loom 0.10 transitive dependency mess: https://discord.com/channels/507304429255393322/842691768175951942/908391237806096444
+	configurations {
+		namedElements.extendsFrom implementation, api
+	}
 
 	repositories {
 		mavenCentral()
@@ -37,63 +51,44 @@ allprojects {
 		}
 	}
 
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+    dependencies {
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+        mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
+        modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 
-	loom {}
+        testImplementation "org.junit.jupiter:junit-jupiter:5+"
+    }
 
-	dependencies {
-		minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-		mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
-		modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+    license {
+        header rootProject.file('LICENSE_HEADER')
+        include '**/*.java'
+    }
 
-		testImplementation "org.junit.jupiter:junit-jupiter:5+"
-	}
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = "UTF-8"
+    }
 
-	// ensure that the encoding is set to UTF-8, no matter what the system default is
-	// this fixes some edge cases with special characters not displaying correctly
-	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-	tasks.withType(JavaCompile) {
-		options.encoding = "UTF-8"
-	}
-
-	jar {
-		from "LICENSE"
-		dependsOn(processResources)
-	}
-
-	license {
-		header rootProject.file('LICENSE_HEADER')
-		include '**/*.java'
-	}
-
-	test {
-		useJUnitPlatform()
-	}
-}
-
-subprojects {
-	project.version = "$project.version+mc$project.minecraft_version"
-	project.archivesBaseName = "$project.archives_base_name+mc$project.minecraft_major_version"
-
-	// Fix for Loom 0.10 transitive dependency mess: https://discord.com/channels/507304429255393322/842691768175951942/908391237806096444
-	configurations {
-		namedElements.extendsFrom implementation, api
-	}
-
-	jar {
+    jar {
 		archiveClassifier.set("dev")
+        from "LICENSE"
 	}
+
+    test {
+        useJUnitPlatform()
+    }
 
 	afterEvaluate {
 		if (pluginManager.hasPlugin("com.github.johnrengelman.shadow")) {
-			task shadowSourcesJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
-				relocators = shadowJar.relocators
-				from sourceSets.main.output
-				configurations = [project.configurations.shadow]
-				archiveBaseName.set(archives_base_name)
-				archiveClassifier.set("sources")
-			}
+            tasks.register('shadowSourcesJar', ShadowJar) {
+                relocators = shadowJar.relocators
+                from sourceSets.main.output
+                configurations = [project.configurations.shadow]
+                archiveBaseName.set(archives_base_name)
+                archiveClassifier.set("sources")
+            }
 			remapSourcesJar.dependsOn(shadowSourcesJar)
 
 			jar {
@@ -136,28 +131,29 @@ subprojects {
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
 	// if it is present.
 	// If you remove this task, sources will not be generated.
-	task sourcesJar(type: Jar, dependsOn: classes) {
-		archiveBaseName.set(project.archives_base_name)
-		archiveClassifier.set("sources")
-		from sourceSets.main.allSource
-	}
+    tasks.register('sourcesJar', Jar) {
+        dependsOn classes
+        archiveBaseName.set(project.archives_base_name)
+        archiveClassifier.set("sources")
+        from sourceSets.main.allSource
+    }
 
-	task updateModMetaFiles(type: Copy) {
-		def projectId = project.archives_base_name.replace('-', '_')
-		from rootProject.file(".template/icon.png")
-		into "src/main/resources/assets/${projectId}"
-		include "*.png"
-		outputs.upToDateWhen { false }
-		doLast {
-			def slurper = new JsonSlurper()
-			def template = slurper.parse(rootProject.file(".template/fabric.mod.json"))
-			def path = file("src/main/resources/fabric.mod.json")
-			def json = path.exists() ? slurper.parse(path) : new HashMap<>()
-			json += template
-			file("src/main/resources/fabric.mod.json")
-					.write(JsonOutput.prettyPrint(JsonOutput.toJson(json)).replace("\${project}", projectId)+"\n")
-		}
-	}
+    tasks.register('updateModMetaFiles', Copy) {
+        def projectId = project.archives_base_name.replace('-', '_')
+        from rootProject.file(".template/icon.png")
+        into "src/main/resources/assets/${projectId}"
+        include "*.png"
+        outputs.upToDateWhen { false }
+        doLast {
+            def slurper = new JsonSlurper()
+            def template = slurper.parse(rootProject.file(".template/fabric.mod.json"))
+            def path = file("src/main/resources/fabric.mod.json")
+            def json = path.exists() ? slurper.parse(path) : new HashMap<>()
+            json += template
+            file("src/main/resources/fabric.mod.json")
+                    .write(JsonOutput.prettyPrint(JsonOutput.toJson(json)).replace("\${project}", projectId) + "\n")
+        }
+    }
 
 	def projectId = archives_base_name.replaceAll(/-(\w)/, {it[1].toUpperCase()})
 
@@ -173,17 +169,15 @@ subprojects {
 	}
 }
 
+// Dependencies for the BOM
 dependencies {
-	modRuntimeOnly("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}") {
-		exclude module: "fabric-loader"
-	}
-
-	afterEvaluate {
-		subprojects {
-			include(api(project(path: ":"+it.name, configuration: "namedElements")))
-			rootProject.getTasksByName("remapJar", false).iterator().next().dependsOn(it.getTasksByName("remapJar", false).iterator().next())
-		}
-	}
+    constraints {
+        subprojects.each { project ->
+            if (!project.name.contains("testmod")) {
+                api(project)
+            }
+        }
+    }
 }
 
 publishing {
@@ -200,10 +194,10 @@ publishing {
 		}
 	}
 
-	publications.create("tweed4", MavenPublication.class, {
+	publications.create("tweed4Bom", MavenPublication.class, {
 		version = project.version
-		artifactId = archives_base_name + "-" + minecraft_major_version
+		artifactId = archives_base_name + "-bom-" + minecraft_major_version
 
-		from components.java
+		from components.javaPlatform
 	})
 }
