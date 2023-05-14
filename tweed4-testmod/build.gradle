@@ -4,6 +4,7 @@ dependencies {
 	implementation project(path: getSubProjectPath("tailor-cloth"), configuration: "namedElements")
 	implementation project(path: getSubProjectPath("tailor-coat"), configuration: "namedElements")
 	implementation project(path: getSubProjectPath("tailor-json-schema"), configuration: "namedElements")
+	implementation project(path: getSubProjectPath("tailor-lang-json-descriptions"), configuration: "namedElements")
 	implementation project(path: getSubProjectPath("data-hjson"), configuration: "namedElements")
 	implementation project(path: getSubProjectPath("data-gson"), configuration: "namedElements")
 

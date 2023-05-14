@@ -1,0 +1,21 @@
+import java.util.Properties
+
+plugins {
+	id 'groovy-gradle-plugin'
+}
+
+repositories {
+	gradlePluginPortal()
+	maven { url = uri("https://maven.fabricmc.net/") }
+	maven { url = uri("https://maven.architectury.dev/") }
+	maven { url = uri("https://maven.minecraftforge.net/") }
+	maven { url = uri("https://maven.siphalor.de/") }
+}
+
+def rootProperties = new Properties()
+rootProperties.load(file("../gradle.properties").newReader())
+dependencies {
+	implementation("com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:${rootProperties["shadow_version"]}")
+	implementation("net.fabricmc:fabric-loom:${rootProperties["loom_version"]}")
+	implementation 'org.codehaus.groovy:groovy-json:3.0.9'
+}
