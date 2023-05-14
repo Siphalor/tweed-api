@@ -17,25 +17,25 @@ allprojects {
 		header rootProject.file('LICENSE_HEADER')
 		include '**/*.java'
 	}
+
+	publishing {
+		repositories {
+			if (project.hasProperty("siphalorMavenUser")) {
+				maven {
+					url = "https://maven.siphalor.de/upload.php/"
+					name = "Siphalor"
+					credentials {
+						username = siphalorMavenUser
+						password = siphalorMavenPassword
+					}
+				}
+			}
+		}
+	}
 }
 
 subprojects {
 	if (!project.hasProperty("no_mod")) {
 		apply plugin: "tweed.fabric.mod"
-	}
-}
-
-publishing {
-	repositories {
-		if (project.hasProperty("siphalorMavenUser")) {
-			maven {
-				url = "https://maven.siphalor.de/upload.php/"
-				name = "Siphalor"
-				credentials {
-					username = siphalorMavenUser
-					password = siphalorMavenPassword
-				}
-			}
-		}
 	}
 }
