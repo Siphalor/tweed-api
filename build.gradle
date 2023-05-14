@@ -1,205 +1,41 @@
-buildscript {
-	dependencies {
-		classpath 'org.codehaus.groovy:groovy-json:3.0.9'
-	}
-}
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
-
 plugins {
-    id 'java-platform'
-	id 'maven-publish'
-	id 'com.github.johnrengelman.shadow' version '7.0.0' apply false
-	id 'fabric-loom' version '1.1-SNAPSHOT' apply false
 	id 'org.cadixdev.licenser' version '0.6.1' apply false
 }
 
 String getSubProjectPath(name) {
-	return ":tweed4-$name-$rootProject.minecraft_major_version"
+	return ":tweed4-$name-$project.minecraft_major_version"
 }
 
 allprojects {
+	apply plugin: 'org.cadixdev.licenser'
+	apply plugin: 'maven-publish'
+
     project.group = project.maven_group
 	project.version = "$project.version+mc$project.minecraft_version"
+
+	license {
+		header rootProject.file('LICENSE_HEADER')
+		include '**/*.java'
+	}
+
+	publishing {
+		repositories {
+			if (project.hasProperty("siphalorMavenUser")) {
+				maven {
+					url = "https://maven.siphalor.de/upload.php/"
+					name = "Siphalor"
+					credentials {
+						username = siphalorMavenUser
+						password = siphalorMavenPassword
+					}
+				}
+			}
+		}
+	}
 }
 
 subprojects {
-    apply plugin: 'fabric-loom'
-    apply plugin: 'java-library'
-    apply plugin: 'org.cadixdev.licenser'
-
-	project.archivesBaseName = project.archives_base_name
-
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-
-	// Fix for Loom 0.10 transitive dependency mess: https://discord.com/channels/507304429255393322/842691768175951942/908391237806096444
-	configurations {
-		namedElements.extendsFrom implementation, api
+	if (!project.hasProperty("no_mod")) {
+		apply plugin: "tweed.fabric.mod"
 	}
-
-    repositories {
-        mavenCentral()
-        maven { url "https://maven.siphalor.de" }
-        maven { url "https://maven.shedaniel.me" }
-        maven { url "https://maven.terraformersmc.com/releases" }
-        maven { url "https://jitpack.io" }
-    }
-
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_17
-
-	loom {}
-
-    dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-        mappings "net.fabricmc:yarn:${rootProject.minecraft_version}+build.${rootProject.yarn_mappings}"
-        modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
-
-        testImplementation "org.junit.jupiter:junit-jupiter:5+"
-    }
-
-    license {
-        header rootProject.file('LICENSE_HEADER')
-        include '**/*.java'
-    }
-
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    tasks.withType(JavaCompile).configureEach {
-        options.encoding = "UTF-8"
-    }
-
-    jar {
-		archiveClassifier.set("dev")
-        from "LICENSE"
-	}
-
-    test {
-        useJUnitPlatform()
-    }
-
-	afterEvaluate {
-		if (pluginManager.hasPlugin("com.github.johnrengelman.shadow")) {
-            tasks.register('shadowSourcesJar', ShadowJar) {
-                relocators = shadowJar.relocators
-                from sourceSets.main.output
-                configurations = [project.configurations.shadow]
-                archiveBaseName.set(archives_base_name)
-                archiveClassifier.set("sources")
-            }
-			remapSourcesJar.dependsOn(shadowSourcesJar)
-
-			jar {
-				finalizedBy(shadowJar)
-			}
-
-			sourcesJar {
-				finalizedBy(shadowSourcesJar)
-			}
-
-			shadowJar {
-				configurations = [project.configurations.shadow]
-				archiveBaseName.set(archives_base_name)
-				archiveClassifier.set("dev")
-			}
-
-			remapJar {
-				dependsOn(shadowJar)
-				inputFile = project.tasks.shadowJar.archiveFile
-			}
-		}
-
-		remapJar {
-			archiveFileName = "${project.archives_base_name}-${project.version}.jar"
-		}
-
-		processResources {
-			inputs.property "version", project.version
-
-			afterEvaluate {
-				from(sourceSets.main.resources.srcDirs) {
-					include "fabric.mod.json"
-					expand "version": project.version
-					duplicatesStrategy DuplicatesStrategy.INCLUDE
-				}
-			}
-		}
-	}
-
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this task, sources will not be generated.
-    tasks.register('sourcesJar', Jar) {
-        dependsOn classes
-        archiveBaseName.set(project.archives_base_name)
-        archiveClassifier.set("sources")
-        from sourceSets.main.allSource
-    }
-
-    tasks.register('updateModMetaFiles', Copy) {
-        def projectId = project.archives_base_name.replace('-', '_')
-        from rootProject.file(".template/icon.png")
-        into "src/main/resources/assets/${projectId}"
-        include "*.png"
-        outputs.upToDateWhen { false }
-        doLast {
-            def slurper = new JsonSlurper()
-            def template = slurper.parse(rootProject.file(".template/fabric.mod.json"))
-            def path = file("src/main/resources/fabric.mod.json")
-            def json = path.exists() ? slurper.parse(path) : new HashMap<>()
-            json += template
-            file("src/main/resources/fabric.mod.json")
-                    .write(JsonOutput.prettyPrint(JsonOutput.toJson(json)).replace("\${project}", projectId) + "\n")
-        }
-    }
-
-	def projectId = archives_base_name.replaceAll(/-(\w)/, {it[1].toUpperCase()})
-
-	// configure the maven publication
-	publishing {
-		publications.create(projectId, MavenPublication.class, {
-			version = project.version
-			artifactId = "${project.archives_base_name}-${project.minecraft_major_version}"
-
-			from components.java
-			java.withSourcesJar()
-		})
-	}
-}
-
-// Dependencies for the BOM
-dependencies {
-    constraints {
-        subprojects.each { project ->
-            if (!project.name.contains("testmod")) {
-                api(project)
-            }
-        }
-    }
-}
-
-publishing {
-	repositories {
-		if (project.hasProperty("siphalorMavenUser")) {
-			maven {
-				url = "https://maven.siphalor.de/upload.php/"
-				name = "Siphalor"
-				credentials {
-					username = siphalorMavenUser
-					password = siphalorMavenPassword
-				}
-			}
-		}
-	}
-
-	publications.create("tweed4Bom", MavenPublication.class, {
-		version = project.version
-		artifactId = archives_base_name + "-bom-" + minecraft_major_version
-
-		from components.javaPlatform
-	})
 }
