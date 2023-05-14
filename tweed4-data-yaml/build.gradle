@@ -1,5 +1,3 @@
-apply plugin: "com.github.johnrengelman.shadow"
-
 dependencies {
 	implementation project(path: getSubProjectPath("data"), configuration: "namedElements")
 

@@ -10,6 +10,8 @@ pluginManagement {
 
 rootProject.name = "tweed"
 
+include "bom"
+project(":bom").name = "tweed4-bom-${properties.get("minecraft_major_version")}"
 rootDir.eachDir {
     if (it.name.startsWith("tweed4-") && it.toPath().resolve("gradle.properties").toFile().exists()) {
 		var dir = rootDir.relativePath(it)
