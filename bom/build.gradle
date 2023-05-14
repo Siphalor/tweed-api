@@ -1,0 +1,22 @@
+plugins {
+	id 'java-platform'
+}
+
+dependencies {
+	constraints {
+		rootProject.subprojects.each { subproject ->
+			if (!subproject.hasProperty("exclude_from_bom")) {
+				api(subproject)
+			}
+		}
+	}
+}
+
+publishing {
+	publications.create("tweed4Bom", MavenPublication.class, {
+		version = project.version
+		artifactId = archives_base_name + "-bom-" + minecraft_major_version
+
+		from components.javaPlatform
+	})
+}
