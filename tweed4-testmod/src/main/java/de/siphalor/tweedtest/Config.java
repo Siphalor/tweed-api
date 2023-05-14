@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings({"unused", "OptionalUsedAsFieldOrParameterType"})
-@ATweedConfig(serializer = "tweed4:hjson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = {"tweed4:coat", "tweed4:json_schema", "tweed4:lang_json_descriptions"}, casing = CaseFormat.LOWER_HYPHEN)
+@ATweedConfig(serializer = "tweed4:hjson", scope = ConfigScope.GAME, environment = ConfigEnvironment.UNIVERSAL, tailors = {"tweed4:lang_json_descriptions", "tweed4:coat", "tweed4:json_schema"}, casing = CaseFormat.LOWER_HYPHEN)
 @ClothData(modid = "tweed4_testmod")
 public class Config {
 	@AConfigEntry(name = "bool", comment = "Some kind of Boolean")
