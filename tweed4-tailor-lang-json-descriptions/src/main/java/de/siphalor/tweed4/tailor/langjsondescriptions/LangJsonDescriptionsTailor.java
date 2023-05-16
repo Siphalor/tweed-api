@@ -36,7 +36,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 public class LangJsonDescriptionsTailor extends Tailor implements TweedInitializer {
-	private static final String TRANSLATION_PREFIX = "tweed4_tailor_descriptions.";
+	private static final String TRANSLATION_PREFIX = "tweed4_tailor_screen.screen.";
 	private static final Gson GSON = new Gson();
 	private final Logger logger = LogManager.getLogger(this.getClass());
 
@@ -66,9 +66,10 @@ public class LangJsonDescriptionsTailor extends Tailor implements TweedInitializ
 	private void process(JsonObject langJson, ConfigCategory category, String path) {
 		category.entryStream().forEach(entry -> {
 			String categoryPath = path + "." + entry.getKey();
+			String descriptionKey = categoryPath + ".description";
 			ConfigEntry<?> configEntry = entry.getValue();
-			if (langJson.has(categoryPath)) {
-				configEntry.setComment(langJson.get(categoryPath).getAsString());
+			if (langJson.has(descriptionKey)) {
+				configEntry.setComment(langJson.get(descriptionKey).getAsString());
 			}
 			if (configEntry instanceof ConfigCategory) {
 				process(langJson, (ConfigCategory) configEntry, categoryPath);
