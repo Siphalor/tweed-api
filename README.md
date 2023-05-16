@@ -23,12 +23,20 @@ repositories {
 }
 
 dependencies {
-	modApi(platform("de.siphalor.tweed4:tweed4-bom-$minecraft_major_version:$tweed_version"))
+	include(modApi(platform("de.siphalor.tweed4:tweed4-bom-$minecraft_major_version:$tweed_version")))
 	// Pick any modules you want to use, e.g.:
 	include(modApi("de.siphalor.tweed4:tweed4-base-$minecraft_major_version"))
 	include(modApi("de.siphalor.tweed4:tweed4-annotated-$minecraft_major_version"))
 	include(modApi("de.siphalor.tweed4:tweed4-data-$minecraft_major_version"))
 	include(modApi("de.siphalor.tweed4:tweed4-data-hjson-$minecraft_major_version"))
+}
+
+// Workaround for https://github.com/gradle/gradle/issues/10195
+configurations.include.transitive = true
+configurations.include.dependencies.each {
+	if (!it.name.contains("bom")) {
+		it.transitive = false
+	}
 }
 ```
 
