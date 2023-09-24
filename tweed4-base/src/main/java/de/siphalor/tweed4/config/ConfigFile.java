@@ -25,6 +25,7 @@ import de.siphalor.tweed4.data.DataValue;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
@@ -241,10 +242,7 @@ public class ConfigFile {
 	}
 
 	public void syncToClients(ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		packetByteBuf.writeEnumConstant(origin);
-		packetByteBuf.writeString(name);
-		write(packetByteBuf, environment, scope, origin);
+		PacketByteBuf packetByteBuf = createSyncToClientBuf(environment, scope, origin);
 
 		for (MinecraftServer server : Tweed.MINECRAFT_SERVERS) {
 			for (ServerPlayerEntity player : PlayerLookup.all(server)) {
@@ -254,22 +252,37 @@ public class ConfigFile {
 	}
 
 	public void syncToClient(ServerPlayerEntity playerEntity, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
-		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-		packetByteBuf.writeEnumConstant(origin);
-		packetByteBuf.writeString(name);
-		write(packetByteBuf, environment, scope, origin);
+		PacketByteBuf packetByteBuf = createSyncToClientBuf(environment, scope, origin);
 
 		ServerPlayNetworking.send(playerEntity, Tweed.CONFIG_SYNC_S2C_PACKET, packetByteBuf);
 	}
 
+	public void syncToClient(PacketSender packetSender, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		PacketByteBuf buf = createSyncToClientBuf(environment, scope, origin);
+		packetSender.sendPacket(Tweed.CONFIG_SYNC_S2C_PACKET, buf);
+	}
+
+	private PacketByteBuf createSyncToClientBuf(ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {
+		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+		packetByteBuf.writeEnumConstant(origin);
+		packetByteBuf.writeString(name);
+		write(packetByteBuf, environment, scope, origin);
+		return packetByteBuf;
+	}
+
 	public void syncToServer(ConfigEnvironment environment, ConfigScope scope) {
+		PacketByteBuf packetByteBuf = createSyncToServerBuf(environment, scope);
+
+		ClientPlayNetworking.send(Tweed.CONFIG_SYNC_C2S_PACKET, packetByteBuf);
+	}
+
+	private PacketByteBuf createSyncToServerBuf(ConfigEnvironment environment, ConfigScope scope) {
 		PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
 		packetByteBuf.writeString(name);
 		packetByteBuf.writeEnumConstant(environment);
 		packetByteBuf.writeEnumConstant(scope);
 		write(packetByteBuf, environment, scope, ConfigOrigin.MAIN);
-
-		ClientPlayNetworking.send(Tweed.CONFIG_SYNC_C2S_PACKET, packetByteBuf);
+		return packetByteBuf;
 	}
 
 	protected void write(PacketByteBuf buffer, ConfigEnvironment environment, ConfigScope scope, ConfigOrigin origin) {

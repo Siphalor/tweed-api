@@ -6,9 +6,6 @@
 		"MinecraftServerAccessor",
 		"MixinMinecraftServer"
 	],
-	"client": [
-		"client.MixinClientPlayNetworkHandler"
-	],
 	"injectors": {
 		"defaultRequire": 1
 	}

@@ -156,12 +156,12 @@ public class CoatDropdownSelectInput<V> implements ConfigInput<V> {
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
 		if (
 				mouseY >= button.getY() + button.getHeight() && mouseY < button.getY() + getHeight()
 						&& mouseX >= button.getX() && mouseX < button.getX() + button.getWidth()
 		) {
-			int newScroll = scroll - (int) amount;
+			int newScroll = scroll - (int) verticalAmount;
 			scroll = MathHelper.clamp(newScroll, 0, Math.max(0, options.length - MAX_VISIBLE_LINES - 1));
 			return newScroll == scroll;
 		}

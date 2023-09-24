@@ -18,11 +18,12 @@ package de.siphalor.tweed4;
 
 import de.siphalor.tweed4.config.*;
 import de.siphalor.tweed4.data.serializer.ConfigDataSerializer;
-import io.netty.buffer.Unpooled;
+import de.siphalor.tweed4.network.RequestSyncPacket;
+import de.siphalor.tweed4.network.StartTweedConfigurationPacket;
+import de.siphalor.tweed4.network.TweedConfigurationTask;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.*;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
@@ -31,6 +32,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerConfigurationNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -80,6 +82,9 @@ public class Tweed implements ModInitializer {
 			}
 		});
 
+		ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register(Tweed::clientConfigurationStart);
+		ServerConfigurationNetworking.registerGlobalReceiver(RequestSyncPacket.TYPE, Tweed::clientConfigurationRequestedSync);
+
 		ServerPlayNetworking.registerGlobalReceiver(REQUEST_SYNC_C2S_PACKET, (server, player, handler, packetByteBuf, packetSender) -> {
 			while (packetByteBuf.isReadable()) {
 				String name = packetByteBuf.readString(32767);
@@ -95,9 +100,7 @@ public class Tweed implements ModInitializer {
 					}
 				} else {
 					LOGGER.warn("Received request to sync config file " + name + " but it was not found.");
-					PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-					buf.writeEnumConstant(ConfigOrigin.DATAPACK);
-					buf.writeString("!" + name);
+					PacketByteBuf buf = createNegativeSyncBuf(name);
 					ServerPlayNetworking.send(player, CONFIG_SYNC_S2C_PACKET, buf);
 				}
 			}
@@ -106,6 +109,33 @@ public class Tweed implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(TWEED_CLOTH_SYNC_C2S_PACKET, Tweed::receiveSyncC2SPacket);
 
 		Tweed.runEntryPoints();
+	}
+
+	private static void clientConfigurationStart(ServerConfigurationNetworkHandler handler, MinecraftServer server) {
+		if (ServerConfigurationNetworking.canSend(handler, StartTweedConfigurationPacket.TYPE)) {
+			handler.addTask(new TweedConfigurationTask());
+		}
+	}
+
+	private static void clientConfigurationRequestedSync(RequestSyncPacket packet, ServerConfigurationNetworkHandler networkHandler, PacketSender responseSender) {
+		List<String> requestedFiles = packet.getRequestedFiles();
+		for (String name : requestedFiles) {
+			ConfigFile configFile = TweedRegistry.getConfigFile(name);
+			if (configFile != null) {
+				configFile.syncToClient(responseSender, ConfigEnvironment.SYNCED, ConfigScope.WORLD, ConfigOrigin.DATAPACK);
+			} else {
+				PacketByteBuf buf = createNegativeSyncBuf(name);
+				responseSender.sendPacket(CONFIG_SYNC_S2C_PACKET, buf);
+			}
+		}
+		networkHandler.completeTask(TweedConfigurationTask.KEY);
+	}
+
+	private static PacketByteBuf createNegativeSyncBuf(String name) {
+		PacketByteBuf buf = PacketByteBufs.create();
+		buf.writeEnumConstant(ConfigOrigin.DATAPACK);
+		buf.writeString("!" + name);
+		return buf;
 	}
 
 	private static void receiveSyncC2SPacket(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf packetByteBuf, PacketSender packetSender) {
